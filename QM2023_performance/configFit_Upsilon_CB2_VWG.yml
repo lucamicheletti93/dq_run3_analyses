@@ -1,0 +1,65 @@
+{
+  "input": {
+    "input_file_name": "AnalysisResultsHistograms.root", #input file name
+    "input_name": ["hist_mass_all_histo_PairsMuonSEPM_matchedMchMid"], #histo name
+    "pdf_dictionary": {
+      "pdf": ["CB2", "CB2", "CB2", "VWG", "SUM"],
+      "pdfName": ["Upsilon1s", "Upsilon2s", "Upsilon3s", "Bkg", "SUM"],
+      "pdfColor": [861, 417, 2, 1],
+      "pdfNameForLegend": ["#Upsilon(1S)", "#Upsilon(2S)", "#Upsilon(3S)", "Background", "Fit"],
+      "pdfStyle": [1, 1, 1, 2],
+      "parVal": [
+        [9.4603, 0.15, 1.016, 2.035, 2.063, 2.247],
+        [10.0233, 0.134, 1.016, 2.035, 2.063, 2.247],
+        [10.3552, 0.139, 1.016, 2.035, 2.063, 2.247],
+        [1, 1, 1],
+        [10000, 500, 100, 100000]
+      ],
+      "parLimMin": [
+        [9.1,  0.1, 1.016, 2.035, 2.063, 2.247],
+        [9.7, 0.03, 1.016, 2.035, 2.063, 2.247],
+        [10., 0.04, 1.016, 2.035, 2.063, 2.247],
+        [-10, 0, -100],
+        [0, 0, 0, 0]
+      ],
+      "parLimMax": [
+        [9.7, 0.2,  1.016, 2.035, 2.063, 2.247],
+        [10.3, 0.2,  1.016, 2.035, 2.063, 2.247],
+        [10.5, 0.2, 1.016, 2.035, 2.063, 2.247],
+        [10, 100, 100],
+        [50000,10000, 5000, 500000]
+      ],
+      "parName": [
+        ["mean_Upsilon1s", "width_Upsilon1s", "a_Upsilon1s", "b_Upsilon1s", "c_Upsilon1s", "d_Upsilon1s"],
+        ["sum::mean_Upsilon2s(mean_Upsilon1s,0.5630)", "prod::width_Upsilon2s(width_Upsilon1s,1.0495)", "a_#Upsilon_2s", "b_#Upsilon2s", "c_#Upsilon2s", "d_#Upsilon2s"],
+        ["sum::mean_Upsilon3s(mean_Upsilon1s,0.8949)", "prod::width_Upsilon3s(width_Upsilon1s,1.0794)", "a_#Upsilon_3s", "b_#Upsilon3s", "c_#Upsilon3s", "d_#Upsilon3s"],
+        ["aa", "bb", "cc"],
+        ["sig_Upsilon1s","sig_Upsilon2s", "sig_Upsilon3s", "bkg"]
+      ],
+      "fitRangeMin": [7],
+      "fitRangeMax": [12],
+      "fitMethod": "likelyhood",
+      "doResidualPlot": true,
+      "doPullPlot": true, 
+      "doCorrMatPlot": true,
+      "doAlicePlot": true,
+      #"parForAlicePlot": ["mean_Upsilon1s","sig_Upsilon1s","sig_Upsilon2s","sig_Upsilon3s"],
+      #"parNameForAlicePlot": ["#mu_{#Upsilon(1S)}", "#it{N}_{#Upsilon(1S)}", "#it{N}_{#Upsilon(2S)}", "#it{N}_{#Upsilon(3S)}"],
+      "parForAlicePlot": [],
+      "parNameForAlicePlot": [],
+      "text": [
+        [0.20, 0.89, "ALICE Performance"],
+        [0.20, 0.82, "pp #sqrt{#it{s}} = 13.6 TeV"], 
+        [0.20, 0.75, "2.5 < #it{y} < 3.6, #Upsilon(nS) #rightarrow #mu^{+}#mu^{-}"],
+        [0.20, 0.68, "MCH+MID"],
+        [0.20, 0.61, "#it{p}_{T} < 20 GeV/c^{2}"],
+        #[0.20, 0.54, "0 < #it{p}_{T} < 2 GeV/c"]
+        #[0.20, 0.54, "2 < #it{p}_{T} < 4 GeV/c"]
+        #[0.20, 0.54, "4 < #it{p}_{T} < 6 GeV/c"]
+      ]
+    }
+  },
+  "output": {
+    "output_file_name": "output/"
+  }
+}
