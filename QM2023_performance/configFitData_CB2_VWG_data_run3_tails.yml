@@ -1,0 +1,67 @@
+{
+    "input": {
+      "input_file_name": "out_LHC22_JPsi_no_LHC22m.root",
+      "input_name": [
+        #uncomment desired pt range
+        #"mass_pt_0_2"
+        #"mass_pt_2_4"
+        #"mass_pt_4_6"
+        "mass_pt_20"
+      ],
+      "pdf_dictionary": {
+        "pdf": ["CB2", "CB2", "VWG", "SUM"],
+        "pdfName": ["Jpsi", "Psi2s", "Bkg", "SUM"],
+        "pdfColor": [861, 417, 1],
+        "pdfNameForLegend": ["J/#psi", "#psi(2S)","Background", "Fit"],
+        "pdfStyle": [1, 1, 2],
+        "parVal": [
+          [3.096, 0.96e-01, 1.061, 23.725, 3.183, 21.144],
+          [3.68, 0.96e-01, 1.061, 23.725, 3.183, 21.144],
+          [1.6432, 4.5482e-01, 3.6494e-01],
+          [100000, 1000, 4800000]
+        ],
+        "parLimMin": [
+          [2.9, 3.0e-02, 0, 0, 0, 0],
+          [3.2, 3.0e-02, 0, 0, 0, 0],
+          [-10, -10, -10],
+          [1, 1, 1]
+        ],
+        "parLimMax": [
+          [3.5, 1.2e-01, 10, 10, 10, 10],
+          [3.9, 1.2e-01, 10, 10, 10, 10],
+          [10, 10, 10],
+          [5000000, 50000, 50000000]
+        ],
+        "parName": [
+          ["mean_Jpsi", "width_Jpsi", "a_Jpsi", "b_Jpsi", "c_Jpsi", "d_Jpsi"],
+          ["sum::mean_Psi2s(mean_Jpsi,0.584)", "prod::width_Psi2s(width_Jpsi,1.05)", "a_Jpsi", "b_Jpsi", "c_Jpsi", "d_Jpsi"],
+          ["aa", "bb", "cc"],
+          ["sig_Jpsi", "sig_Psi2s", "bkg"]
+        ],
+        "fitRangeMin": [2.1],
+        "fitRangeMax": [4.9],
+        "fitMethod": "likelyhood",
+        "doResidualPlot": true,
+        "doPullPlot": true, 
+        "doCorrMatPlot": true,
+        "doAlicePlot": true,
+        "parForAlicePlot": [],
+        "parNameForAlicePlot": [],
+        "text": [
+          [0.20, 0.89, "ALICE Performance"],
+          [0.20, 0.82, "pp #sqrt{#it{s}} = 13.6 TeV"], 
+          [0.20, 0.75, "2.5 < #it{y} < 3.6, J/#psi, #psi(2S) #rightarrow #mu^{+}#mu^{-}"],
+          [0.20, 0.68, "MFT+MCH+MID"],
+          [0.20, 0.61, "#chi^{2}_{MCH-MFT} < 45"],
+          #uncomment desired value for ALICE-style plot
+          #[0.20, 0.54, "0 < #it{p}_{T} < 2 GeV/c"]
+          #[0.20, 0.54, "2 < #it{p}_{T} < 4 GeV/c"]
+          #[0.20, 0.54, "4 < #it{p}_{T} < 6 GeV/c"]
+          [0.20, 0.54, "#it{p}_{T} < 20 GeV/c"]
+        ]
+      }
+    },
+    "output": {
+      "output_file_name": "output/"
+    }
+  }
