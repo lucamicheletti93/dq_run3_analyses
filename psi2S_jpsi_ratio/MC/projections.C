@@ -48,6 +48,7 @@ void projections() {
         "PairsMuonSEPM_muonLowPt210SigmaPDCA",
         "PairsMuonSEPM_muonLowPt510SigmaPDCA"
     };
+
     string histName = "Mass_Pt_Rapidity";
 
     TFile *fIn = new TFile(Form("/Users/lucamicheletti/alice/local_train_test_mc/LHC24e5/%s.root", fInName.c_str()), "READ");
@@ -59,6 +60,12 @@ void projections() {
         THnSparseD *histSparse = (THnSparseD*) list -> FindObject(histName.c_str());
         TH1D *histProjInt = (TH1D*) histSparse -> Projection(0, Form("Proj_%s", cut.c_str()));
         histProjInt -> Write(Form("Proj_%s", cut.c_str()));
+
+
+        for (int iPt = 0;iPt < nPtBins;iPt++) {
+            TH1D *histProjPt = (TH1D*) projectHistogram(histSparse, minPtBins[iPt], maxPtBins[iPt], minRapBins[0], maxRapBins[0]);
+            histProjPt -> Write(Form("Proj_%s__Pt_%1.0f_%1.0f", cut.c_str(), minPtBins[iPt], maxPtBins[iPt]));
+        }
     }
     fOut -> ls();
     fOut -> Close();
