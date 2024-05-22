@@ -18,7 +18,7 @@
 void LoadStyle();
 void SetLegend(TLegend *);
 
-TH1D* projectHistogram(THnSparseD *, double , double , double , double );
+TH1D* ProjectHistogram(THnSparseD *, double , double , double , double );
 
 void projections() {
     const int nPtBins = 5;
@@ -63,7 +63,7 @@ void projections() {
 
 
         for (int iPt = 0;iPt < nPtBins;iPt++) {
-            TH1D *histProjPt = (TH1D*) projectHistogram(histSparse, minPtBins[iPt], maxPtBins[iPt], minRapBins[0], maxRapBins[0]);
+            TH1D *histProjPt = (TH1D*) ProjectHistogram(histSparse, minPtBins[iPt], maxPtBins[iPt], minRapBins[0], maxRapBins[0]);
             histProjPt -> Write(Form("Proj_%s__Pt_%1.0f_%1.0f", cut.c_str(), minPtBins[iPt], maxPtBins[iPt]));
         }
     }
@@ -83,7 +83,7 @@ void SetLegend(TLegend *legend){
     legend -> SetTextSize(0.04);
 }
 
-TH1D* projectHistogram(THnSparseD *histSparse, double minPtRange, double maxPtRange, double minRapRange, double maxRapRange) {
+TH1D* ProjectHistogram(THnSparseD *histSparse, double minPtRange, double maxPtRange, double minRapRange, double maxRapRange) {
     double minPtBin = histSparse -> GetAxis(1) -> FindBin(minPtRange);
     double maxPtBin = histSparse -> GetAxis(1) -> FindBin(maxPtRange - 0.01);
     double minCentrBin = histSparse -> GetAxis(2) -> FindBin(minRapRange);
