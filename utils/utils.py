@@ -19,6 +19,25 @@ def download(inputCfg):
     if not os.path.isdir("%s" % (output_dir)):
         os.system("mkdir -p %s" % (output_dir))
 
+    with open(inputCfg["input"]["alien_run_list"], 'r') as file:
+        run_list = file.read().splitlines()
+
+    with open(inputCfg["input"]["alien_input_path"], 'r') as file:
+        alien_path = file.read().splitlines()
+
+    print("----- Download and save files in %s -----" % (output_dir))
+    for iRun, run in enumerate(run_list):
+        file_type = inputCfg["input"]["file_type"]
+
+        os.system("mkdir -p %s/%s" % (output_dir, run))
+
+        #print("alien_cp alien://%s/%s file:%s/%s/." % (alien_path[iRun], file_type, output_dir, run))
+        os.system("alien_cp alien://%s/%s file:%s/%s/." % (alien_path[iRun], file_type, output_dir, run))
+        fOut.write("{}\n".format(run))
+    fOut.close()
+
+    exit()
+
     print("----- Download and save files in %s -----" % (inputCfg["input"]["output_dir_name"]))
     for iRun in range(0, len(inputCfg["input"]["run_list"])):
 
@@ -28,9 +47,28 @@ def download(inputCfg):
 
         os.system("mkdir -p %s/%s" % (output_dir, run))
         
-        os.system("alien_cp alien://%s/*/%s file:%s/%s/." % (alien_path, file_type, output_dir, run))
+        #os.system("alien_cp alien://%s/*/%s file:%s/%s/." % (alien_path, file_type, output_dir, run))
+        os.system("alien_cp alien://%s/%s file:%s/%s/." % (alien_path, file_type, output_dir, run))
         fOut.write("{}\n".format(run))
     fOut.close()
+
+def fix(inputCfg):
+    output_dir = inputCfg["input"]["output_dir_name"]
+
+    with open(inputCfg["input"]["alien_run_list"], 'r') as file:
+        run_list = file.read().splitlines()
+    
+    with open(inputCfg["input"]["alien_input_path"], 'r') as file:
+        alien_path = file.read().splitlines()
+
+    print("----- Download and save missing files in %s -----" % (output_dir))
+    for iRun, run in enumerate(run_list):
+        file_type = inputCfg["input"]["file_type"]
+
+        if not os.path.isfile(("{}/{}/{}").format(output_dir, run, file_type)):
+            print("Run ", run, " does not exist!")
+            #os.system("alien_cp alien://%s/*/%s file:%s/%s/." % (alien_path[iRun], file_type, output_dir, run))
+
 
 def merge(inputCfg):
     fInPath = inputCfg["input"]["file_path"]
@@ -48,6 +86,7 @@ def main():
     parser = argparse.ArgumentParser(description='Arguments to pass')
     parser.add_argument('cfgFileName', metavar='text', default='config.yml', help='config file name')
     parser.add_argument("--download", help="Download single files", action="store_true")
+    parser.add_argument("--fix", help="Download missing files from download", action="store_true")
     parser.add_argument("--merge", help="Do the merging of the downloaded files", action="store_true")
     args = parser.parse_args()
 
@@ -58,6 +97,8 @@ def main():
 
     if args.download:
         download(inputCfg)
+    if args.fix:
+        fix(inputCfg)
     if args.merge:
         merge(inputCfg)
 
