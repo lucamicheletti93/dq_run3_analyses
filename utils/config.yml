@@ -1,24 +1,11 @@
 
 input:
-    output_dir_name: "/Users/lucamicheletti/cernbox/JPSI/Run3/2023/PbPb/cpass1/LHC23zzh"
-    run_list: [
-      544124,
-      544123,
-      544122,
-      544121,
-      544116
-    ]
-
-    alien_input_path: [
-      "/alice/cern.ch/user/a/alihyperloop/jobs/0024/hy_246509/AOD",
-      "/alice/cern.ch/user/a/alihyperloop/jobs/0024/hy_246508/AOD",
-      "/alice/cern.ch/user/a/alihyperloop/jobs/0024/hy_246507/AOD",
-      "/alice/cern.ch/user/a/alihyperloop/jobs/0024/hy_246506/AOD",
-      "/alice/cern.ch/user/a/alihyperloop/jobs/0024/hy_246505/AOD"
-    ]
+    output_dir_name: "/Users/lucamicheletti/cernbox/JPSI/Jpsi_flow/data/pass3/LHC23_full/train_235531"
+    alien_run_list: alien_run_list.txt
+    alien_input_path: alien_input_path.txt
 
     file_type: "AnalysisResults.root"
-    file_path: "/Users/lucamicheletti/cernbox/JPSI/Run3/2023/PbPb/cpass1/LHC23zzh"
+    file_path: "/Users/lucamicheletti/cernbox/JPSI/Jpsi_flow/data/pass3/LHC23_full/train_235531"
     table_maker_stat: table-maker/Statistics
     table_maker: table-maker/output
     table_maker_dir: ["Muons_muonQualityCuts"]
