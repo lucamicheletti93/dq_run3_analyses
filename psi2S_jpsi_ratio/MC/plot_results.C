@@ -31,6 +31,17 @@ void plot_results() {
     const double BrPsi2sToMuMu = 8.0e-3;
     const double errBrPsi2sToMuMu = 0.6e-3;
 
+    double ptBinsRun2[] = {0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 22.0, 26.0, 30.0};
+    double widthJpsiRun2[] = {0.067, 0.069, 0.068, 0.069, 0.069, 0.070, 0.071, 0.072, 0.074, 0.075, 0.079, 0.080, 0.087, 0.083, 0.098, 0.083, 0.112, 0.121};
+    double errWidthJpsiRun2[] = {0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.002, 0.003, 0.005, 0.007, 0.010, 0.011, 0.019, 0.031};
+
+    TH1D *histWidthJpsiDataRun2 = new TH1D("histWidthJpsiDataRun2","", 18, ptBinsRun2);
+    for (int iPt = 0;iPt < 18;iPt++) {
+        histWidthJpsiDataRun2 -> SetBinContent(iPt+1, widthJpsiRun2[iPt]);
+        histWidthJpsiDataRun2 -> SetBinError(iPt+1, errWidthJpsiRun2[iPt]);
+    }
+    SetHistogram(histWidthJpsiDataRun2, 1, 1, 20, 1);
+
     double ptBinsRun3[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 10.0, 20.0};
     double corrPsi2sOverJpsiRun3Prel[] = {0.114, 0.128, 0.131, 0.203, 0.210, 0.239, 0.241, 0.304};
     double statCorrPsi2sOverJpsiRun3Prel[] = {0.011, 0.009, 0.010, 0.013, 0.017, 0.016, 0.026, 0.037};
@@ -148,6 +159,11 @@ void plot_results() {
     histWidthJpsiTimeAssocNA60 -> Draw("EP SAME");
     histWidthJpsiStdAssocNA60 -> Draw("EP SAME");
     histWidthJpsiDataTimeAssocCB2 -> Draw("EP SAME");
+    histWidthJpsiDataRun2 -> Draw("EP SAME");
+
+    TFile *fOut = new TFile("jpsi_width.root", "RECREATE");
+    histWidthJpsiDataTimeAssocCB2 -> Write("histJpsiWidthRun3");
+    histWidthJpsiDataRun2 -> Write("histJpsiWidthRun2");
 
     TLegend *legendWidthJpsi = new TLegend(0.20, 0.69, 0.60, 0.89);
     SetLegend(legendWidthJpsi);

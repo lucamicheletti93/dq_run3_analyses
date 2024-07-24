@@ -32,7 +32,7 @@ def download(inputCfg):
         os.system("mkdir -p %s/%s" % (output_dir, run))
 
         #print("alien_cp alien://%s/%s file:%s/%s/." % (alien_path[iRun], file_type, output_dir, run))
-        os.system("alien_cp alien://%s/%s file:%s/%s/." % (alien_path[iRun], file_type, output_dir, run))
+        os.system("alien_cp alien://%s/*/%s file:%s/%s/." % (alien_path[iRun], file_type, output_dir, run))
         fOut.write("{}\n".format(run))
     fOut.close()
 
@@ -71,11 +71,16 @@ def fix(inputCfg):
 
 
 def merge(inputCfg):
+    output_dir = inputCfg["input"]["output_dir_name"]
+
+    with open(inputCfg["input"]["alien_run_list"], 'r') as file:
+        run_list = file.read().splitlines()
+
     fInPath = inputCfg["input"]["file_path"]
     file_type = inputCfg["input"]["file_type"]
     os.system("mkdir -p {}/merged_files".format(fInPath))
-    runs = inputCfg["input"]["run_list"]
-    for run in runs:
+
+    for run in run_list:
         #print("mkdir -p {}/merged_files/{}".format(fInPath, run))
         os.system(f'mkdir -p {fInPath}/merged_files/{run}')
         #print("hadd {}/merged_files/{}/AnalysisResults.root {}/{}/*/AnalysisResults.root".format(fInPath, run, fInPath, run))

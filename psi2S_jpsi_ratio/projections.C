@@ -29,16 +29,23 @@ void projections() {
     // Data settings
     string dataset = "2022";
     //string productionName = "LHC22o_pass6_minBias";
-    string productionName = "LHC22o_pass7_skimmed";
+    string productionName = "apass7_skimmed/LHC22o";
     string associationType = "time_association";
 
     string histName = "Mass_Pt_Rapidity";
     //string histName = "Mass_Pt";
 
     // pt differential
-    const int nPtBins1 = 8;
-    double minPtBins1[] = {0, 1, 2, 3, 4, 5, 7, 10};
-    double maxPtBins1[] = {1, 2, 3, 4, 5, 7, 10, 20};
+    //const int nPtBins1 = 8;
+    //double minPtBins1[] = {0, 1, 2, 3, 4, 5, 7, 10};
+    //double maxPtBins1[] = {1, 2, 3, 4, 5, 7, 10, 20};
+    //const int nPtBins1 = 14;
+    //double minPtBins1[] = {0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 10, 15};
+    //double maxPtBins1[] = {0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 10, 15, 20};
+
+    const int nPtBins1 = 13;
+    double minPtBins1[] = {0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 15};
+    double maxPtBins1[] = {0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 15, 20};
     const int nRapBins1 = 1;
     double minRapBins1[] = {2.5};
     double maxRapBins1[] = {4};
@@ -67,6 +74,8 @@ void projections() {
     string fInName = "AnalysisResults_table_reader";
     string cuts[] = {
         "PairsMuonSEPM_matchedMchMid",
+        "PairsMuonSEPP_matchedMchMid",
+        "PairsMuonSEMM_matchedMchMid",
         "PairsMuonSEPM_muonLowPt10SigmaPDCA",
         "PairsMuonSEPM_muonLowPt210SigmaPDCA",
         "PairsMuonSEPM_muonLowPt510SigmaPDCA"
@@ -88,7 +97,7 @@ void projections() {
 
             for (int iPt = 0;iPt < nPtBins1;iPt++) {
                 TH1D *histProjPt = (TH1D*) ProjectTHnSparse(histSparse, minPtBins1[iPt], maxPtBins1[iPt], minRapBins1[0], maxRapBins1[0]);
-                histProjPt -> Write(Form("Proj_%s__Pt_%1.0f_%1.0f", cut.c_str(), minPtBins1[iPt], maxPtBins1[iPt]));
+                histProjPt -> Write(Form("Proj_%s__Pt_%2.1f_%2.1f", cut.c_str(), minPtBins1[iPt], maxPtBins1[iPt]));
             }
 
             for (int iRap = 0;iRap < nRapBins2;iRap++) {
