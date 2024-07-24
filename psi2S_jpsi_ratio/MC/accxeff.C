@@ -150,8 +150,8 @@ void accxeff() {
     //TFile *fIn = new TFile("/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/MC/central_production/AnalysisResults.root", "READ");
     string productionName = "LHC24e5"; // prompt charmonia at forward https://its.cern.ch/jira/browse/O2-4884
     //string productionName = "LHC24e4"; // non-prompt charmonia at forward https://its.cern.ch/jira/browse/O2-4885
-    string associationType = "time_association";
-    //string associationType = "std_association";
+    //string associationType = "time_association";
+    string associationType = "std_association";
     TFile *fIn = new TFile(Form("/Users/lucamicheletti/cernbox/JPSI/Run3/MC/%s/AnalysisResults_dq_efficiency_%s.root", productionName.c_str(), associationType.c_str()), "READ");
 
     TList *listGen1 = (TList*) fIn -> Get("analysis-same-event-pairing/output");
@@ -165,14 +165,14 @@ void accxeff() {
     TH1D *histGenJpsiRap = (TH1D*) histGenJpsiPtRap -> ProjectionY("histGenJpsiRap");
     SetHistogram(histGenJpsiRap, 1, 1, 20, 1);
 
-    TList *listPsi2SGen2 = (TList*) listGen1 -> FindObject("MCTruthGen_Psi2S");
-    TH2D *histPsi2SPtYGen = (TH2D*) listPsi2SGen2 -> FindObject("Pt_Rapidity");
-    histPsi2SPtYGen -> GetXaxis() -> SetRangeUser(0., 20.); // WARNING! constrain the generated particles to be in the 0 < pT < 20 region
-    histPsi2SPtYGen -> GetYaxis() -> SetRangeUser(2.5, 4); // WARNING! constrain the generated particles to be in the 2.5 < y < 4 region
+    TList *listGenPsi2S2 = (TList*) listGen1 -> FindObject("MCTruthGen_Psi2S");
+    TH2D *histGenPsi2SPtRap = (TH2D*) listGenPsi2S2 -> FindObject("Pt_Rapidity");
+    histGenPsi2SPtRap -> GetXaxis() -> SetRangeUser(0., 20.); // WARNING! constrain the generated particles to be in the 0 < pT < 20 region
+    histGenPsi2SPtRap -> GetYaxis() -> SetRangeUser(2.5, 4); // WARNING! constrain the generated particles to be in the 2.5 < y < 4 region
 
-    TH1D *histGenPsi2SPt = (TH1D*) histPsi2SPtYGen -> ProjectionX("histGenPsi2SPt");
+    TH1D *histGenPsi2SPt = (TH1D*) histGenPsi2SPtRap -> ProjectionX("histGenPsi2SPt");
     SetHistogram(histGenPsi2SPt, 1, 1, 20, 1);
-    TH1D *histGenPsi2SRap = (TH1D*) histPsi2SPtYGen -> ProjectionY("histGenPsi2SRap");
+    TH1D *histGenPsi2SRap = (TH1D*) histGenPsi2SPtRap -> ProjectionY("histGenPsi2SRap");
     SetHistogram(histGenPsi2SRap, 1, 1, 20, 1);
 
     TList *listRec1 = (TList*) fIn -> Get("analysis-same-event-pairing/output");
@@ -254,6 +254,27 @@ void accxeff() {
     histRecJpsiPtRapCut2 -> RebinY(2);
     histRecJpsiPtRapCut3 -> RebinY(2);
     histRecJpsiPtRapCut4 -> RebinY(2);
+
+    double AxeJpsiCut1 = histRecJpsiPtRapCut1 -> Integral() / histGenJpsiPtRap -> Integral();
+    double AxeJpsiCut2 = histRecJpsiPtRapCut2 -> Integral() / histGenJpsiPtRap -> Integral();
+    double AxeJpsiCut3 = histRecJpsiPtRapCut3 -> Integral() / histGenJpsiPtRap -> Integral();
+    double AxeJpsiCut4 = histRecJpsiPtRapCut4 -> Integral() / histGenJpsiPtRap -> Integral();
+
+    double AxePsi2SCut1 = histRecPsi2SPtRapCut1 -> Integral() / histGenPsi2SPtRap -> Integral();
+    double AxePsi2SCut2 = histRecPsi2SPtRapCut2 -> Integral() / histGenPsi2SPtRap -> Integral();
+    double AxePsi2SCut3 = histRecPsi2SPtRapCut3 -> Integral() / histGenPsi2SPtRap -> Integral();
+    double AxePsi2SCut4 = histRecPsi2SPtRapCut4 -> Integral() / histGenPsi2SPtRap -> Integral();
+
+    std::cout << "[J/psi] Rec = " << histRecJpsiPtRapCut1 -> Integral() << "; Gen = " << histGenJpsiPtRap -> Integral() << " -> " << AxeJpsiCut1 << std::endl;
+    std::cout << "[J/psi] Rec = " << histRecJpsiPtRapCut2 -> Integral() << "; Gen = " << histGenJpsiPtRap -> Integral() << " -> " << AxeJpsiCut2 << std::endl;
+    std::cout << "[J/psi] Rec = " << histRecJpsiPtRapCut3 -> Integral() << "; Gen = " << histGenJpsiPtRap -> Integral() << " -> " << AxeJpsiCut3 << std::endl;
+    std::cout << "[J/psi] Rec = " << histRecJpsiPtRapCut4 -> Integral() << "; Gen = " << histGenJpsiPtRap -> Integral() << " -> " << AxeJpsiCut4 << std::endl;
+
+    std::cout << "[Psi(2S)] Rec = " << histRecPsi2SPtRapCut1 -> Integral() << "; Gen = " << histGenPsi2SPtRap -> Integral() << " -> " << AxePsi2SCut1 << std::endl;
+    std::cout << "[Psi(2S)] Rec = " << histRecPsi2SPtRapCut2 -> Integral() << "; Gen = " << histGenPsi2SPtRap -> Integral() << " -> " << AxePsi2SCut2 << std::endl;
+    std::cout << "[Psi(2S)] Rec = " << histRecPsi2SPtRapCut3 -> Integral() << "; Gen = " << histGenPsi2SPtRap -> Integral() << " -> " << AxePsi2SCut3 << std::endl;
+    std::cout << "[Psi(2S)] Rec = " << histRecPsi2SPtRapCut4 -> Integral() << "; Gen = " << histGenPsi2SPtRap -> Integral() << " -> " << AxePsi2SCut4 << std::endl;
+
 
     TH2D *histAxeJpsiPtRapCut1 = (TH2D*) histRecJpsiPtRapCut1 -> Clone("histAxeJpsiPtRapCut1");
     histAxeJpsiPtRapCut1 -> Divide(histGenJpsiPtRap);

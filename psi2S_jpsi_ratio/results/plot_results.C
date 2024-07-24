@@ -26,20 +26,30 @@ struct Row {
 void plot_results() {
     LoadStyle();
 
+    //string productionName = "LHC22o_pass6_minBias";
+    string productionName = "LHC22o_pass7_skimmed";
+
     const double BrJpsiToMuMu = 0.05961;
     const double errBrJpsiToMuMu = 0.00033;
     const double BrPsi2sToMuMu = 8.0e-3;
     const double errBrPsi2sToMuMu = 0.6e-3;
 
-    double ptBinsRun3[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 10.0, 20.0};
+    //const int nPtBinsRun3 = 14;
+    //double ptBinsRun3[] = {0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 10, 15, 20};
+    const int nPtBinsRun3 = 13;
+    double ptBinsRun3[] = {0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 15, 20};
+
+    const int nPtBinsRun3Prel = 8;
+    double ptBinsRun3Prel[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 10.0, 20.0};
+
     double corrPsi2sOverJpsiVsPtRun3Prel[] = {0.114, 0.128, 0.131, 0.203, 0.210, 0.239, 0.241, 0.304};
     double statCorrPsi2sOverJpsiVsPtRun3Prel[] = {0.011, 0.009, 0.010, 0.013, 0.017, 0.016, 0.026, 0.037};
     double systCorrPsi2sOverJpsiVsPtRun3Prel[] = {0.025, 0.025, 0.026, 0.033, 0.037, 0.045, 0.060, 0.052};
 
-    TH1D *histStatCorrPsi2sOverJpsiVsPtRun3Prel = new TH1D("histStatCorrPsi2sOverJpsiVsPtRun3Prel", "", 8, ptBinsRun3);
-    TH1D *histSystCorrPsi2sOverJpsiVsPtRun3Prel = new TH1D("histSystCorrPsi2sOverJpsiVsPtRun3Prel", "", 8, ptBinsRun3);
+    TH1D *histStatCorrPsi2sOverJpsiVsPtRun3Prel = new TH1D("histStatCorrPsi2sOverJpsiVsPtRun3Prel", "", nPtBinsRun3Prel, ptBinsRun3Prel);
+    TH1D *histSystCorrPsi2sOverJpsiVsPtRun3Prel = new TH1D("histSystCorrPsi2sOverJpsiVsPtRun3Prel", "", nPtBinsRun3Prel, ptBinsRun3Prel);
 
-    for (int iPt = 0;iPt < 8;iPt++) {
+    for (int iPt = 0;iPt < nPtBinsRun3;iPt++) {
         histStatCorrPsi2sOverJpsiVsPtRun3Prel -> SetBinContent(iPt+1, corrPsi2sOverJpsiVsPtRun3Prel[iPt]);
         histStatCorrPsi2sOverJpsiVsPtRun3Prel -> SetBinError(iPt+1, statCorrPsi2sOverJpsiVsPtRun3Prel[iPt]);
         histSystCorrPsi2sOverJpsiVsPtRun3Prel -> SetBinContent(iPt+1, corrPsi2sOverJpsiVsPtRun3Prel[iPt]);
@@ -59,7 +69,7 @@ void plot_results() {
     TH1D *histStatCorrPsi2sOverJpsiVsRapRun3Prel = new TH1D("histStatCorrPsi2sOverJpsiVsRapRun3Prel", "", 6, rapBinsRun3);
     TH1D *histSystCorrPsi2sOverJpsiVsRapRun3Prel = new TH1D("histSystCorrPsi2sOverJpsiVsRapRun3Prel", "", 6, rapBinsRun3);
 
-    for (int iRap = 0;iRap < 8;iRap++) {
+    for (int iRap = 0;iRap < 6;iRap++) {
         histStatCorrPsi2sOverJpsiVsRapRun3Prel -> SetBinContent(iRap+1, corrPsi2sOverJpsiVsRapRun3Prel[iRap]);
         histStatCorrPsi2sOverJpsiVsRapRun3Prel -> SetBinError(iRap+1, statCorrPsi2sOverJpsiVsRapRun3Prel[iRap]);
         histSystCorrPsi2sOverJpsiVsRapRun3Prel -> SetBinContent(iRap+1, corrPsi2sOverJpsiVsRapRun3Prel[iRap]);
@@ -71,14 +81,14 @@ void plot_results() {
     histSystCorrPsi2sOverJpsiVsRapRun3Prel -> SetFillStyle(0);
 
     // Read J/psi signal extraction
-    std::ifstream fileJpsiVsPt("/Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC22o_pass6_minBias/time_association/pt_dependence/systematic_sig_Jpsi.txt");
+    std::ifstream fileJpsiVsPt(Form("/Users/lucamicheletti/GITHUB/dq_fitter/analysis/%s/time_association/pt_dependence/systematic_sig_Jpsi.txt", productionName.c_str()));
 
     std::string headerJpsiVsPt;
     std::getline(fileJpsiVsPt, headerJpsiVsPt);
     int counterPt = 0;
 
-    TH1D *histStatJpsiVsPtRun3 = new TH1D("histStatJpsiVsPtRun3", "", 8, ptBinsRun3);
-    TH1D *histSystJpsiVsPtRun3 = new TH1D("histSystPsi2sVsPtRun3", "", 8, ptBinsRun3);
+    TH1D *histStatJpsiVsPtRun3 = new TH1D("histStatJpsiVsPtRun3", "", nPtBinsRun3, ptBinsRun3);
+    TH1D *histSystJpsiVsPtRun3 = new TH1D("histSystPsi2sVsPtRun3", "", nPtBinsRun3, ptBinsRun3);
 
     for (std::string line; std::getline(fileJpsiVsPt, line);) {
         std::istringstream iss(line);
@@ -122,14 +132,14 @@ void plot_results() {
 
 
     // Read Psi(2S) signal extraction
-    std::ifstream filePsi2sVsPt("/Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC22o_pass6_minBias/time_association/pt_dependence/systematic_sig_Psi2s.txt");
+    std::ifstream filePsi2sVsPt(Form("/Users/lucamicheletti/GITHUB/dq_fitter/analysis/%s/time_association/pt_dependence/systematic_sig_Psi2s.txt", productionName.c_str()));
 
     std::string headerPsi2sVsPt;
     std::getline(filePsi2sVsPt, headerPsi2sVsPt);
     counterPt = 0;
 
-    TH1D *histStatPsi2sVsPtRun3 = new TH1D("histStatPsi2sVsPtRun3", "", 8, ptBinsRun3);
-    TH1D *histSystPsi2sVsPtRun3 = new TH1D("histSystPsi2sVsPtRun3", "", 8, ptBinsRun3);
+    TH1D *histStatPsi2sVsPtRun3 = new TH1D("histStatPsi2sVsPtRun3", "", nPtBinsRun3, ptBinsRun3);
+    TH1D *histSystPsi2sVsPtRun3 = new TH1D("histSystPsi2sVsPtRun3", "", nPtBinsRun3, ptBinsRun3);
 
     for (std::string line; std::getline(filePsi2sVsPt, line);) {
         std::istringstream iss(line);
@@ -209,6 +219,8 @@ void plot_results() {
     histStatJpsiVsPtRun3 -> SetTitle("");
     histStatJpsiVsPtRun3 -> GetXaxis() -> SetTitle("#it{p}_{T} (GeV/#it{c})");
     histStatJpsiVsPtRun3 -> GetYaxis() -> SetTitle("#it{N}_{J/#psi}");
+    histStatJpsiVsPtRun3 -> Scale(1, "WIDTH");
+    histSystJpsiVsPtRun3 -> Scale(1, "WIDTH");
     histStatJpsiVsPtRun3 -> Draw("EP SAME");
     histSystJpsiVsPtRun3 -> Draw("E2P SAME");
 
@@ -226,6 +238,8 @@ void plot_results() {
     histStatPsi2sVsPtRun3 -> GetXaxis() -> SetTitle("#it{p}_{T} (GeV/#it{c})");
     histStatPsi2sVsPtRun3 -> GetYaxis() -> SetTitle("#it{N}_{#psi(2S)}");
     histStatPsi2sVsPtRun3 -> Draw("EP");
+    histStatPsi2sVsPtRun3 -> Scale(1, "WIDTH");
+    histSystPsi2sVsPtRun3 -> Scale(1, "WIDTH");
     histStatPsi2sVsPtRun3 -> Draw("EP SAME");
     histSystPsi2sVsPtRun3 -> Draw("E2P SAME");
 
@@ -242,6 +256,7 @@ void plot_results() {
     histStatPsi2sOverJpsiVsPtRun3 -> SetTitle("");
     histStatPsi2sOverJpsiVsPtRun3 -> GetXaxis() -> SetTitle("#it{p}_{T} (GeV/#it{c})");
     histStatPsi2sOverJpsiVsPtRun3 -> GetYaxis() -> SetTitle("#it{N}_{#psi(2S)} / #it{N}_{J/#psi}");
+    histStatPsi2sOverJpsiVsPtRun3 -> GetYaxis() -> SetRangeUser(0, 0.1);
     histStatPsi2sOverJpsiVsPtRun3 -> Draw("EP");
     histSystPsi2sOverJpsiVsPtRun3 -> Draw("E2P SAME");
 
@@ -262,6 +277,7 @@ void plot_results() {
     histStatCorrPsi2sOverJpsiVsPt -> SetTitle("");
     histStatCorrPsi2sOverJpsiVsPt -> GetXaxis() -> SetTitle("#it{p}_{T} (GeV/#it{c})");
     histStatCorrPsi2sOverJpsiVsPt -> GetYaxis() -> SetTitle("d#sigma^{#psi(2S)}/d#it{p}_{T} / d#sigma^{J/#psi}/d#it{p}_{T}");
+    histStatCorrPsi2sOverJpsiVsPt -> GetYaxis() -> SetRangeUser(0, 0.5);
     histStatCorrPsi2sOverJpsiVsPt -> Draw("EP");
     histSystCorrPsi2sOverJpsiVsPt -> Draw("E2P SAME");
     histStatCorrPsi2sOverJpsiVsPtRun3Prel -> Draw("EP SAME");
@@ -271,7 +287,7 @@ void plot_results() {
     histStatCorrPsi2sOverJpsiVsRap -> SetTitle("");
     histStatCorrPsi2sOverJpsiVsRap -> GetXaxis() -> SetTitle("#it{y}");
     histStatCorrPsi2sOverJpsiVsRap -> GetYaxis() -> SetTitle("d#sigma^{#psi(2S)}/d#it{y} / d#sigma^{J/#psi}/d#it{y}");
-    histStatCorrPsi2sOverJpsiVsRap -> GetYaxis() -> SetRangeUser(0.05, 0.2);
+    histStatCorrPsi2sOverJpsiVsRap -> GetYaxis() -> SetRangeUser(0, 0.5);
     histStatCorrPsi2sOverJpsiVsRap -> Draw("EP");
     histSystCorrPsi2sOverJpsiVsRap -> Draw("E2P SAME");
     histStatCorrPsi2sOverJpsiVsRapRun3Prel -> Draw("EP SAME");
@@ -286,15 +302,6 @@ void plot_results() {
     canvasPsi2sOverJpsiVsRap -> SaveAs("plots/Psi2sOverJpsiVsRap.pdf");
     canvasCorrPsi2sOverJpsiVsPt -> SaveAs("plots/CorrPsi2sOverJpsiVsPt.pdf");
     canvasCorrPsi2sOverJpsiVsRap -> SaveAs("plots/CorrPsi2sOverJpsiVsRap.pdf");
-
-
-
-
-
-
-
-
-
 }
 ////////////////////////////////////////////////////////////////////////////////
 void LoadStyle(){
