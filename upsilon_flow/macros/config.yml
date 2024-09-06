@@ -1,0 +1,6 @@
+---
+prefilter:
+  data: /Users/lucamicheletti/GITHUB/dq_run3_analyses/upsilon_flow/data/train_261116/AO2D.root
+  tree: "DF_2338657052269120/O2rtdileptmtree"
+  cuts: "(fCentFT0C >= 0. && fCentFT0C > 1. && fPt < 20. && fCos2DeltaPhi > -1. && fCos2DeltaPhi < 1.)"
+  suffix: _centrality_cut
