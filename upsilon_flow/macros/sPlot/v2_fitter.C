@@ -36,7 +36,7 @@ using namespace RooStats ;
 void AddModel(RooWorkspace*);
 void AddData(RooWorkspace*, string, string);
 void DoSPlot(RooWorkspace*);
-void MakePlotsAndTree(RooWorkspace*, string, string);
+void MakePlotsAndTree(RooWorkspace*, string, string, bool);
 
 void create_toy_sample(float lumi = 1.0);
 
@@ -50,8 +50,8 @@ void v2_fitter(bool useToy = false) {
     treeName = "toyv2";
   } else {
     cout << "----------- USE REAL DATA -----------" << endl;
-    fInName = "/Users/lucamicheletti/GITHUB/dq_run3_analyses/upsilon_flow/data/train_261116/AO2D_centrality_cut.root";
-    treeName = "DF_2338657052269120/O2rtdileptmtree";
+    fInName = "/Users/lucamicheletti/GITHUB/dq_run3_analyses/upsilon_flow/data/train_261116/AO2D_Centr_0_90__Pt_0_20.root";
+    treeName = "O2rtdileptmtree";
   }
 
   //Create a new workspace to manage the project
@@ -70,7 +70,7 @@ void v2_fitter(bool useToy = false) {
   DoSPlot(wspace);
   
   //Make control plots
-  MakePlotsAndTree(wspace, fInName, treeName);
+  MakePlotsAndTree(wspace, fInName, treeName, useToy);
 
   //cleanup
   delete wspace;
@@ -239,10 +239,10 @@ void DoSPlot(RooWorkspace *ws){
    ws -> import(*data, Rename("dataWithSWeights"));
 }
 ///////////////////////////////////////////////////
-void MakePlotsAndTree(RooWorkspace *ws, string fInName, string treeName){
+void MakePlotsAndTree(RooWorkspace *ws, string fInName, string treeName, bool useToy) {
   // Open input trees
-  //TFile *fIn = new TFile(fInName.c_str(), "READ");
-  //TTree *realdata = (TTree*) fIn -> Get(treeName.c_str());
+  TFile *fIn = new TFile(fInName.c_str(), "READ");
+  TTree *realdata = (TTree*) fIn -> Get(treeName.c_str());
   
   // Get PDFs fron WS
   RooAbsPdf *model = ws -> pdf("model");
@@ -300,7 +300,12 @@ void MakePlotsAndTree(RooWorkspace *ws, string fInName, string treeName){
 
   frameFlowUps -> SetTitle("cos(2#Delta#phi) #Upsilon(1S) distribution");
   frameFlowUps -> Draw();
-  //realdata -> Draw("fCos2DeltaPhi", "SAME");
+
+  if (useToy) {
+    realdata -> SetLineColor(kRed);
+    realdata -> SetLineWidth(2);
+    realdata -> Draw("fCos2DeltaPhi", "label>0.1", "SAME");
+  }
 
   latexTitle -> DrawLatex(0.30, 0.65, Form("v_{2}^{#varUpsilon(1S)} = %5.4f #pm %5.4f", histFlowUps -> GetMean(), histFlowUps -> GetMeanError()));
 
@@ -314,8 +319,11 @@ void MakePlotsAndTree(RooWorkspace *ws, string fInName, string treeName){
   frameFlowBkg -> SetTitle("cos(2#Delta#phi) background distribution");
   frameFlowBkg -> Draw();
 
-  //realdata->Draw("fCos2DeltaPhi","label<0.1","SAME");
-  //realdata -> Draw("fCos2DeltaPhi", "same");
+  if (useToy) {
+    realdata -> SetLineColor(kRed);
+    realdata -> SetLineWidth(2);
+    realdata -> Draw("fCos2DeltaPhi", "label<0.1", "SAME");
+  }
 
   latexTitle -> DrawLatex(0.30, 0.65, Form("v_{2}^{Bkg} = %5.4f #pm %5.4f", histFlowBkg -> GetMean(), histFlowBkg -> GetMeanError()));
 

@@ -23,10 +23,10 @@ def prefilter(config):
     function to apply pre-filters on D0 tree according to BDT output (see config_fit.yml)
     """
     fIn = ROOT.TFile(config["prefilter"]["data"], "READ")
-    tree = fIn.Get(config["prefilter"]["tree"])
+    tree = fIn.Get(config["prefilter"]["treeIn"])
     rDataFrame = ROOT.RDataFrame(tree).Filter(config["prefilter"]["cuts"])
     fOutName = config["prefilter"]["data"].replace(".root", config["prefilter"]["suffix"] + ".root")
-    rDataFrame.Snapshot(config["prefilter"]["tree"], fOutName)
+    rDataFrame.Snapshot(config["prefilter"]["treeOut"], fOutName)
     fIn.Close()
 
 if __name__ == '__main__':
