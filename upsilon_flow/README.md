@@ -1,4 +1,4 @@
-## $\Upsilon$(1S) flow in Pb-Pb collisions
+## $\Upsilon\rm{(1S)}$ flow in Pb-Pb collisions
 
 ### Minitree filtering
 - utils.py script in `/macros` allows to apply cuts to the original samples creating a sub-for unbinned analyses:
