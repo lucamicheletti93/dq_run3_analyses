@@ -51,7 +51,7 @@ void v2_fitter(bool useToy = false) {
   } else {
     cout << "----------- USE REAL DATA -----------" << endl;
     fInName = "/Users/lucamicheletti/GITHUB/dq_run3_analyses/upsilon_flow/data/train_261116/AO2D_Centr_0_90__Pt_0_20.root";
-    treeName = "O2rtdileptmtree";
+    treeName = "minitree_Centr_0_90__Pt_0_20";
   }
 
   //Create a new workspace to manage the project

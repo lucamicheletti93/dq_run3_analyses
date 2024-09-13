@@ -2,6 +2,9 @@
 prefilter:
   data: /Users/lucamicheletti/GITHUB/dq_run3_analyses/upsilon_flow/data/train_261116/AO2D.root
   treeIn: "DF_2338657052269120/O2rtdileptmtree"
-  treeOut: "O2rtdileptmtree"
-  cuts: "(fCentFT0C >= 20. && fCentFT0C < 60. && fPt > 2. && fPt < 20. && fCos2DeltaPhi > -1. && fCos2DeltaPhi < 1.)"
-  suffix: _Centr_20_60__Pt_2_20
+  #treeOut: "minitree_Centr_5_60__Pt_2_15"
+  #cuts: "(fCentFT0C >= 5. && fCentFT0C < 60. && fPt > 2. && fPt < 15. && fCos2DeltaPhi > -1. && fCos2DeltaPhi < 1.)"
+  #suffix: _Centr_5_60__Pt_2_15
+  treeOut: "minitree_Centr_0_90__Pt_0_15"
+  cuts: "(fCentFT0C >= 0. && fCentFT0C < 90. && fPt > 0. && fPt < 15. && fCos2DeltaPhi > -1. && fCos2DeltaPhi < 1.)"
+  suffix: _Centr_0_90__Pt_0_15

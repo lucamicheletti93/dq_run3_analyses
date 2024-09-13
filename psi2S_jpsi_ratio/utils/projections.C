@@ -23,14 +23,14 @@ TH1D* ProjectTH2(TH2D *, double , double );
 
 void projections() {
     // MC settings
-    //string dataset = "MC";
-    //string productionName = "LHC24e4";
-    //string associationType = "std_association";
-    // Data settings
-    string dataset = "2022";
-    //string productionName = "LHC22o_pass6_minBias";
-    string productionName = "apass7_skimmed/LHC22o";
+    string dataset = "MC";
+    string productionName = "LHC24g8";
     string associationType = "time_association";
+    // Data settings
+    //string dataset = "2022";
+    //string productionName = "LHC22o_pass6_minBias";
+    //string productionName = "apass7_skimmed/LHC22o";
+    //string associationType = "time_association";
 
     string histName = "Mass_Pt_Rapidity";
     //string histName = "Mass_Pt";
@@ -58,19 +58,19 @@ void projections() {
     double minRapBins2[] = {2.50, 2.75, 3.00, 3.25, 3.50, 3.75};
     double maxRapBins2[] = {2.75, 3.00, 3.25, 3.50, 3.75, 4.00};
 
-    /*
     string fInName = "AnalysisResults_dq_efficiency";
     string cuts[] = {
+        "PairsMuonSEPM_matchedMchMid",
         "PairsMuonSEPM_matchedMchMid_mumuFromJpsi",
-        "PairsMuonSEPM_muonLowPt10SigmaPDCA_mumuFromJpsi",
-        "PairsMuonSEPM_muonLowPt210SigmaPDCA_mumuFromJpsi",
-        "PairsMuonSEPM_muonLowPt510SigmaPDCA_mumuFromJpsi",
         "PairsMuonSEPM_matchedMchMid_mumuFromPsi2S",
-        "PairsMuonSEPM_muonLowPt10SigmaPDCA_mumuFromPsi2S",
-        "PairsMuonSEPM_muonLowPt210SigmaPDCA_mumuFromPsi2S",
-        "PairsMuonSEPM_muonLowPt510SigmaPDCA_mumuFromPsi2S"
+        //"PairsMuonSEPM_muonLowPt10SigmaPDCA_mumuFromJpsi",
+        //"PairsMuonSEPM_muonLowPt210SigmaPDCA_mumuFromJpsi",
+        //"PairsMuonSEPM_muonLowPt510SigmaPDCA_mumuFromJpsi",
+        //"PairsMuonSEPM_muonLowPt10SigmaPDCA_mumuFromPsi2S",
+        //"PairsMuonSEPM_muonLowPt210SigmaPDCA_mumuFromPsi2S",
+        //"PairsMuonSEPM_muonLowPt510SigmaPDCA_mumuFromPsi2S"
     };
-    */
+    /*
     string fInName = "AnalysisResults_table_reader";
     string cuts[] = {
         "PairsMuonSEPM_matchedMchMid",
@@ -80,6 +80,7 @@ void projections() {
         "PairsMuonSEPM_muonLowPt210SigmaPDCA",
         "PairsMuonSEPM_muonLowPt510SigmaPDCA"
     };
+    */
 
     TFile *fIn = new TFile(Form("/Users/lucamicheletti/cernbox/JPSI/Run3/%s/%s/%s_%s.root", dataset.c_str(), productionName.c_str(), fInName.c_str(), associationType.c_str()), "READ");
     fIn -> ls();
