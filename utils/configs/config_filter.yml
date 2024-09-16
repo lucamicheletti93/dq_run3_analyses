@@ -1,0 +1,7 @@
+---
+prefilter:
+  data: /Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/LHC23_pass4_skimmed_minitree/AO2D_merged.root
+  treeIn: "DF_2298168347845024/O2rtdileptmtree"
+  treeOut: "minitree_Pt_2_20"
+  cuts: "(fPt > 2. && fPt < 20.)"
+  suffix: _Pt_2_20
