@@ -32,7 +32,8 @@ def download(inputCfg):
         os.system("mkdir -p %s/%s" % (output_dir, run))
 
         #print("alien_cp alien://%s/%s file:%s/%s/." % (alien_path[iRun], file_type, output_dir, run))
-        os.system("alien_cp alien://%s/*/%s file:%s/%s/." % (alien_path[iRun], file_type, output_dir, run))
+        #os.system("alien_cp alien://%s/*/%s file:%s/%s/." % (alien_path[iRun], file_type, output_dir, run))
+        os.system("alien_cp alien://%s/%s file:%s/%s/." % (alien_path[iRun], file_type, output_dir, run))
         fOut.write("{}\n".format(run))
     fOut.close()
 
