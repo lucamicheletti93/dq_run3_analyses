@@ -3,6 +3,7 @@ void SetLegend(TLegend *);
 
 void theory_predictions() {
     LoadStyle();
+    double deltaY = 1.5;
 
     // taken from https://docs.google.com/spreadsheets/d/1gkvbqAOPlNoyyDsgQ7QtirU1ZQ-LIYxzaXsjY1XG0uI/edit?gid=1699652183#gid=1699652183
 
@@ -40,9 +41,9 @@ void theory_predictions() {
     double csJpsiCgcNrqcFonllPt[nPtBinsCgcNrqcdFonll], csJpsiCgcNrqcFonllPtMin[nPtBinsCgcNrqcdFonll], csJpsiCgcNrqcFonllPtMax[nPtBinsCgcNrqcdFonll];
 
     for (int iPt = 0;iPt < nPtBinsCgcNrqcdFonll;iPt++) {
-        csJpsiCgcNrqcFonllPt[iPt] = (csJpsiFonll1Pt[iPt] + csJpsiCgcNrqcdPt[iPt]) / ptBinWidthCgcNrqcdFonll[iPt];
-        csJpsiCgcNrqcFonllPtMin[iPt] = TMath::Sqrt(TMath::Power(csJpsiCgcNrqcdPtMin[iPt], 2.) + TMath::Power(csJpsiFonll1PtMinS[iPt], 2.) + TMath::Power(csJpsiFonll1PtMinM[iPt], 2.) + TMath::Power(csJpsiFonll1PtMinPdf[iPt], 2.)) / ptBinWidthCgcNrqcdFonll[iPt];
-        csJpsiCgcNrqcFonllPtMax[iPt] = TMath::Sqrt(TMath::Power(csJpsiCgcNrqcdPtMax[iPt], 2.) + TMath::Power(csJpsiFonll1PtMaxS[iPt], 2.) + TMath::Power(csJpsiFonll1PtMaxM[iPt], 2.) + TMath::Power(csJpsiFonll1PtMaxPdf[iPt], 2.)) / ptBinWidthCgcNrqcdFonll[iPt];
+        csJpsiCgcNrqcFonllPt[iPt] = (csJpsiFonll1Pt[iPt] + csJpsiCgcNrqcdPt[iPt]) / (deltaY * ptBinWidthCgcNrqcdFonll[iPt]);
+        csJpsiCgcNrqcFonllPtMin[iPt] = TMath::Sqrt(TMath::Power(csJpsiCgcNrqcdPtMin[iPt], 2.) + TMath::Power(csJpsiFonll1PtMinS[iPt], 2.) + TMath::Power(csJpsiFonll1PtMinM[iPt], 2.) + TMath::Power(csJpsiFonll1PtMinPdf[iPt], 2.)) / (deltaY * ptBinWidthCgcNrqcdFonll[iPt]);
+        csJpsiCgcNrqcFonllPtMax[iPt] = TMath::Sqrt(TMath::Power(csJpsiCgcNrqcdPtMax[iPt], 2.) + TMath::Power(csJpsiFonll1PtMaxS[iPt], 2.) + TMath::Power(csJpsiFonll1PtMaxM[iPt], 2.) + TMath::Power(csJpsiFonll1PtMaxPdf[iPt], 2.)) / (deltaY * ptBinWidthCgcNrqcdFonll[iPt]);
     }
 
     /////////////////////////
@@ -69,9 +70,9 @@ void theory_predictions() {
     double csPsi2sCgcNrqcFonllPt[nPtBinsCgcNrqcdFonll], csPsi2sCgcNrqcFonllPtMin[nPtBinsCgcNrqcdFonll], csPsi2sCgcNrqcFonllPtMax[nPtBinsCgcNrqcdFonll];
 
     for (int iPt = 0;iPt < nPtBinsCgcNrqcdFonll;iPt++) {
-        csPsi2sCgcNrqcFonllPt[iPt] = (csPsi2sFonll1Pt[iPt] + csPsi2sCgcNrqcdPt[iPt]) / ptBinWidthCgcNrqcdFonll[iPt];
-        csPsi2sCgcNrqcFonllPtMin[iPt] = TMath::Sqrt(TMath::Power(csPsi2sCgcNrqcdPtMin[iPt], 2.) + TMath::Power(csPsi2sFonll1PtMinS[iPt], 2.) + TMath::Power(csPsi2sFonll1PtMinM[iPt], 2.) + TMath::Power(csPsi2sFonll1PtMinPdf[iPt], 2.)) / ptBinWidthCgcNrqcdFonll[iPt];
-        csPsi2sCgcNrqcFonllPtMax[iPt] = TMath::Sqrt(TMath::Power(csPsi2sCgcNrqcdPtMax[iPt], 2.) + TMath::Power(csPsi2sFonll1PtMaxS[iPt], 2.) + TMath::Power(csPsi2sFonll1PtMaxM[iPt], 2.) + TMath::Power(csPsi2sFonll1PtMaxPdf[iPt], 2.)) / ptBinWidthCgcNrqcdFonll[iPt];
+        csPsi2sCgcNrqcFonllPt[iPt] = (csPsi2sFonll1Pt[iPt] + csPsi2sCgcNrqcdPt[iPt]) / (deltaY * ptBinWidthCgcNrqcdFonll[iPt]);
+        csPsi2sCgcNrqcFonllPtMin[iPt] = TMath::Sqrt(TMath::Power(csPsi2sCgcNrqcdPtMin[iPt], 2.) + TMath::Power(csPsi2sFonll1PtMinS[iPt], 2.) + TMath::Power(csPsi2sFonll1PtMinM[iPt], 2.) + TMath::Power(csPsi2sFonll1PtMinPdf[iPt], 2.)) / (deltaY * ptBinWidthCgcNrqcdFonll[iPt]);
+        csPsi2sCgcNrqcFonllPtMax[iPt] = TMath::Sqrt(TMath::Power(csPsi2sCgcNrqcdPtMax[iPt], 2.) + TMath::Power(csPsi2sFonll1PtMaxS[iPt], 2.) + TMath::Power(csPsi2sFonll1PtMaxM[iPt], 2.) + TMath::Power(csPsi2sFonll1PtMaxPdf[iPt], 2.)) / (deltaY * ptBinWidthCgcNrqcdFonll[iPt]);
     }
 
     ///////////////////
@@ -107,9 +108,9 @@ void theory_predictions() {
     double csJpsiNrqcFonllPt[nPtBinsNrqcdFonll], csJpsiNrqcFonllPtMin[nPtBinsNrqcdFonll], csJpsiNrqcFonllPtMax[nPtBinsNrqcdFonll];
 
     for (int iPt = 0;iPt < nPtBinsNrqcdFonll;iPt++) {
-        csJpsiNrqcFonllPt[iPt] = (csJpsiFonll2Pt[iPt] + csJpsiNrqcdPt[iPt]) / ptBinWidthNrqcdFonll[iPt];
-        csJpsiNrqcFonllPtMin[iPt] = TMath::Sqrt(TMath::Power(csJpsiNrqcdPtMin[iPt], 2.) + TMath::Power(csJpsiFonll2PtMinS[iPt], 2.) + TMath::Power(csJpsiFonll2PtMinM[iPt], 2.) + TMath::Power(csJpsiFonll2PtMinPdf[iPt], 2.)) / ptBinWidthCgcNrqcdFonll[iPt];
-        csJpsiNrqcFonllPtMax[iPt] = TMath::Sqrt(TMath::Power(csJpsiNrqcdPtMax[iPt], 2.) + TMath::Power(csJpsiFonll2PtMaxS[iPt], 2.) + TMath::Power(csJpsiFonll2PtMaxM[iPt], 2.) + TMath::Power(csJpsiFonll2PtMaxPdf[iPt], 2.)) / ptBinWidthCgcNrqcdFonll[iPt];
+        csJpsiNrqcFonllPt[iPt] = (csJpsiFonll2Pt[iPt] + csJpsiNrqcdPt[iPt]) / (deltaY * ptBinWidthNrqcdFonll[iPt]);
+        csJpsiNrqcFonllPtMin[iPt] = TMath::Sqrt(TMath::Power(csJpsiNrqcdPtMin[iPt], 2.) + TMath::Power(csJpsiFonll2PtMinS[iPt], 2.) + TMath::Power(csJpsiFonll2PtMinM[iPt], 2.) + TMath::Power(csJpsiFonll2PtMinPdf[iPt], 2.)) / (deltaY * ptBinWidthNrqcdFonll[iPt]);
+        csJpsiNrqcFonllPtMax[iPt] = TMath::Sqrt(TMath::Power(csJpsiNrqcdPtMax[iPt], 2.) + TMath::Power(csJpsiFonll2PtMaxS[iPt], 2.) + TMath::Power(csJpsiFonll2PtMaxM[iPt], 2.) + TMath::Power(csJpsiFonll2PtMaxPdf[iPt], 2.)) / (deltaY * ptBinWidthNrqcdFonll[iPt]);
     }
 
     /////////////////////////
@@ -136,9 +137,9 @@ void theory_predictions() {
     double csPsi2sNrqcFonllPt[nPtBinsNrqcdFonll], csPsi2sNrqcFonllPtMin[nPtBinsNrqcdFonll], csPsi2sNrqcFonllPtMax[nPtBinsNrqcdFonll];
 
     for (int iPt = 0;iPt < nPtBinsNrqcdFonll;iPt++) {
-        csPsi2sNrqcFonllPt[iPt] = (csPsi2sFonll2Pt[iPt] + csPsi2sNrqcdPt[iPt]) / ptBinWidthNrqcdFonll[iPt];
-        csPsi2sNrqcFonllPtMin[iPt] = TMath::Sqrt(TMath::Power(csPsi2sNrqcdPtMin[iPt], 2.) + TMath::Power(csPsi2sFonll2PtMinS[iPt], 2.) + TMath::Power(csPsi2sFonll2PtMinM[iPt], 2.) + TMath::Power(csPsi2sFonll2PtMinPdf[iPt], 2.)) / ptBinWidthCgcNrqcdFonll[iPt];
-        csPsi2sNrqcFonllPtMax[iPt] = TMath::Sqrt(TMath::Power(csPsi2sNrqcdPtMax[iPt], 2.) + TMath::Power(csPsi2sFonll2PtMaxS[iPt], 2.) + TMath::Power(csPsi2sFonll2PtMaxM[iPt], 2.) + TMath::Power(csPsi2sFonll2PtMaxPdf[iPt], 2.)) / ptBinWidthCgcNrqcdFonll[iPt];
+        csPsi2sNrqcFonllPt[iPt] = (csPsi2sFonll2Pt[iPt] + csPsi2sNrqcdPt[iPt]) / (deltaY * ptBinWidthNrqcdFonll[iPt]);
+        csPsi2sNrqcFonllPtMin[iPt] = TMath::Sqrt(TMath::Power(csPsi2sNrqcdPtMin[iPt], 2.) + TMath::Power(csPsi2sFonll2PtMinS[iPt], 2.) + TMath::Power(csPsi2sFonll2PtMinM[iPt], 2.) + TMath::Power(csPsi2sFonll2PtMinPdf[iPt], 2.)) / (deltaY * ptBinWidthNrqcdFonll[iPt]);
+        csPsi2sNrqcFonllPtMax[iPt] = TMath::Sqrt(TMath::Power(csPsi2sNrqcdPtMax[iPt], 2.) + TMath::Power(csPsi2sFonll2PtMaxS[iPt], 2.) + TMath::Power(csPsi2sFonll2PtMaxM[iPt], 2.) + TMath::Power(csPsi2sFonll2PtMaxPdf[iPt], 2.)) / (deltaY * ptBinWidthNrqcdFonll[iPt]);
     }
 
     ///////////////////
@@ -205,9 +206,9 @@ void theory_predictions() {
     double csJpsiIcemFonllPt[nPtBinsIcemFonll], csJpsiIcemFonllPtMin[nPtBinsIcemFonll], csJpsiIcemFonllPtMax[nPtBinsIcemFonll];
 
     for (int iPt = 0;iPt < nPtBinsIcemFonll;iPt++) {
-        csJpsiIcemFonllPt[iPt] = (csJpsiFonll3Pt[iPt] + csJpsiIcemPt[iPt]) / ptBinWidthIcemFonll[iPt];
-        csJpsiIcemFonllPtMin[iPt] = TMath::Sqrt(TMath::Power(csJpsiIcemPtMinRS[iPt], 2.) + TMath::Power(csJpsiIcemPtMinMS[iPt], 2.) + TMath::Power(csJpsiFonll3PtMinS[iPt], 2.) + TMath::Power(csJpsiFonll3PtMinM[iPt], 2.) + TMath::Power(csJpsiFonll3PtMinPdf[iPt], 2.)) / ptBinWidthIcemFonll[iPt];
-        csJpsiIcemFonllPtMax[iPt] = TMath::Sqrt(TMath::Power(csJpsiIcemPtMaxRS[iPt], 2.) + TMath::Power(csJpsiIcemPtMaxMS[iPt], 2.) + TMath::Power(csJpsiFonll3PtMaxS[iPt], 2.) + TMath::Power(csJpsiFonll3PtMaxM[iPt], 2.) + TMath::Power(csJpsiFonll3PtMaxPdf[iPt], 2.)) / ptBinWidthIcemFonll[iPt];
+        csJpsiIcemFonllPt[iPt] = (csJpsiFonll3Pt[iPt] + csJpsiIcemPt[iPt]) / (deltaY * ptBinWidthIcemFonll[iPt]);
+        csJpsiIcemFonllPtMin[iPt] = TMath::Sqrt(TMath::Power(csJpsiIcemPtMinRS[iPt], 2.) + TMath::Power(csJpsiIcemPtMinMS[iPt], 2.) + TMath::Power(csJpsiFonll3PtMinS[iPt], 2.) + TMath::Power(csJpsiFonll3PtMinM[iPt], 2.) + TMath::Power(csJpsiFonll3PtMinPdf[iPt], 2.)) / (deltaY * ptBinWidthIcemFonll[iPt]);
+        csJpsiIcemFonllPtMax[iPt] = TMath::Sqrt(TMath::Power(csJpsiIcemPtMaxRS[iPt], 2.) + TMath::Power(csJpsiIcemPtMaxMS[iPt], 2.) + TMath::Power(csJpsiFonll3PtMaxS[iPt], 2.) + TMath::Power(csJpsiFonll3PtMaxM[iPt], 2.) + TMath::Power(csJpsiFonll3PtMaxPdf[iPt], 2.)) / (deltaY * ptBinWidthIcemFonll[iPt]);
     }
 
     /////////////////////////
@@ -237,9 +238,9 @@ void theory_predictions() {
     double csPsi2sIcemFonllPt[nPtBinsIcemFonll], csPsi2sIcemFonllPtMin[nPtBinsIcemFonll], csPsi2sIcemFonllPtMax[nPtBinsIcemFonll];
 
     for (int iPt = 0;iPt < nPtBinsIcemFonll;iPt++) {
-        csPsi2sIcemFonllPt[iPt] = (csPsi2sFonll3Pt[iPt] + csPsi2sIcemPt[iPt]) / ptBinWidthIcemFonll[iPt];
-        csPsi2sIcemFonllPtMin[iPt] = TMath::Sqrt(TMath::Power(csPsi2sIcemPtMinRS[iPt], 2.) + TMath::Power(csPsi2sIcemPtMinMS[iPt], 2.) + TMath::Power(csPsi2sFonll3PtMinS[iPt], 2.) + TMath::Power(csPsi2sFonll3PtMinM[iPt], 2.) + TMath::Power(csPsi2sFonll3PtMinPdf[iPt], 2.)) / ptBinWidthIcemFonll[iPt];
-        csPsi2sIcemFonllPtMax[iPt] = TMath::Sqrt(TMath::Power(csPsi2sIcemPtMaxRS[iPt], 2.) + TMath::Power(csPsi2sIcemPtMaxMS[iPt], 2.) + TMath::Power(csPsi2sFonll3PtMaxS[iPt], 2.) + TMath::Power(csPsi2sFonll3PtMaxM[iPt], 2.) + TMath::Power(csPsi2sFonll3PtMaxPdf[iPt], 2.)) / ptBinWidthIcemFonll[iPt];
+        csPsi2sIcemFonllPt[iPt] = (csPsi2sFonll3Pt[iPt] + csPsi2sIcemPt[iPt]) / (deltaY * ptBinWidthIcemFonll[iPt]);
+        csPsi2sIcemFonllPtMin[iPt] = TMath::Sqrt(TMath::Power(csPsi2sIcemPtMinRS[iPt], 2.) + TMath::Power(csPsi2sIcemPtMinMS[iPt], 2.) + TMath::Power(csPsi2sFonll3PtMinS[iPt], 2.) + TMath::Power(csPsi2sFonll3PtMinM[iPt], 2.) + TMath::Power(csPsi2sFonll3PtMinPdf[iPt], 2.)) / (deltaY * ptBinWidthIcemFonll[iPt]);
+        csPsi2sIcemFonllPtMax[iPt] = TMath::Sqrt(TMath::Power(csPsi2sIcemPtMaxRS[iPt], 2.) + TMath::Power(csPsi2sIcemPtMaxMS[iPt], 2.) + TMath::Power(csPsi2sFonll3PtMaxS[iPt], 2.) + TMath::Power(csPsi2sFonll3PtMaxM[iPt], 2.) + TMath::Power(csPsi2sFonll3PtMaxPdf[iPt], 2.)) / (deltaY * ptBinWidthIcemFonll[iPt]);
     }
 
     // Plot results

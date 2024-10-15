@@ -36,6 +36,8 @@ def download(inputCfg):
         os.system("alien_cp alien://%s/%s file:%s/%s/." % (alien_path[iRun], file_type, output_dir, run))
         fOut.write("{}\n".format(run))
     fOut.close()
+    print("--- How to run the AO2D merger ---")
+    print("o2-aod-merger --input input.txt --output AO2D_merged.root --max-size 1000000000 --skip-non-existing-files --skip-parent-files-list")
 
     exit()
 
