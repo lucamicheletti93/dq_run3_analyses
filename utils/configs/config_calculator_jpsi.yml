@@ -1,9 +1,9 @@
 ---
 lumi:
-  fInName: /Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/LHC23_pass4_skimmed_minitree/AnalysisResults.root
+  fInName: /Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/LHC22_pass7_skimmed_minitree/AnalysisResults_fDiMuon_trigger.root
 
 yields:
-  fInName: /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC23_pass4_skimmed/unbinned_fit/output__minitree_Pt_2_20_CB2_CB2_VWG__2.4_4.6.root
+  fInName: /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC22_pass7_skimmed/unbinned_fit/fDiMuon_trigger/output__minitree_Pt_2_20_CB2_CB2_VWG__2.4_4.6.root
   histName: sig_Jpsi_sw
 
 axe:
@@ -16,6 +16,7 @@ axe:
 
 crossSec:
   branchingRatio: 0.05961
+  deltaY: 1.5
   label: "J/#psi, pp@13.6TeV"
   ptCentrRun2: [2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 9.0, 11.0, 13.0, 15.0, 17.0, 19.0]
   ptWidthRun2: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
@@ -23,5 +24,18 @@ crossSec:
   statCrossSecRun2: [13.83, 9.19, 5.84, 3.81, 2.61, 1.81, 0.78, 0.43, 0.27, 0.18, 0.13, 0.11]
   labelRun2: "J/#psi, pp@13TeV"
 
+simpleRatio:
+  fInNameYields: /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC22_pass7_skimmed/unbinned_fit/output__minitree_Pt_2_20_CB2_CB2_VWG__2.4_4.6.root
+  branchingRatios: [0.008, 0.05961]
+  histNameYields: [sig_Psi2s_sw, sig_Jpsi_sw]
+  fInNameAxe1: /Users/lucamicheletti/GITHUB/dq_run3_analyses/psi2S_jpsi_ratio/results/cross_section_jpsi_LHC22_pass7_skimmed.root
+  fInNameAxe2: /Users/lucamicheletti/GITHUB/dq_run3_analyses/psi2S_jpsi_ratio/results/cross_section_psi2s_LHC22_pass7_skimmed.root
+  label: "#psi(2S) / J/#psi, pp@13.6TeV"
+  #ptCentrRun2: [2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 9.0, 11.0, 13.0, 15.0, 17.0, 19.0]
+  #ptWidthRun2: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+  #crossSecRun2: [1771.2, 1113.3, 644.62, 350.87, 195.33, 112.4, 49.92, 19.09, 7.79, 3.44, 1.69, 0.94]
+  #statCrossSecRun2: [13.83, 9.19, 5.84, 3.81, 2.61, 1.81, 0.78, 0.43, 0.27, 0.18, 0.13, 0.11]
+  #labelRun2: "J/#psi, pp@13TeV"
+
 output:
-  fOutName: "/Users/lucamicheletti/GITHUB/dq_run3_analyses/psi2S_jpsi_ratio/results/cross_section_jpsi_LHC23_pass4_skimmed"
+  fOutName: "/Users/lucamicheletti/GITHUB/dq_run3_analyses/psi2S_jpsi_ratio/results/cross_section_jpsi_LHC22_pass7_skimmed"

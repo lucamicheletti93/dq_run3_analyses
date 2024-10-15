@@ -100,10 +100,12 @@ def cross_section(inputCfg):
 
     # Cross sections
     branchingRatio = inputCfg["crossSec"]["branchingRatio"]
+    deltaY = inputCfg["crossSec"]["deltaY"]
     histCrossSec = histRawYield.Clone("histCrossSec")
     histCrossSec.Divide(histAxe)
-    histCrossSec.Scale(1. / (branchingRatio * limiInt))
+    histCrossSec.Scale(1. / (branchingRatio * limiInt * deltaY))
     histCrossSec.SetLineColor(ROOT.kRed+1)
+    histCrossSec.SetLineWidth(3)
 
     ptCentrRun2 = inputCfg["crossSec"]["ptCentrRun2"]
     ptWidthRun2 = inputCfg["crossSec"]["ptWidthRun2"]
@@ -112,18 +114,18 @@ def cross_section(inputCfg):
 
     graCrossSecRun2 = ROOT.TGraphErrors(len(ptCentrRun2), np.array(ptCentrRun2), np.array(crossSecRun2), np.array(ptWidthRun2), np.array(statCrossSecRun2))
     graCrossSecRun2.SetMarkerStyle(20)
-    graCrossSecRun2.SetMarkerColor(ROOT.kRed+1)
-    graCrossSecRun2.SetLineColor(ROOT.kRed+1)
+    graCrossSecRun2.SetMarkerColor(ROOT.kBlack)
+    graCrossSecRun2.SetLineColor(ROOT.kBlack)
 
     canvasCrossSec = ROOT.TCanvas("canvasCrossSec", "", 800, 600)
     ROOT.gPad.SetLogy(True)
-    histCrossSec.GetYaxis().SetTitle("d#sigma/d#it{p}_{T} (GeV/#it{c})^{-1}")
+    histCrossSec.GetYaxis().SetTitle("d#sigma/d#it{p}_{T} (nb^{-1} / GeV/#it{c})")
     histCrossSec.SetTitle("")
     histCrossSec.SetStats(False)
     histCrossSec.Draw("H")
     graCrossSecRun2.Draw("EP SAME")
 
-    legend = ROOT.TLegend(0.65, 0.57, 0.82, 0.92, " ", "brNDC")
+    legend = ROOT.TLegend(0.65, 0.67, 0.82, 0.92, " ", "brNDC")
     SetLegend(legend)
     legend.SetTextSize(0.04)
     legend.AddEntry(histCrossSec, inputCfg["crossSec"]["label"], "L")
@@ -144,13 +146,60 @@ def cross_section(inputCfg):
 
     input()
 
+def simple_ratio(inputCfg):
+    """
+    function to compute the simple ratio of charmonia states
+    """
+    LoadStyle()
+
+    # Acceptance-times-efficiency
+    fInYields = ROOT.TFile(inputCfg["simpleRatio"]["fInNameYields"], "READ")
+    histRawYield1 = fInYields.Get(inputCfg["simpleRatio"]["histNameYields"][0])
+    histRawYield2 = fInYields.Get(inputCfg["simpleRatio"]["histNameYields"][1])
+
+    fInAxe1 = ROOT.TFile(inputCfg["simpleRatio"]["fInNameAxe1"], "READ")
+    histAxe1 = fInAxe1.Get("histAxe")
+
+    fInAxe2 = ROOT.TFile(inputCfg["simpleRatio"]["fInNameAxe2"], "READ")
+    histAxe2 = fInAxe2.Get("histAxe")
+
+    histRawYieldRatios = histRawYield1.Clone("histRawYieldRatios")
+    histRawYieldRatios.Divide(histRawYield2)
+
+    histAxeRatios = histAxe1.Clone("histAxeRatios")
+    histAxeRatios.Divide(histAxe2)
+
+    histCrossSecRatios = histRawYieldRatios.Clone("histCrossSecRatios")
+    histCrossSecRatios.Divide(histAxeRatios)
+    histCrossSecRatios.Scale(inputCfg["simpleRatio"]["branchingRatios"][1] / inputCfg["simpleRatio"]["branchingRatios"][0])
+
+    canvasCrossSecRatio = ROOT.TCanvas("canvasCrossSecRatio", "", 800, 600)
+    ROOT.gPad.SetLogy(True)
+    histCrossSecRatios.GetYaxis().SetTitle("#sigma^{#psi(2S)} / #sigma^{J/#psi}")
+    histCrossSecRatios.SetTitle("")
+    histCrossSecRatios.SetStats(False)
+    histCrossSecRatios.Draw("H")
+    #graCrossSecRun2.Draw("EP SAME")
+
+    legend = ROOT.TLegend(0.65, 0.67, 0.82, 0.92, " ", "brNDC")
+    SetLegend(legend)
+    legend.SetTextSize(0.04)
+    legend.AddEntry(histCrossSecRatios, inputCfg["simpleRatio"]["label"], "L")
+    #legend.AddEntry(graCrossSecRun2, inputCfg["crossSec"]["labelRun2"], "PL")
+    legend.Draw()
+
+    canvasCrossSecRatio.Update()
+
+    input()
+
 
 
 ### ### ###
 def main():
     parser = argparse.ArgumentParser(description='Arguments to pass')
     parser.add_argument('cfgFileName', metavar='text', default='config.yml', help='config file name')
-    parser.add_argument("--cross_section", help="Compute luminosity for skimmed events", action="store_true")
+    parser.add_argument("--cross_section", help="Compute the cross section for skimmed events", action="store_true")
+    parser.add_argument("--simple_ratio", help="Compute the simple ratio for skimmed events", action="store_true")
     args = parser.parse_args()
 
     print('Loading task configuration: ...', end='\r')
@@ -160,5 +209,8 @@ def main():
 
     if args.cross_section:
         cross_section(inputCfg)
+    
+    if args.simple_ratio:
+        simple_ratio(inputCfg)
 
 main()
