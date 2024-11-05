@@ -23,14 +23,16 @@ TH1D* ProjectTH2(TH2D *, double , double );
 
 void projections() {
     // MC settings
-    string dataset = "MC";
-    string productionName = "LHC24g8";
-    string associationType = "time_association";
+    //string dataset = "MC";
+    //string productionName = "LHC24g8";
+    //string associationType = "time_association";
     // Data settings
-    //string dataset = "2022";
-    //string productionName = "LHC22o_pass6_minBias";
+    string dataset = "2022";
+    string productionName = "LHC22_pass7_skimmed";
     //string productionName = "apass7_skimmed/LHC22o";
     //string associationType = "time_association";
+    string associationType = "fDiMuon";
+    string pathName = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data";
 
     string histName = "Mass_Pt_Rapidity";
     //string histName = "Mass_Pt";
@@ -58,6 +60,7 @@ void projections() {
     double minRapBins2[] = {2.50, 2.75, 3.00, 3.25, 3.50, 3.75};
     double maxRapBins2[] = {2.75, 3.00, 3.25, 3.50, 3.75, 4.00};
 
+    /*
     string fInName = "AnalysisResults_dq_efficiency";
     string cuts[] = {
         "PairsMuonSEPM_matchedMchMid",
@@ -70,23 +73,23 @@ void projections() {
         //"PairsMuonSEPM_muonLowPt210SigmaPDCA_mumuFromPsi2S",
         //"PairsMuonSEPM_muonLowPt510SigmaPDCA_mumuFromPsi2S"
     };
-    /*
-    string fInName = "AnalysisResults_table_reader";
+    */
+
+    string fInName = "AnalysisResults";
     string cuts[] = {
         "PairsMuonSEPM_matchedMchMid",
         "PairsMuonSEPP_matchedMchMid",
-        "PairsMuonSEMM_matchedMchMid",
-        "PairsMuonSEPM_muonLowPt10SigmaPDCA",
-        "PairsMuonSEPM_muonLowPt210SigmaPDCA",
-        "PairsMuonSEPM_muonLowPt510SigmaPDCA"
+        "PairsMuonSEMM_matchedMchMid"//,
+        //"PairsMuonSEPM_muonLowPt10SigmaPDCA",
+        //"PairsMuonSEPM_muonLowPt210SigmaPDCA",
+        //"PairsMuonSEPM_muonLowPt510SigmaPDCA"
     };
-    */
 
-    TFile *fIn = new TFile(Form("/Users/lucamicheletti/cernbox/JPSI/Run3/%s/%s/%s_%s.root", dataset.c_str(), productionName.c_str(), fInName.c_str(), associationType.c_str()), "READ");
+    TFile *fIn = new TFile(Form("%s/%s/%s/%s_%s.root", pathName.c_str(), dataset.c_str(), productionName.c_str(), fInName.c_str(), associationType.c_str()), "READ");
     fIn -> ls();
     TList *list1 = (TList*) fIn -> Get("analysis-same-event-pairing/output");
 
-    TFile *fOut = new TFile(Form("/Users/lucamicheletti/cernbox/JPSI/Run3/%s/%s/Histograms_%s_%s.root", dataset.c_str(), productionName.c_str(), fInName.c_str(), associationType.c_str()), "RECREATE");
+    TFile *fOut = new TFile(Form("%s/%s/%s/Histograms_%s_%s.root", pathName.c_str(), dataset.c_str(), productionName.c_str(), fInName.c_str(), associationType.c_str()), "RECREATE");
     for (auto& cut : cuts) {
         TList *list = (TList*) list1 -> FindObject(cut.c_str());
 
