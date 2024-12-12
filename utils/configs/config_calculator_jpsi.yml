@@ -1,9 +1,9 @@
 ---
 lumi:
-  fInName: /Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/LHC22_pass7_skimmed_minitree/AnalysisResults_fDiMuon_trigger.root
+  fInName: /Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2023/LHC23_pass4_skimmed_minitree/AnalysisResults.root
 
 yields:
-  fInName: /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC22_pass7_skimmed/unbinned_fit/fDiMuon_trigger/output__minitree_Pt_2_20_CB2_CB2_VWG__2.4_4.6.root
+  fInName: /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC23_pass4_skimmed/unbinned_fit/output__minitree_Pt_2_20_CB2_CB2_VWG__2.4_4.6.root
   histName: sig_Jpsi_sw
 
 axe:
@@ -38,4 +38,4 @@ simpleRatio:
   #labelRun2: "J/#psi, pp@13TeV"
 
 output:
-  fOutName: "/Users/lucamicheletti/GITHUB/dq_run3_analyses/psi2S_jpsi_ratio/results/cross_section_jpsi_LHC22_pass7_skimmed"
+  fOutName: "/Users/lucamicheletti/GITHUB/dq_run3_analyses/psi2S_jpsi_ratio/results/cross_section_jpsi_LHC23_pass4_skimmed"

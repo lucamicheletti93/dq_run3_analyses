@@ -119,7 +119,7 @@ def cross_section(inputCfg):
 
     canvasCrossSec = ROOT.TCanvas("canvasCrossSec", "", 800, 600)
     ROOT.gPad.SetLogy(True)
-    histCrossSec.GetYaxis().SetTitle("d#sigma/d#it{p}_{T} (nb^{-1} / GeV/#it{c})")
+    histCrossSec.GetYaxis().SetTitle("d^{2}#sigma/d#it{p}_{T}dy (nb^{-1} / GeV/#it{c})")
     histCrossSec.SetTitle("")
     histCrossSec.SetStats(False)
     histCrossSec.Draw("H")
