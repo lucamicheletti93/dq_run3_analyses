@@ -24,18 +24,22 @@ TH1D* ProjectTH2(TH2D *, double , double );
 void projections() {
     // MC settings
     //string dataset = "MC";
-    //string productionName = "LHC24g8";
+    //string productionName = "LHC24e5";
     //string associationType = "time_association";
     // Data settings
-    string dataset = "2022";
-    string productionName = "LHC22_pass7_skimmed";
-    //string productionName = "apass7_skimmed/LHC22o";
+    string dataset = "2024"; //
+    //string dataset = "2023";
+    string productionName = "LHC24al_pass1_skimmed"; //
+    //string productionName = "LHC23_pass4_thinned";
     //string associationType = "time_association";
-    string associationType = "fDiMuon";
-    string pathName = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data";
+    string associationType = "std_assoc_fSingleMuLow"; // fDiMuon,fSingleMuLow,std_assoc_fSingleMuLow,time_assoc_fSingleMuLow,std_assoc_fDiMuon,time_assoc_fDiMuon
+    string pathName = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data"; //
+    //string pathName = "/Users/lucamicheletti/cernbox/JPSI/Run3";
 
     string histName = "Mass_Pt_Rapidity";
     //string histName = "Mass_Pt";
+
+    bool hasMixedEvent = true;
 
     // pt differential
     //const int nPtBins1 = 8;
@@ -64,11 +68,13 @@ void projections() {
     string fInName = "AnalysisResults_dq_efficiency";
     string cuts[] = {
         "PairsMuonSEPM_matchedMchMid",
+        "PairsMuonSEPP_matchedMchMid",
+        "PairsMuonSEMM_matchedMchMid",
         "PairsMuonSEPM_matchedMchMid_mumuFromJpsi",
         "PairsMuonSEPM_matchedMchMid_mumuFromPsi2S",
-        //"PairsMuonSEPM_muonLowPt10SigmaPDCA_mumuFromJpsi",
-        //"PairsMuonSEPM_muonLowPt210SigmaPDCA_mumuFromJpsi",
-        //"PairsMuonSEPM_muonLowPt510SigmaPDCA_mumuFromJpsi",
+        "PairsMuonSEPM_muonLowPt210SigmaPDCA",
+        "PairsMuonSEPP_muonLowPt210SigmaPDCA",
+        "PairsMuonSEMM_muonLowPt210SigmaPDCA"
         //"PairsMuonSEPM_muonLowPt10SigmaPDCA_mumuFromPsi2S",
         //"PairsMuonSEPM_muonLowPt210SigmaPDCA_mumuFromPsi2S",
         //"PairsMuonSEPM_muonLowPt510SigmaPDCA_mumuFromPsi2S"
@@ -79,10 +85,10 @@ void projections() {
     string cuts[] = {
         "PairsMuonSEPM_matchedMchMid",
         "PairsMuonSEPP_matchedMchMid",
-        "PairsMuonSEMM_matchedMchMid"//,
-        //"PairsMuonSEPM_muonLowPt10SigmaPDCA",
-        //"PairsMuonSEPM_muonLowPt210SigmaPDCA",
-        //"PairsMuonSEPM_muonLowPt510SigmaPDCA"
+        "PairsMuonSEMM_matchedMchMid",
+        "PairsMuonSEPM_muonLowPt210SigmaPDCA",
+        "PairsMuonSEPP_muonLowPt210SigmaPDCA",
+        "PairsMuonSEMM_muonLowPt210SigmaPDCA"
     };
 
     TFile *fIn = new TFile(Form("%s/%s/%s/%s_%s.root", pathName.c_str(), dataset.c_str(), productionName.c_str(), fInName.c_str(), associationType.c_str()), "READ");
@@ -91,12 +97,21 @@ void projections() {
 
     TFile *fOut = new TFile(Form("%s/%s/%s/Histograms_%s_%s.root", pathName.c_str(), dataset.c_str(), productionName.c_str(), fInName.c_str(), associationType.c_str()), "RECREATE");
     for (auto& cut : cuts) {
-        TList *list = (TList*) list1 -> FindObject(cut.c_str());
+        TList *listSE = (TList*) list1 -> FindObject(cut.c_str());
 
         if (histName == "Mass_Pt_Rapidity") {
-            THnSparseD *histSparse = (THnSparseD*) list -> FindObject(histName.c_str());
+            THnSparseD *histSparse = (THnSparseD*) listSE -> FindObject(histName.c_str());
+            histSparse -> GetAxis(1) -> SetRangeUser(0., 20.);
+            histSparse -> GetAxis(2) -> SetRangeUser(2.5, 4);
+
             TH1D *histProjInt = (TH1D*) histSparse -> Projection(0, Form("Proj_%s", cut.c_str()));
             histProjInt -> Write(Form("Proj_%s", cut.c_str()));
+
+            TH1D *histProjPtInt = (TH1D*) histSparse -> Projection(1, Form("Proj_Pt_%s", cut.c_str()));
+            histProjPtInt -> Write(Form("Proj_Pt_%s", cut.c_str()));
+
+            TH1D *histProjRapInt = (TH1D*) histSparse -> Projection(2, Form("Proj_Rap_%s", cut.c_str()));
+            histProjRapInt -> Write(Form("Proj_Rap_%s", cut.c_str()));
 
 
             for (int iPt = 0;iPt < nPtBins1;iPt++) {
@@ -111,7 +126,7 @@ void projections() {
         }
 
         if (histName == "Mass_Pt") {
-            TH2D *hist2D = (TH2D*) list -> FindObject(histName.c_str());
+            TH2D *hist2D = (TH2D*) listSE -> FindObject(histName.c_str());
             TH1D *histProjInt = (TH1D*) hist2D -> ProjectionX(Form("Proj_%s", cut.c_str()));
             histProjInt -> Write(Form("Proj_%s", cut.c_str()));
 
@@ -119,6 +134,37 @@ void projections() {
             for (int iPt = 0;iPt < nPtBins1;iPt++) {
                 TH1D *histProjPt = (TH1D*) ProjectTH2(hist2D, minPtBins1[iPt], maxPtBins1[iPt]);
                 histProjPt -> Write(Form("Proj_%s__Pt_%1.0f_%1.0f", cut.c_str(), minPtBins1[iPt], maxPtBins1[iPt]));
+            }
+        }
+
+        if (hasMixedEvent) {
+            TList *list2 = (TList*) fIn -> Get("analysis-event-mixing/output");
+            auto cutME = cut.replace(9, 2, "ME");
+            TList *listME = (TList*) list2 -> FindObject(cutME.c_str());
+
+            if (histName == "Mass_Pt_Rapidity") {
+                THnSparseD *histSparseME = (THnSparseD*) listME -> FindObject(histName.c_str());
+                histSparseME -> GetAxis(1) -> SetRangeUser(0., 20.);
+                histSparseME -> GetAxis(2) -> SetRangeUser(2.5, 4);
+
+                TH1D *histProjIntME = (TH1D*) histSparseME -> Projection(0, Form("Proj_%s", cut.c_str()));
+                histProjIntME -> Write(Form("Proj_%s", cut.c_str()));
+
+                TH1D *histProjPtIntME = (TH1D*) histSparseME -> Projection(1, Form("Proj_Pt_%s", cut.c_str()));
+                histProjPtIntME -> Write(Form("Proj_Pt_%s", cut.c_str()));
+
+                TH1D *histProjRapIntME = (TH1D*) histSparseME -> Projection(2, Form("Proj_Rap_%s", cut.c_str()));
+                histProjRapIntME -> Write(Form("Proj_Rap_%s", cut.c_str()));
+
+                for (int iPt = 0;iPt < nPtBins1;iPt++) {
+                    TH1D *histProjPtME = (TH1D*) ProjectTHnSparse(histSparseME, minPtBins1[iPt], maxPtBins1[iPt], minRapBins1[0], maxRapBins1[0]);
+                    histProjPtME -> Write(Form("Proj_%s__Pt_%2.1f_%2.1f", cut.c_str(), minPtBins1[iPt], maxPtBins1[iPt]));
+                }
+
+                for (int iRap = 0;iRap < nRapBins2;iRap++) {
+                    TH1D *histProjRapME = (TH1D*) ProjectTHnSparse(histSparseME, minPtBins2[0], maxPtBins2[0], minRapBins2[iRap], maxRapBins2[iRap]);
+                    histProjRapME -> Write(Form("Proj_%s__Rap_%3.2f_%3.2f", cut.c_str(), minRapBins2[iRap], maxRapBins2[iRap]));
+                }
             }
         }
         

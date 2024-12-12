@@ -1,11 +1,11 @@
 
 input:
-    output_dir_name: "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2022/LHC22_pass7_skimmed"
+    output_dir_name: "/Users/lucamicheletti/cernbox/JPSI/Jpsi_flow/data/pass4/LHC23_full/train_278035"
     alien_run_list: /Users/lucamicheletti/GITHUB/dq_run3_analyses/utils/alien_run_list.txt
     alien_input_path: /Users/lucamicheletti/GITHUB/dq_run3_analyses/utils/alien_input_path.txt
 
     file_type: "AnalysisResults.root"
-    file_path: "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2022/LHC22_pass7_skimmed"
+    file_path: "/Users/lucamicheletti/cernbox/JPSI/Jpsi_flow/data/pass4/LHC23_full/train_278035"
     table_maker_stat: table-maker/Statistics
     table_maker: table-maker/output
     table_maker_dir: ["Muons_muonQualityCuts"]

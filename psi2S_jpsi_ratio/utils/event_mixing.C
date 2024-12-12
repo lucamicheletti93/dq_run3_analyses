@@ -28,6 +28,11 @@ double ComputeSideBandsNorm(TH1D *, double [2], double[2]);
 TH1D* ComputeLsBackground(TH1D *, TH1D *, string);
 TH1D* CreateSideBandsHist(TH1D *, double [2], double[2], string);
 
+// https://alice-notes.web.cern.ch/system/files/notes/analysis/486/2017-Aug-11-analysis_note-JPsiPbPb2015_AN_30062016.pdf
+double ComputeFbkgNorm1(TH1D *, TH1D *, double [2], double[2]);
+double ComputeFbkgNorm2(TH1D *, TH1D *, TH1D *, TH1D *, double [2], double[2]);
+double ComputeFbkgNorm3(TH1D *, TH1D *, TH1D *, TH1D *, TH1D *, double [2], double[2]);
+
 void event_mixing() {
     //LoadStyle();
 
@@ -35,7 +40,7 @@ void event_mixing() {
     double minPtBins[] = {0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 15};
     double maxPtBins[] = {0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 15, 20};
 
-    double minRanges[13][2] = {{2.1, 4.9},{2.1, 4.9},{2.1, 4.9},{2.1, 4.9},{2.1, 4.9},{1.9, 4.5},{1.9, 4.5},{1.9, 4.5},{1.9, 4.5},{1.9, 4.5},{1.9, 4.5},{1.9, 4.5},{1.9, 4.5}};
+    double minRanges[13][2] = {{2.0, 4.0},{2.1, 4.9},{2.1, 4.9},{2.1, 4.9},{2.1, 4.9},{1.9, 4.5},{1.9, 4.5},{1.9, 4.5},{1.9, 4.5},{1.9, 4.5},{1.9, 4.5},{1.9, 4.5},{1.9, 4.5}};
     double maxRanges[13][2] = {{2.5, 5.0},{2.5, 5.0},{2.5, 5.0},{2.4, 5.0},{2.4, 5.0},{2.2, 5.0},{2.2, 5.0},{2.2, 5.0},{2.2, 5.0},{2.2, 5.0},{2.2, 5.0},{2.2, 5.0},{2.2, 5.0}};
     double minRange[2];
     double maxRange[2];
@@ -46,19 +51,19 @@ void event_mixing() {
     //string fInNameSE = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2022/LHC22_pass6_minimum_bias/Histograms_AnalysisResults_time_association.root";
     //string fInNameSE = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2023/LHC23_pass4_thinned/Histograms_AnalysisResults_time_association.root";
     //string fInNameSE = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2024/LHC24_pass1_skimmed/Histograms_AnalysisResults_fDiMuon.root";
-    //string fInNameSE = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2024/LHC24_pass1_skimmed/Histograms_AnalysisResults_fDiMuon.root"; // fDiMuon,fSingleMuLow
-    string fInNameSE = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2024/LHC24al_pass1_skimmed/Histograms_AnalysisResults_std_assoc_fDiMuon.root"; // fDiMuon,fSingleMuLow
+    string fInNameSE = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2024/LHC24_pass1_skimmed/Histograms_AnalysisResults_fDiMuon.root"; // fDiMuon,fSingleMuLow
+    //string fInNameSE = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2024/LHC24al_pass1_skimmed/Histograms_AnalysisResults_std_assoc_fDiMuon.root"; // fDiMuon,fSingleMuLow
     string cutNameSE = "muonLowPt210SigmaPDCA"; // matchedMchMid,muonLowPt210SigmaPDCA
 
     // Mixed Event files [ME]
-    //string fInNameME = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2024/LHC24_pass1_skimmed/Histograms_AnalysisResults_fSingleMuLow.root";
-    string fInNameME = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2024/LHC24al_pass1_skimmed/Histograms_AnalysisResults_std_assoc_fSingleMuLow.root";
+    string fInNameME = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2024/LHC24_pass1_skimmed/Histograms_AnalysisResults_fSingleMuLow.root";
+    //string fInNameME = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2024/LHC24al_pass1_skimmed/Histograms_AnalysisResults_std_assoc_fSingleMuLow.root";
     string cutNameME = "muonLowPt210SigmaPDCA"; // matchedMchMid,muonLowPt210SigmaPDCA
 
     TFile *fInSE = new TFile(fInNameSE.c_str(), "READ");
     TFile *fInME = new TFile(fInNameME.c_str(), "READ");
 
-    TFile *fOut = new TFile("Histograms_AnalysisResults_fDiMuon_noBkg.root", "RECREATE");
+    TFile *fOut = new TFile("/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2024/LHC24_pass1_skimmed/Histograms_AnalysisResults_fDiMuon_noBkg.root", "RECREATE");
 
     //ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo//
     // Integrated spectra
@@ -79,11 +84,6 @@ void event_mixing() {
     TH1D *histMassIntSingleMuLowMEPP = (TH1D*) fInME -> Get(Form("Proj_PairsMuonMEPP_%s", cutNameME.c_str())); SetHistogram(histMassIntSingleMuLowMEPP, kAzure+2, 2);
     TH1D *histMassIntSingleMuLowMEMM = (TH1D*) fInME -> Get(Form("Proj_PairsMuonMEMM_%s", cutNameME.c_str())); SetHistogram(histMassIntSingleMuLowMEMM, kAzure+2, 2);
 
-    TH1D *histMassIntDiMuonSEPPMM = ComputeLsBackground(histMassIntDiMuonSEPP, histMassIntDiMuonSEMM, Form("histMassIntPPMM_%s", cutNameME.c_str())); SetHistogram(histMassIntDiMuonSEPPMM, kBlue+1, 2);
-    TH1D *histMassIntDiMuonPPMM = ComputeLsBackground(histMassIntDiMuonSEPP, histMassIntDiMuonSEMM, "histMassIntDiMuonPPMM"); SetHistogram(histMassIntDiMuonPPMM, kBlue+1, 2);
-    TH1D *histMassIntSingleMuLowPPMM = ComputeLsBackground(histMassIntSingleMuLowSEPP, histMassIntSingleMuLowSEMM, "histMassIntSingleMuLowPPMM"); SetHistogram(histMassIntSingleMuLowPPMM, kBlue+1, 2);
-    TH1D *histMassIntDiMuonMEPPMM = ComputeLsBackground(histMassIntDiMuonMEPP, histMassIntDiMuonMEMM, "histMassIntDiMuonMEPPMM"); SetHistogram(histMassIntDiMuonMEPPMM, kBlue+1, 2);
-
     //double normIntDiMuonSEPPMM = ComputeScaleFactor(histMassIntDiMuonSEPM, histMassIntDiMuonSEPP, histMassIntDiMuonSEMM, minRanges, maxRanges);
     //double normIntDiMuonMEPPMM = ComputeScaleFactor(histMassIntDiMuonSEPM, histMassIntDiMuonMEPP, histMassIntDiMuonMEMM, minRanges, maxRanges);
     //double normIntSingleMuLowSEPPMM = ComputeScaleFactor(histMassIntSingleMuLowSEPM, histMassIntSingleMuLowSEPP, histMassIntSingleMuLowSEMM, minRanges, maxRanges);
@@ -91,8 +91,8 @@ void event_mixing() {
     //double scaleFactorDiMuonMEPM = normIntDiMuonMEPPMM / normIntDiMuonSEPPMM;
 
     // Normalize using sidebands -> Not working, the shape is different
-    //double sbNormDiMuonSEPM = ComputeSideBandsNorm(histMassIntDiMuonSEPM, minRanges, maxRanges);
-    //double sbNormDiMuonMEPM = ComputeSideBandsNorm(histMassIntDiMuonMEPM, minRanges, maxRanges);
+    //double sbNormDiMuonSEPM = ComputeFbkgNorm1(histMassIntDiMuonSEPM, minRanges, maxRanges);
+    //double sbNormDiMuonMEPM = ComputeFbkgNorm1(histMassIntDiMuonMEPM, minRanges, maxRanges);
     //double scaleFactorDiMuonMEPM = sbNormDiMuonSEPM / sbNormDiMuonMEPM; 
 
     TH1D *histMassIntSingleMuLowRfactor = ComputeRfactor(histMassIntSingleMuLowMEPM, histMassIntSingleMuLowMEPP, histMassIntSingleMuLowMEMM, "histMassIntSingleMuLowRfactor"); SetHistogram(histMassIntSingleMuLowRfactor, kBlue+1, 2);
@@ -106,30 +106,68 @@ void event_mixing() {
     lineUnity -> SetLineStyle(kDashed);
     lineUnity -> Draw("SAME");
 
+    std::copy(std::begin(minRanges[0]), std::end(minRanges[0]), minRange);
+    std::copy(std::begin(maxRanges[0]), std::end(maxRanges[0]), maxRange);
+
+    double minRangeIntFull[2] = {2.0, -999};
+    double maxRangeIntFull[2] = {5.0, -999};
+    double minRangeIntSb[2] = {1.9, 4.0};
+    double maxRangeIntSb[2] = {2.3, 5.0};
+
     // Compute F-factor for normalization
-    fFactor = ComputeFfactor(histMassIntSingleMuLowMEPM, histMassIntDiMuonSEPP, histMassIntDiMuonSEMM, histMassIntSingleMuLowRfactor);
+    /*fFactor = ComputeFfactor(histMassIntSingleMuLowMEPM, histMassIntDiMuonSEPP, histMassIntDiMuonSEMM, histMassIntSingleMuLowRfactor);
     std::cout << "F-factor = " << fFactor << std::endl;
     histMassIntSingleMuLowMEPM -> Scale(fFactor); // Warning!!!!
 
     // Compute scale factors
     std::copy(std::begin(minRanges[0]), std::end(minRanges[0]), minRange);
-    std::copy(std::begin(maxRanges[0]), std::end(maxRanges[0]), maxRange);
+    std::copy(std::begin(maxRanges[0]), std::end(maxRanges[0]), maxRange);*/
 
-    double normIntDiMuonSEPM = ComputeSideBandsNorm(histMassIntDiMuonSEPM, minRange, maxRange);
-    double normIntDiMuonSEPPMM = ComputeSideBandsNorm(histMassIntDiMuonSEPPMM, minRange, maxRange);
-    double normIntDiMuonMEPPMM = ComputeSideBandsNorm(histMassIntDiMuonMEPPMM, minRange, maxRange);
-    double normIntSingleMuLowMEPM = ComputeSideBandsNorm(histMassIntSingleMuLowMEPM, minRange, maxRange);
-    double scaleFactorSingleMuLowMEPM = normIntDiMuonSEPM / normIntSingleMuLowMEPM;
-    double scaleFactorDiMuonSEPPMM = normIntDiMuonSEPM / normIntDiMuonSEPPMM;
-    double scaleFactorDiMuonMEPPMM = normIntDiMuonSEPM / normIntDiMuonMEPPMM;
+    //double normIntDiMuonSEPM = ComputeSideBandsNorm(histMassIntDiMuonSEPM, minRange, maxRange);
+    //double normIntDiMuonSEPPMM = ComputeSideBandsNorm(histMassIntDiMuonSEPPMM, minRange, maxRange);
+    //double normIntDiMuonMEPPMM = ComputeSideBandsNorm(histMassIntDiMuonMEPPMM, minRange, maxRange);
+    //double normIntSingleMuLowMEPM = ComputeSideBandsNorm(histMassIntSingleMuLowMEPM, minRange, maxRange);
+    //double scaleFactorSingleMuLowMEPM = normIntDiMuonSEPM / normIntSingleMuLowMEPM;
+    //double scaleFactorDiMuonSEPPMM = normIntDiMuonSEPM / normIntDiMuonSEPPMM;
+    //double scaleFactorDiMuonMEPPMM = normIntDiMuonSEPM / normIntDiMuonMEPPMM;
 
-    histMassIntSingleMuLowMEPM -> Scale(scaleFactorSingleMuLowMEPM);  // Warning!!!!
-    histMassIntDiMuonSEPPMM -> Scale(scaleFactorDiMuonSEPPMM); // Warning!!!!
-    histMassIntDiMuonMEPPMM -> Scale(scaleFactorDiMuonMEPPMM); // Warning!!!!
+    //histMassIntSingleMuLowMEPM -> Scale(scaleFactorSingleMuLowMEPM);  // Warning!!!!
+    //histMassIntDiMuonSEPPMM -> Scale(scaleFactorDiMuonSEPPMM); // Warning!!!!
+    //histMassIntDiMuonMEPPMM -> Scale(scaleFactorDiMuonMEPPMM); // Warning!!!!
+
+    double fBkgNorm1 = ComputeFbkgNorm1(histMassIntDiMuonSEPM, histMassIntSingleMuLowMEPM, minRangeIntSb, minRangeIntSb);
+    double fBkgNorm2 = ComputeFbkgNorm2(histMassIntSingleMuLowMEPM, histMassIntSingleMuLowSEPP, histMassIntSingleMuLowSEMM, histMassIntSingleMuLowRfactor, minRangeIntFull, maxRangeIntFull);
+    double fBkgNorm3 = ComputeFbkgNorm3(histMassIntSingleMuLowSEPP, histMassIntSingleMuLowSEMM, histMassIntSingleMuLowMEPP, histMassIntSingleMuLowMEMM, histMassIntSingleMuLowRfactor, minRangeIntFull, maxRangeIntFull);
+
+    std::cout << "1-F norm: " << fBkgNorm1 << std::endl;
+    std::cout << "2-F norm: " << fBkgNorm2 << std::endl;
+    std::cout << "3-F norm: " << fBkgNorm3 << std::endl;
+
+    TH1D *histMassIntSingleMuLowMEPM_BkgNorm1 = (TH1D*) histMassIntSingleMuLowMEPM -> Clone("histMassIntSingleMuLowMEPM_BkgNorm1");
+    TH1D *histMassIntSingleMuLowMEPM_BkgNorm2 = (TH1D*) histMassIntSingleMuLowMEPM -> Clone("histMassIntSingleMuLowMEPM_BkgNorm2");
+    TH1D *histMassIntSingleMuLowMEPM_BkgNorm3 = (TH1D*) histMassIntSingleMuLowMEPM -> Clone("histMassIntSingleMuLowMEPM_BkgNorm3");
+
+    histMassIntSingleMuLowMEPM_BkgNorm1 -> Scale(fBkgNorm1);
+    histMassIntSingleMuLowMEPM_BkgNorm2 -> Scale(fBkgNorm2);
+    histMassIntSingleMuLowMEPM_BkgNorm3 -> Scale(fBkgNorm3);
+
+    SetHistogram(histMassIntSingleMuLowMEPM_BkgNorm1, kAzure+1, 2);
+    SetHistogram(histMassIntSingleMuLowMEPM_BkgNorm2, kRed+1, 2);
+    SetHistogram(histMassIntSingleMuLowMEPM_BkgNorm3, kGreen+1, 2);
+
+    TH1D *histMassIntDiMuonSEPPMM = ComputeLsBackground(histMassIntDiMuonSEPP, histMassIntDiMuonSEMM, Form("histMassIntPPMM_%s", cutNameME.c_str()));
+    TH1D *histMassIntDiMuonPPMM = ComputeLsBackground(histMassIntDiMuonSEPP, histMassIntDiMuonSEMM, "histMassIntDiMuonPPMM");
+    TH1D *histMassIntSingleMuLowPPMM = ComputeLsBackground(histMassIntSingleMuLowSEPP, histMassIntSingleMuLowSEMM, "histMassIntSingleMuLowPPMM");
+    TH1D *histMassIntDiMuonMEPPMM = ComputeLsBackground(histMassIntDiMuonMEPP, histMassIntDiMuonMEMM, "histMassIntDiMuonMEPPMM");
+
+    SetHistogram(histMassIntDiMuonSEPPMM, kMagenta, 2);
+    SetHistogram(histMassIntDiMuonPPMM, kBlue+1, 2);
+    SetHistogram(histMassIntSingleMuLowPPMM, kViolet, 2);
+    SetHistogram(histMassIntDiMuonMEPPMM, kBlue+1, 2);
 
     // Remove combinatorial background
     TH1D *histMassIntDiMuonBkgSubtrSEPM = (TH1D*) histMassIntDiMuonSEPM -> Clone("histMassIntDiMuonBkgSubtrSEPM");
-    histMassIntDiMuonBkgSubtrSEPM -> Add(histMassIntSingleMuLowMEPM, -1);
+    histMassIntDiMuonBkgSubtrSEPM -> Add(histMassIntSingleMuLowMEPM_BkgNorm1, -1);
     SetHistogram(histMassIntDiMuonBkgSubtrSEPM, kRed+1, 2);
 
     TCanvas *canvasIntMassDiMuon = new TCanvas("canvasIntMassDiMuon", "fDiMuon events", 800, 600);
@@ -139,10 +177,16 @@ void event_mixing() {
     histMassIntDiMuonSEPM -> GetXaxis() -> SetRangeUser(1.9, 5);
     histMassIntDiMuonSEPM -> GetYaxis() -> SetRangeUser(1, 1e6);
     histMassIntDiMuonSEPM -> Draw("EP");
-    histMassIntSingleMuLowMEPM -> Draw("EP SAME");
+    histMassIntSingleMuLowMEPM_BkgNorm1 -> Draw("EP SAME");
+    histMassIntSingleMuLowMEPM_BkgNorm2 -> Draw("EP SAME");
+    histMassIntSingleMuLowMEPM_BkgNorm3 -> Draw("EP SAME");
     histMassIntDiMuonBkgSubtrSEPM -> Draw("EP SAME");
-    histMassIntDiMuonPPMM -> Draw("EP SAME");
-    histMassIntDiMuonMEPPMM -> Draw("EP SAME");
+    histMassIntDiMuonSEPPMM -> Draw("EP SAME");
+    histMassIntSingleMuLowPPMM -> Draw("EP SAME");
+    //histMassIntSingleMuLowMEPM -> Draw("EP SAME");
+    //histMassIntDiMuonBkgSubtrSEPM -> Draw("EP SAME");
+    //histMassIntDiMuonPPMM -> Draw("EP SAME");
+    //histMassIntDiMuonMEPPMM -> Draw("EP SAME");
 
     TLegend *legendIntMassDiMuon = new TLegend(0.50, 0.70, 0.70, 0.89);
     SetLegend(legendIntMassDiMuon);
@@ -206,8 +250,9 @@ void event_mixing() {
         //lineUnity -> Draw("SAME");
 
         // Compute F-factor for normalization
-        fFactor = ComputeFfactor(histMassPtSingleMuLowMEPM, histMassPtDiMuonSEPP, histMassPtDiMuonSEMM, histMassPtRfactor);
-        histMassPtSingleMuLowMEPM -> Scale(fFactor); // Warning!!!!
+        //fFactor = ComputeFfactor(histMassPtSingleMuLowMEPM, histMassPtDiMuonSEPP, histMassPtDiMuonSEMM, histMassPtRfactor);
+        //histMassPtSingleMuLowMEPM -> Scale(fFactor); // Warning!!!!
+        fFactor = ComputeFbkgNorm1(histMassPtDiMuonSEPM, histMassPtSingleMuLowMEPM, minRangeIntSb, minRangeIntSb);
 
         // Compute scale factors
         //double normPtDiMuonSEPPMM = ComputeScaleFactor(histMassPtDiMuonSEPM, histMassPtDiMuonSEPP, histMassPtDiMuonSEMM, minRanges, maxRanges);
@@ -224,8 +269,11 @@ void event_mixing() {
         double scaleFactorSingleMuLowMEPM = normPtDiMuonSEPM / normPtSingleMuLowMEPM;
         double scaleFactorDiMuonSEPPMM = normPtDiMuonSEPM / normPtDiMuonSEPPMM;
 
-        histMassPtSingleMuLowMEPM -> Scale(0.5 * scaleFactorSingleMuLowMEPM); // Warning!!!!
-        histMassPtScaledDiMuonSEPPMM -> Scale(0.5 * scaleFactorDiMuonSEPPMM); // Warning!!!!
+        //histMassPtSingleMuLowMEPM -> Scale(0.5 * scaleFactorSingleMuLowMEPM); // Warning!!!!
+        //histMassPtScaledDiMuonSEPPMM -> Scale(0.5 * scaleFactorDiMuonSEPPMM); // Warning!!!!
+
+        //histMassPtSingleMuLowMEPM -> Scale(fFactor); // Warning!!!!
+        histMassPtSingleMuLowMEPM -> Scale(fBkgNorm1); // Warning!!!!
 
         std::cout << "F-factor = " << fFactor  << "; Scale-factor SingleMuLowMEPM = " << scaleFactorSingleMuLowMEPM << std::endl;
 
@@ -237,8 +285,8 @@ void event_mixing() {
         TH1D *histMassPtRatio_DiMuonSEPM_SingleMuLowMEPM = (TH1D*) histMassPtDiMuonSEPM -> Clone(Form("histMassPtRatio_DiMuonSEPM_SingleMuLowMEPM__Pt_%2.1f_%2.1f", minPtBins[iPt], maxPtBins[iPt]));
         histMassPtRatio_DiMuonSEPM_SingleMuLowMEPM -> Divide(histMassPtSingleMuLowMEPM);
 
-        TH1D *histMassPtRatio_DiMuonSEPM_DiMuonPPMM = (TH1D*) histMassPtDiMuonSEPM -> Clone(Form("histMassPtRatio_DiMuonSEPM_DiMuonPPMM__Pt_%2.1f_%2.1f", minPtBins[iPt], maxPtBins[iPt]));
-        histMassPtRatio_DiMuonSEPM_DiMuonPPMM -> Divide(histMassPtScaledDiMuonSEPPMM);
+        //TH1D *histMassPtRatio_DiMuonSEPM_DiMuonPPMM = (TH1D*) histMassPtDiMuonSEPM -> Clone(Form("histMassPtRatio_DiMuonSEPM_DiMuonPPMM__Pt_%2.1f_%2.1f", minPtBins[iPt], maxPtBins[iPt]));
+        //histMassPtRatio_DiMuonSEPM_DiMuonPPMM -> Divide(histMassPtScaledDiMuonSEPPMM);
 
         //------------------------------------------------------//
         // Plot mass histo vs pT for DiMuon only
@@ -263,7 +311,7 @@ void event_mixing() {
         histMassPtDiMuonSEPM -> SetTitle(Form("%2.1f < #it{p}_{T} < %2.1f GeV/#it{c}", minPtBins[iPt], maxPtBins[iPt]));
         histMassPtDiMuonSEPM -> Draw("EP");
         histMassPtSingleMuLowMEPM -> Draw("EP SAME");
-        //histMassPtDiMuonBkgSubtrSEPM -> Draw("EP SAME");
+        histMassPtDiMuonBkgSubtrSEPM -> Draw("EP SAME");
         //histMassPtScaledDiMuonSEPPMM -> Draw("EP SAME");
 
         TLegend *legendMassPtBkgs = new TLegend(0.50, 0.70, 0.70, 0.89);
@@ -442,6 +490,63 @@ double ComputeSideBandsNorm(TH1D *hist, double minRanges[], double maxRanges[]) 
     double sbLeft = hist -> Integral(hist -> FindBin(minRanges[0]), hist -> FindBin(maxRanges[0]));
     double sbRight = hist -> Integral(hist -> FindBin(minRanges[1]), hist -> FindBin(maxRanges[1]));
     return sbLeft + sbRight;
+}
+////////////////////////////////////////////////////////////////////////////////
+double ComputeFbkgNorm1(TH1D *histSEPM, TH1D *histMEPM, double minRanges[], double maxRanges[]) {
+    double sbLeftSE = histSEPM -> Integral(histSEPM -> FindBin(minRanges[0]), histSEPM -> FindBin(maxRanges[0]));
+    double sbRightSE = histSEPM -> Integral(histSEPM -> FindBin(minRanges[1]), histSEPM -> FindBin(maxRanges[1]));
+
+    double sbLeftME = histMEPM -> Integral(histMEPM -> FindBin(minRanges[0]), histMEPM -> FindBin(maxRanges[0]));
+    double sbRightME = histMEPM -> Integral(histMEPM -> FindBin(minRanges[1]), histMEPM -> FindBin(maxRanges[1]));
+
+    return (sbLeftSE + sbRightSE) / (sbLeftME + sbRightME);
+}
+////////////////////////////////////////////////////////////////////////////////
+double ComputeFbkgNorm2(TH1D *histMEPM, TH1D *histSEPP, TH1D *histSEMM, TH1D *histRfactor, double minRanges[], double maxRanges[]) {
+    int nBins = histMEPM -> GetNbinsX();
+    double lowEdge = histMEPM -> FindBin(minRanges[0]);
+    double topEdge =  histMEPM -> FindBin(maxRanges[0]);
+
+    double numFactor = 0;
+    double denFactor = 0;
+
+    for (int iBin = 0;iBin < nBins;iBin++) {
+        double nMEPM = histMEPM -> GetBinContent(iBin+1);
+        double nSEPP = histSEPP -> GetBinContent(iBin+1);
+        double nSEMM = histSEMM -> GetBinContent(iBin+1);
+        double rFactor = histRfactor -> GetBinContent(iBin+1);
+
+        if (iBin > lowEdge && iBin < topEdge) {
+            numFactor += 2. * rFactor * TMath::Sqrt(nSEPP * nSEMM);
+            denFactor += nMEPM;
+        }
+    }
+
+    return numFactor / denFactor;
+}
+////////////////////////////////////////////////////////////////////////////////
+double ComputeFbkgNorm3(TH1D *histSEPP, TH1D *histSEMM, TH1D *histMEPP, TH1D *histMEMM, TH1D *histRfactor, double minRanges[], double maxRanges[]) {
+    int nBins = histSEPP -> GetNbinsX();
+    double lowEdge = histSEPP -> FindBin(minRanges[0]);
+    double topEdge =  histSEPP -> FindBin(maxRanges[0]);
+
+    double numFactor = 0;
+    double denFactor = 0;
+
+    for (int iBin = 0;iBin < nBins;iBin++) {
+        double nSEPP = histSEPP -> GetBinContent(iBin+1);
+        double nSEMM = histSEMM -> GetBinContent(iBin+1);
+        double nMEPP = histMEPP -> GetBinContent(iBin+1);
+        double nMEMM = histMEMM -> GetBinContent(iBin+1);
+        double rFactor = histRfactor -> GetBinContent(iBin+1);
+
+        if (iBin > lowEdge && iBin < topEdge) {
+            numFactor += 2. * rFactor * TMath::Sqrt(nSEPP * nSEMM);
+            denFactor += 2. * rFactor * TMath::Sqrt(nMEPP * nMEMM);
+        }
+    }
+
+    return numFactor / denFactor;
 }
 ////////////////////////////////////////////////////////////////////////////////
 TH1D *CreateSideBandsHist (TH1D *hist, double minRanges[], double maxRanges[], string histName) {

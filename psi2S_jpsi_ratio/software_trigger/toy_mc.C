@@ -42,9 +42,17 @@ void toy_mc(int nEvs = 100000000, double ptCut = 0.7) {
     histMuPtCutRun2 -> SetMarkerColor(kGreen+1);
     
 
-    TF1 *funcPol1 = new TF1("funcPol1", "pol1", 0, 2);
-    funcPol1 -> SetParameter(0, 0);
-    funcPol1 -> SetParameter(1, 1);
+    //TF1 *funcPol1 = new TF1("funcPol1", "pol1", 0, 2);
+    //funcPol1 -> SetParameter(0, 0);
+    //funcPol1 -> SetParameter(1, 1);
+
+    TF1 *funcPol1 = new TF1("funcPol1", "gaus", 0, 2);
+    funcPol1 -> SetParameter(0, 1);
+    funcPol1 -> SetParameter(1, ptCut);
+    funcPol1 -> SetParameter(2, 0.15);
+
+    TH1D *histPtThr = new TH1D("histPtThr", "", 1000, 0, 2);
+    TH1D *histIntegralPtThr = new TH1D("histPtThr", "", 1000, 0, 2);
 
     double ptCutSmeared = ptCut;
 
@@ -71,12 +79,30 @@ void toy_mc(int nEvs = 100000000, double ptCut = 0.7) {
         }
 
         ptCutSmeared = funcPol1 -> GetRandom(0, 1);
+        histPtThr -> Fill(ptCutSmeared);
         if (ptMu1 > ptCutSmeared && ptMu2 > ptCutSmeared) {
             histDimuPtCutRun2 -> Fill(dimuon.M(), dimuon.Pt());
             histMuPtCutRun2 -> Fill(ptMu1);
             histMuPtCutRun2 -> Fill(ptMu2);
         }
     }
+
+    int sumPreviousBins = 0;
+    for (int iBin = 0;iBin < 1000;iBin++) {
+        sumPreviousBins += histPtThr -> GetBinContent(iBin+1);
+        histIntegralPtThr -> SetBinContent(iBin, sumPreviousBins);
+    }
+
+    TCanvas *canvasPtThr = new TCanvas("canvasPtThr", "", 1200, 600);
+    canvasPtThr -> Divide(2, 1);
+
+    canvasPtThr -> cd(1);
+    histPtThr -> Scale(1. / histPtThr -> Integral());
+    histPtThr -> Draw("EP");
+
+    canvasPtThr -> cd(2);
+    histIntegralPtThr -> Scale(1. / histIntegralPtThr -> GetBinContent(999));
+    histIntegralPtThr -> Draw("EP");
 
     TCanvas *canvasDimu = new TCanvas("canvasDimu", "", 800, 600);
     histDimu -> Draw("COLZ");
@@ -104,11 +130,15 @@ void toy_mc(int nEvs = 100000000, double ptCut = 0.7) {
     TCanvas *canvasMassProj = new TCanvas("canvasMassProj", "", 1800, 1800);
     canvasMassProj -> Divide(4, 3);
 
+    TCanvas *canvasMassProjvsRun2 = new TCanvas("canvasMassProjvsRun2", "", 1800, 1800);
+    canvasMassProjvsRun2 -> Divide(4, 3);
+
     TCanvas *canvasRatioMassProj = new TCanvas("canvasRatioMassProj", "", 1800, 1800);
     canvasRatioMassProj -> Divide(4, 3);
 
     for (int iPt = 0;iPt < 12;iPt++) {
         canvasMassProj -> cd(iPt+1);
+        gStyle -> SetOptStat(false);
 
         float minPt = histDimu -> GetYaxis() -> GetBinLowEdge(iPt+1);
         float maxPt = histDimu -> GetYaxis() -> GetBinLowEdge(iPt+1) + histDimu -> GetYaxis() -> GetBinWidth(iPt+1);
@@ -130,12 +160,11 @@ void toy_mc(int nEvs = 100000000, double ptCut = 0.7) {
         legendMassProj -> SetTextSize(0.05);
         legendMassProj -> AddEntry(histMassProj, "#it{p}_{T}^{#mu} > 0", "PL");
         legendMassProj -> AddEntry(histMassProjPtCutRun3, Form("#it{p}_{T}^{#mu} > %2.1f GeV/c", ptCut), "PL");
-        legendMassProj -> AddEntry(histMassProjPtCutRun2, Form("#it{p}_{T}^{#mu} > %2.1f GeV/c smearing", ptCut), "PL");
 
         gPad -> SetLogy(1);
+        histMassProj -> SetTitle(Form("%2.1f < #it{p}_{T} < %2.1f GeV/#it{c}", minPt, maxPt));
         histMassProj -> Draw("EP");
         histMassProjPtCutRun3 -> Draw("EP SAME");
-        histMassProjPtCutRun2 -> Draw("EP SAME");
         legendMassProj -> Draw("SAME");
 
         TH1D *histRatioMassProj = (TH1D*) histMassProj -> Clone(Form("Ratio %2.1f < pT < %2.1f GeV/c [pT cut]", minPt, maxPt));
@@ -143,8 +172,27 @@ void toy_mc(int nEvs = 100000000, double ptCut = 0.7) {
 
         canvasRatioMassProj -> cd(iPt+1);
         histRatioMassProj -> Draw("EP");
+
+
+        canvasMassProjvsRun2 -> cd(iPt+1);
+        gStyle -> SetOptStat(false);
+
+        TLegend *legendMassProjVsRun2 = new TLegend(0.20, 0.20, 0.40, 0.50, " ", "brNDC");
+        SetLegend(legendMassProjVsRun2);
+        legendMassProjVsRun2 -> SetTextSize(0.05);
+        legendMassProjVsRun2 -> AddEntry(histMassProj, "#it{p}_{T}^{#mu} > 0", "PL");
+        legendMassProjVsRun2 -> AddEntry(histMassProjPtCutRun3, Form("#it{p}_{T}^{#mu} > %2.1f GeV/c", ptCut), "PL");
+        legendMassProjVsRun2 -> AddEntry(histMassProjPtCutRun2, Form("#it{p}_{T}^{#mu} > %2.1f GeV/c smearing", ptCut), "PL");
+
+        gPad -> SetLogy(1);
+        histMassProj -> SetTitle(Form("%2.1f < #it{p}_{T} < %2.1f GeV/#it{c}", minPt, maxPt));
+        histMassProj -> Draw("EP");
+        histMassProjPtCutRun3 -> Draw("EP SAME");
+        histMassProjPtCutRun2 -> Draw("EP SAME");
+        legendMassProjVsRun2 -> Draw("SAME");
     }
     canvasMassProj -> SaveAs("toy_mc_result.pdf");
+    canvasMassProjvsRun2 -> SaveAs("toy_mc_result_vs_Run2.pdf");
     canvasRatioMassProj -> SaveAs("ratio_toy_mc_result.pdf");
 }
 ////////////////////////////////////////////////////////////////////////////////
