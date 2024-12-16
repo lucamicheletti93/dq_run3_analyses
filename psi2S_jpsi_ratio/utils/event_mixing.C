@@ -219,8 +219,8 @@ void event_mixing() {
     // Pt differential spectrum
     //ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo//
     TCanvas *canvasMassPt = new TCanvas("canvasMassPt", "SEPM signal only", 1800, 1800); canvasMassPt -> Divide(5, 3);
-    TCanvas *canvasMassPtBkgs = new TCanvas("canvasMassPtBkgs", "comparisong OS vs LS / ME backgrounds", 1800, 1800); canvasMassPtBkgs -> Divide(5, 3);
-    TCanvas *canvasMassPtSideBands = new TCanvas("canvasMassPtSideBands", "comparisong OS vs LS / ME backgrounds", 1800, 1800); canvasMassPtSideBands -> Divide(5, 3);
+    TCanvas *canvasMassPtBkgs = new TCanvas("canvasMassPtBkgs", "comparison OS vs LS / ME backgrounds", 1800, 1800); canvasMassPtBkgs -> Divide(5, 3);
+    TCanvas *canvasMassPtSideBands = new TCanvas("canvasMassPtSideBands", "comparison OS vs LS / ME backgrounds", 1800, 1800); canvasMassPtSideBands -> Divide(5, 3);
     //TCanvas *canvasMassPtRatio = new TCanvas("canvasMassPtRatio", "Ratio OS vs LS / ME backgrounds", 1800, 1800); canvasMassPtRatio -> Divide(5, 3);
     //TCanvas *canvasMassPtRfactor = new TCanvas("canvasMassPtRfactor", "R-factor calculation", 1800, 1800); canvasMassPtRfactor -> Divide(5, 3);
 

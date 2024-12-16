@@ -26,8 +26,14 @@ void toy_mc(int nEvs = 100000000, double ptCut = 0.7) {
     TH1D *histPhiGen = (TH1D*) fIn -> Get("Phi");
 
     TH2D *histDimu = new TH2D("histDimu", "", 100, 0, 5, 20, 0, 10);
+    histDimu -> GetXaxis() -> SetTitle("#it{M} GeV/c^{2}");
+    histDimu -> GetYaxis() -> SetTitle("#it{p}_{T} GeV/c");
     TH2D *histDimuPtCutRun3 = new TH2D("histDimuPtCutRun3", "", 100, 0, 5, 20, 0, 10);
+    histDimuPtCutRun3 -> GetXaxis() -> SetTitle("#it{M} GeV/c^{2}");
+    histDimuPtCutRun3 -> GetYaxis() -> SetTitle("#it{p}_{T}  GeV/c");
     TH2D *histDimuPtCutRun2 = new TH2D("histDimuPtCutRun2", "", 100, 0, 5, 20, 0, 10);
+    histDimuPtCutRun2 -> GetXaxis() -> SetTitle("#it{M} GeV/c^{2}");
+    histDimuPtCutRun2 -> GetYaxis() -> SetTitle("#it{p}_{T}  GeV/c");
 
     TH1D *histMuPt = new TH1D("histMuPt", "", 100, 0, 10);
     histMuPt -> SetLineColor(kBlue+1);
