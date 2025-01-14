@@ -1,10 +1,17 @@
+#include <iostream>
+#include <fstream>  
+
 void LoadStyle();
 void SetLegend(TLegend * );
 void SetHistogram(TH1D *, int , int , int , double );
 
 void accxeff() {
     LoadStyle();
-    double ptBinsRun3[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 10.0, 20.0};
+    const int nPtBins = 13;
+    //double ptBinsRun3[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 10.0, 20.0};
+    double ptBinsRun3[] = {0.0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 15, 20};
+    double ptMinRun3[] = {0.0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 15};
+    double ptMaxRun3[] = {0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 15, 20};
     //-----------------------------------------------------------//
     // https://alice-notes.web.cern.ch/system/files/notes/analysis/497/2017-Aug-11-analysis_note-pp13TeV-analysis_note.pdf
     // Run 2 Axe
@@ -332,29 +339,29 @@ void accxeff() {
     SetHistogram(histAxeJpsiPtCut4, 880, 1, 20, 0.8);
     */
 
-    TH1D *histGenJpsiPtRebin = (TH1D*) histGenJpsiPt -> Rebin(8, "histGenJpsiPtRebin", ptBinsRun3); 
-    TH1D *histRecJpsiPtCut1Rebin = (TH1D*) histRecJpsiPtCut1 -> Rebin(8, "histRecJpsiPtCut1Rebin", ptBinsRun3); 
+    TH1D *histGenJpsiPtRebin = (TH1D*) histGenJpsiPt -> Rebin(nPtBins, "histGenJpsiPtRebin", ptBinsRun3); 
+    TH1D *histRecJpsiPtCut1Rebin = (TH1D*) histRecJpsiPtCut1 -> Rebin(nPtBins, "histRecJpsiPtCut1Rebin", ptBinsRun3); 
     SetHistogram(histRecJpsiPtCut1Rebin, 633, 1, 20, 0.8);
-    TH1D *histRecJpsiPtCut2Rebin = (TH1D*) histRecJpsiPtCut2 -> Rebin(8, "histRecJpsiPtCut2Rebin", ptBinsRun3); 
+    TH1D *histRecJpsiPtCut2Rebin = (TH1D*) histRecJpsiPtCut2 -> Rebin(nPtBins, "histRecJpsiPtCut2Rebin", ptBinsRun3); 
     SetHistogram(histRecJpsiPtCut2Rebin, 862, 1, 20, 0.8);
-    TH1D *histRecJpsiPtCut3Rebin = (TH1D*) histRecJpsiPtCut3 -> Rebin(8, "histRecJpsiPtCut3Rebin", ptBinsRun3); 
+    TH1D *histRecJpsiPtCut3Rebin = (TH1D*) histRecJpsiPtCut3 -> Rebin(nPtBins, "histRecJpsiPtCut3Rebin", ptBinsRun3); 
     SetHistogram(histRecJpsiPtCut3Rebin, 417, 1, 20, 0.8);
-    TH1D *histRecJpsiPtCut4Rebin = (TH1D*) histRecJpsiPtCut4 -> Rebin(8, "histRecJpsiPtCut4Rebin", ptBinsRun3); 
+    TH1D *histRecJpsiPtCut4Rebin = (TH1D*) histRecJpsiPtCut4 -> Rebin(nPtBins, "histRecJpsiPtCut4Rebin", ptBinsRun3); 
     SetHistogram(histRecJpsiPtCut4Rebin, 880, 1, 20, 0.8);
 
-    TH1D *histAxeJpsiPtCut1 = new TH1D("histAxeJpsiPtCut1", "", 8, ptBinsRun3);
+    TH1D *histAxeJpsiPtCut1 = new TH1D("histAxeJpsiPtCut1", "", nPtBins, ptBinsRun3);
     histAxeJpsiPtCut1 -> Divide(histRecJpsiPtCut1Rebin, histGenJpsiPtRebin, 1, 1, "B");
     SetHistogram(histAxeJpsiPtCut1, 633, 1, 20, 0.8);
 
-    TH1D *histAxeJpsiPtCut2 = new TH1D("histAxeJpsiPtCut2", "", 8, ptBinsRun3);
+    TH1D *histAxeJpsiPtCut2 = new TH1D("histAxeJpsiPtCut2", "", nPtBins, ptBinsRun3);
     histAxeJpsiPtCut2 -> Divide(histRecJpsiPtCut2Rebin, histGenJpsiPtRebin, 1, 1, "B");
     SetHistogram(histAxeJpsiPtCut2, 862, 1, 20, 0.8);
 
-    TH1D *histAxeJpsiPtCut3 = new TH1D("histAxeJpsiPtCut3", "", 8, ptBinsRun3);
+    TH1D *histAxeJpsiPtCut3 = new TH1D("histAxeJpsiPtCut3", "", nPtBins, ptBinsRun3);
     histAxeJpsiPtCut3 -> Divide(histRecJpsiPtCut3Rebin, histGenJpsiPtRebin, 1, 1, "B");
     SetHistogram(histAxeJpsiPtCut3, 417, 1, 20, 0.8);
 
-    TH1D *histAxeJpsiPtCut4 = new TH1D("histAxeJpsiPtCut4", "", 8, ptBinsRun3);
+    TH1D *histAxeJpsiPtCut4 = new TH1D("histAxeJpsiPtCut4", "", nPtBins, ptBinsRun3);
     histAxeJpsiPtCut4 -> Divide(histRecJpsiPtCut4Rebin, histGenJpsiPtRebin, 1, 1, "B");
     SetHistogram(histAxeJpsiPtCut4, 880, 1, 20, 0.8);
 
@@ -412,29 +419,29 @@ void accxeff() {
     SetHistogram(histAxePsi2SPtCut4, 880, 1, 20, 0.8);
     */
 
-    TH1D *histGenPsi2SPtRebin = (TH1D*) histGenPsi2SPt -> Rebin(8, "histGenPsi2SPtRebin", ptBinsRun3); 
-    TH1D *histRecPsi2SPtCut1Rebin = (TH1D*) histRecPsi2SPtCut1 -> Rebin(8, "histRecPsi2SPtCut1Rebin", ptBinsRun3); 
+    TH1D *histGenPsi2SPtRebin = (TH1D*) histGenPsi2SPt -> Rebin(nPtBins, "histGenPsi2SPtRebin", ptBinsRun3); 
+    TH1D *histRecPsi2SPtCut1Rebin = (TH1D*) histRecPsi2SPtCut1 -> Rebin(nPtBins, "histRecPsi2SPtCut1Rebin", ptBinsRun3); 
     SetHistogram(histRecPsi2SPtCut1Rebin, 633, 1, 20, 0.8);
-    TH1D *histRecPsi2SPtCut2Rebin = (TH1D*) histRecPsi2SPtCut2 -> Rebin(8, "histRecPsi2SPtCut2Rebin", ptBinsRun3); 
+    TH1D *histRecPsi2SPtCut2Rebin = (TH1D*) histRecPsi2SPtCut2 -> Rebin(nPtBins, "histRecPsi2SPtCut2Rebin", ptBinsRun3); 
     SetHistogram(histRecPsi2SPtCut2Rebin, 862, 1, 20, 0.8);
-    TH1D *histRecPsi2SPtCut3Rebin = (TH1D*) histRecPsi2SPtCut3 -> Rebin(8, "histRecPsi2SPtCut3Rebin", ptBinsRun3); 
+    TH1D *histRecPsi2SPtCut3Rebin = (TH1D*) histRecPsi2SPtCut3 -> Rebin(nPtBins, "histRecPsi2SPtCut3Rebin", ptBinsRun3); 
     SetHistogram(histRecPsi2SPtCut3Rebin, 417, 1, 20, 0.8);
-    TH1D *histRecPsi2SPtCut4Rebin = (TH1D*) histRecPsi2SPtCut4 -> Rebin(8, "histRecPsi2SPtCut4Rebin", ptBinsRun3); 
+    TH1D *histRecPsi2SPtCut4Rebin = (TH1D*) histRecPsi2SPtCut4 -> Rebin(nPtBins, "histRecPsi2SPtCut4Rebin", ptBinsRun3); 
     SetHistogram(histRecPsi2SPtCut4Rebin, 880, 1, 20, 0.8);
 
-    TH1D *histAxePsi2SPtCut1 = new TH1D("histAxePsi2SPtCut1", "", 8, ptBinsRun3);
+    TH1D *histAxePsi2SPtCut1 = new TH1D("histAxePsi2SPtCut1", "", nPtBins, ptBinsRun3);
     histAxePsi2SPtCut1 -> Divide(histRecPsi2SPtCut1Rebin, histGenPsi2SPtRebin, 1, 1, "B");
     SetHistogram(histAxePsi2SPtCut1, 633, 1, 20, 0.8);
 
-    TH1D *histAxePsi2SPtCut2 = new TH1D("histAxePsi2SPtCut2", "", 8, ptBinsRun3);
+    TH1D *histAxePsi2SPtCut2 = new TH1D("histAxePsi2SPtCut2", "", nPtBins, ptBinsRun3);
     histAxePsi2SPtCut2 -> Divide(histRecPsi2SPtCut2Rebin, histGenPsi2SPtRebin, 1, 1, "B");
     SetHistogram(histAxePsi2SPtCut2, 862, 1, 20, 0.8);
 
-    TH1D *histAxePsi2SPtCut3 = new TH1D("histAxePsi2SPtCut3", "", 8, ptBinsRun3);
+    TH1D *histAxePsi2SPtCut3 = new TH1D("histAxePsi2SPtCut3", "", nPtBins, ptBinsRun3);
     histAxePsi2SPtCut3 -> Divide(histRecPsi2SPtCut3Rebin, histGenPsi2SPtRebin, 1, 1, "B");
     SetHistogram(histAxePsi2SPtCut3, 417, 1, 20, 0.8);
 
-    TH1D *histAxePsi2SPtCut4 = new TH1D("histAxePsi2SPtCut4", "", 8, ptBinsRun3);
+    TH1D *histAxePsi2SPtCut4 = new TH1D("histAxePsi2SPtCut4", "", nPtBins, ptBinsRun3);
     histAxePsi2SPtCut4 -> Divide(histRecPsi2SPtCut4Rebin, histGenPsi2SPtRebin, 1, 1, "B");
     SetHistogram(histAxePsi2SPtCut4, 880, 1, 20, 0.8);
 
@@ -740,6 +747,15 @@ void accxeff() {
     canvasAxePsi2SRap -> SaveAs(Form("plots/Axe_Psi2S_rap_%s_%s.pdf", productionName.c_str(), associationType.c_str()));
     canvasRatioAxePt -> SaveAs(Form("plots/Axe_ratio_pt_%s_%s.pdf", productionName.c_str(), associationType.c_str()));
     canvasRatioRap -> SaveAs(Form("plots/Axe_ratio_rap_%s_%s.pdf", productionName.c_str(), associationType.c_str()));
+
+    std::ofstream outfile (Form("ratio_pt_%s_%s.txt", productionName.c_str(), associationType.c_str()));
+    outfile << "x_min x_max val stat syst " << std::endl; 
+    for (int iPt = 0;iPt < nPtBins;iPt++) {
+        double ratio = histRatioAxePtCut3 -> GetBinContent(iPt+1);
+        double errRatio = histRatioAxePtCut3 -> GetBinError(iPt+1);
+        outfile << ptMinRun3[iPt] << " " << ptMaxRun3[iPt] << " " << ratio << " " << errRatio << " 0.00 0.00" << std::endl;
+    }
+    outfile.close();
 
 
     TFile *fOut = new TFile(Form("Axe_%s_%s.root", productionName.c_str(), associationType.c_str()), "RECREATE");
