@@ -1,0 +1,17 @@
+inputs:
+  path: /Users/lucamicheletti/cernbox/JPSI/Run3/MC
+  production: LHC24l7
+  prefix: AnalysisResults_dq_efficiency
+  assocType: time_association
+  sigGen: Psi2S
+  sigRec: mumuFromPsi2S
+  cuts: [matchedMchMid]
+  hlistGen: analysis-same-event-pairing/output
+  listGen: MCTruthGen
+  histGen: Pt_Rapidity
+  hlistRec: analysis-same-event-pairing/output
+  listRec: PairsMuonSEPM
+  histRec: Mass_Pt_Rapidity
+
+outputs:
+  path: /Users/lucamicheletti/cernbox/JPSI/Run3/MC
