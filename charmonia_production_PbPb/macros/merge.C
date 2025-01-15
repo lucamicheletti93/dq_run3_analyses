@@ -24,6 +24,10 @@ void merge() {
     /* std::string pathToFiles = "/Users/saragaretti/cernbox/JPsi_Psi2S_ratio/Train_321538/data/LHC23_pass4_pTcut_1GeV_new";
     std::ifstream fRunList(Form("%s/run_list_K.txt", pathToFiles.c_str())); */
     std::ofstream missingRunsFile(Form("%s/missing_runs.txt", pathToFiles.c_str()));
+    //string muonCut = "muonLowPt10SigmaPDCA";
+    string muonCut = "muonLowPt210SigmaPDCA";
+    //string muonCut = "muonLowPt510SigmaPDCA";
+    //string muonCut = "matchedMchMid";
 
     std::vector<int> runList;
     int runNumber;
@@ -113,8 +117,7 @@ void merge() {
     }
     for (const auto& run : runList) {
         cout << "index: " << index << endl;
-        TFile* fIn = new TFile(Form("%s/%d/Histograms_matchedMchMid.root", pathToFiles.c_str(), run), "READ");
-        //TFile* fIn = new TFile(Form("%s/%d/Histograms_muonLowPt510SigmaPDCA.root", pathToFiles.c_str(), run), "READ");
+        TFile* fIn = new TFile(Form("%s/%d/Histograms_%s.root", pathToFiles.c_str(), run, muonCut.c_str()), "READ");
         std::cout << "Doing the merging of run: " << run << std::endl;
         if (fIn->IsZombie()) {
             std::cout << "Run " << run << " -> ISSUE!" << std::endl;
