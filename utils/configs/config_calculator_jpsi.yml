@@ -1,6 +1,6 @@
 ---
 lumi:
-  fInName: /Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2023/LHC23_pass4_skimmed_minitree/AnalysisResults.root
+  fInName: /Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data/2022/LHC22_pass7_skimmed_minitree/AnalysisResults.root
 
 yields:
   fInName: /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC23_pass4_skimmed/unbinned_fit/output__minitree_Pt_2_20_CB2_CB2_VWG__2.4_4.6.root
@@ -36,6 +36,12 @@ simpleRatio:
   #crossSecRun2: [1771.2, 1113.3, 644.62, 350.87, 195.33, 112.4, 49.92, 19.09, 7.79, 3.44, 1.69, 0.94]
   #statCrossSecRun2: [13.83, 9.19, 5.84, 3.81, 2.61, 1.81, 0.78, 0.43, 0.27, 0.18, 0.13, 0.11]
   #labelRun2: "J/#psi, pp@13TeV"
+
+luminosity:
+  sigmaTVX: 59400000000
+  path: /Users/lucamicheletti/GITHUB/dq_run3_analyses/psi2S_jpsi_ratio/run_lists/2024
+  trigger: fDiMuon
+  periods: [LHC24af, LHC24ag, LHC24aj, LHC24al, LHC24am]
 
 output:
   fOutName: "/Users/lucamicheletti/GITHUB/dq_run3_analyses/psi2S_jpsi_ratio/results/cross_section_jpsi_LHC23_pass4_skimmed"

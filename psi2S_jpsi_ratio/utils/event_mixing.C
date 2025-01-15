@@ -196,6 +196,25 @@ void event_mixing() {
     legendIntMassDiMuon -> AddEntry(histMassIntDiMuonBkgSubtrSEPM, "(SE PM) - (ME PM)", "PL");
     legendIntMassDiMuon -> Draw("SAME");
 
+    TCanvas *canvasIntMassDiMuonBkgNorm1 = new TCanvas("canvasIntMassDiMuonBkgNorm1", "fDiMuon events", 800, 600);
+    gStyle -> SetOptStat(false);
+    gPad -> SetLogy(true);
+    histMassIntDiMuonSEPM -> SetTitle("");
+    histMassIntDiMuonSEPM -> GetXaxis() -> SetTitle("#it{M}_{#mu#mu} (GeV/c^{2})");
+    histMassIntDiMuonSEPM -> GetXaxis() -> SetRangeUser(1.9, 5);
+    histMassIntDiMuonSEPM -> GetYaxis() -> SetRangeUser(1e3, 1e6);
+    histMassIntDiMuonSEPM -> Draw("EP");
+    histMassIntSingleMuLowMEPM_BkgNorm1 -> Draw("EP SAME");
+    histMassIntDiMuonBkgSubtrSEPM -> Draw("EP SAME");
+
+    TLegend *legendIntMassDiMuonBkgNorm1 = new TLegend(0.50, 0.70, 0.70, 0.89);
+    SetLegend(legendIntMassDiMuonBkgNorm1);
+    legendIntMassDiMuonBkgNorm1 -> AddEntry(histMassIntDiMuonSEPM, "SE PM - fDiMuon", "PL");
+    legendIntMassDiMuonBkgNorm1 -> AddEntry(histMassIntSingleMuLowMEPM_BkgNorm1, "ME PM - fSingleMuLow", "PL");
+    legendIntMassDiMuonBkgNorm1 -> AddEntry(histMassIntDiMuonBkgSubtrSEPM, "(SE PM) - (ME PM)", "PL");
+    legendIntMassDiMuonBkgNorm1 -> Draw("SAME");
+
+
     TCanvas *canvasIntMassSingleMuLow = new TCanvas("canvasIntMassSingleMuLow", "fSingleMuLow events", 800, 600);
     gStyle -> SetOptStat(false);
     gPad -> SetLogy(true);
@@ -219,6 +238,7 @@ void event_mixing() {
     // Pt differential spectrum
     //ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo ooOOoo//
     TCanvas *canvasMassPt = new TCanvas("canvasMassPt", "SEPM signal only", 1800, 1800); canvasMassPt -> Divide(5, 3);
+    TCanvas *canvasMassLowPt = new TCanvas("canvasMassLowPt", "SEPM signal only", 1800, 300); canvasMassLowPt -> Divide(5, 1);
     TCanvas *canvasMassPtBkgs = new TCanvas("canvasMassPtBkgs", "comparison OS vs LS / ME backgrounds", 1800, 1800); canvasMassPtBkgs -> Divide(5, 3);
     TCanvas *canvasMassPtSideBands = new TCanvas("canvasMassPtSideBands", "comparison OS vs LS / ME backgrounds", 1800, 1800); canvasMassPtSideBands -> Divide(5, 3);
     //TCanvas *canvasMassPtRatio = new TCanvas("canvasMassPtRatio", "Ratio OS vs LS / ME backgrounds", 1800, 1800); canvasMassPtRatio -> Divide(5, 3);
@@ -294,6 +314,7 @@ void event_mixing() {
         gStyle -> SetOptStat(false);
         gPad -> SetLogy(false);
         histMassPtDiMuonSEPM -> SetTitle(Form("%2.1f < #it{p}_{T} < %2.1f GeV/#it{c}", minPtBins[iPt], maxPtBins[iPt]));
+        histMassPtDiMuonSEPM -> GetXaxis() -> SetTitle("#it{M} (GeV/c^{2})");
         histMassPtDiMuonSEPM -> Draw("EP");
         histMassPtDiMuonSEPPMM -> Draw("EP SAME");
 
@@ -302,6 +323,21 @@ void event_mixing() {
         legendMassPt -> AddEntry(histMassPtDiMuonSEPM, "OS [fDiMuon]", "PL");
         legendMassPt -> AddEntry(histMassPtDiMuonSEPPMM, "LS [fDiMuon]", "PL");
         legendMassPt -> Draw("SAME");
+
+        if (iPt < 5) {
+            canvasMassLowPt -> cd(iPt+1);
+            gStyle -> SetOptStat(false);
+            gPad -> SetLogy(false);
+            histMassPtDiMuonSEPM -> SetTitle(Form("%2.1f < #it{p}_{T} < %2.1f GeV/#it{c}", minPtBins[iPt], maxPtBins[iPt]));
+            histMassPtDiMuonSEPM -> Draw("EP");
+            histMassPtDiMuonSEPPMM -> Draw("EP SAME");
+
+            TLegend *legendMassPt = new TLegend(0.60, 0.70, 0.80, 0.89);
+            SetLegend(legendMassPt);
+            legendMassPt -> AddEntry(histMassPtDiMuonSEPM, "OS [fDiMuon]", "PL");
+            legendMassPt -> AddEntry(histMassPtDiMuonSEPPMM, "LS [fDiMuon]", "PL");
+            legendMassPt -> Draw("SAME");
+        }
 
         //------------------------------------------------------//
         // Plot mass histo vs pT for DiMuon only with backgrounds
@@ -367,8 +403,11 @@ void event_mixing() {
         fOut -> cd();
         histMassPtDiMuonBkgSubtrSEPM -> Write();
     }
+    canvasIntMassDiMuonBkgNorm1 -> SaveAs("figures/histIntMassDiMuonBkgNorm1.pdf");
     canvasMassPt -> SaveAs("figures/histMassPt.pdf");
+    canvasMassLowPt -> SaveAs("figures/histMassLowPt.pdf");
     canvasMassPtBkgs -> SaveAs("figures/histMassPtBkgs.pdf");
+
     //fOut -> Close();
 
 
