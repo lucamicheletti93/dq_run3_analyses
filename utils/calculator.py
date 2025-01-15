@@ -51,6 +51,8 @@ def cross_section(inputCfg):
     histLumi.GetYaxis().SetTitle("Lumi. (nb^{-1})")
     histLumi.SetBinContent(1, limiInt)
 
+    exit()
+
     # Raw yields
     fInRawYields = ROOT.TFile(inputCfg["yields"]["fInName"], "READ")
     histRawYield = fInRawYields.Get(inputCfg["yields"]["histName"])
@@ -192,6 +194,42 @@ def simple_ratio(inputCfg):
 
     input()
 
+def luminosity(inputCfg):
+    """
+    function to compute luminosity for triggered data -> outout of check_triggers.C
+    """
+    LoadStyle()
+
+    sigmaTVX = inputCfg["luminosity"]["sigmaTVX"] # pb
+    path = inputCfg["luminosity"]["path"]
+    periods = inputCfg["luminosity"]["periods"]
+    trigger = inputCfg["luminosity"]["trigger"]
+
+    fInNames = [f'{path}/{period}_{trigger}_trigger_summary.root' for period in periods]
+
+    lumiInt = 0
+    for iPeriod, fInName in enumerate(fInNames):
+        counterTVX = 0
+        counterScalTrig = 0
+        counterSelTrig = 0
+        fIn = ROOT.TFile(fInName, "READ")
+        histCounterTVX = fIn.Get("histCounterTVX")
+        histCounterScalTrig = fIn.Get("histCounterScalTrig")
+        histCounterSelTrig = fIn.Get("histCounterSelTrig")
+
+        for iRun in range(0, int(histCounterTVX.GetEntries())):
+            counterTVX += histCounterTVX.GetBinContent(iRun+1)
+            counterScalTrig += histCounterScalTrig.GetBinContent(iRun+1)
+            counterSelTrig += histCounterSelTrig.GetBinContent(iRun+1)
+
+        lumi = (counterTVX * (counterScalTrig / counterSelTrig)) / sigmaTVX # pb
+        print(f'{periods[iPeriod]} = {lumi} pb-1')
+        lumiInt += lumi
+    print(f'--> luminosity LHC24 = {lumiInt}')
+
+
+
+
 
 
 ### ### ###
@@ -200,6 +238,7 @@ def main():
     parser.add_argument('cfgFileName', metavar='text', default='config.yml', help='config file name')
     parser.add_argument("--cross_section", help="Compute the cross section for skimmed events", action="store_true")
     parser.add_argument("--simple_ratio", help="Compute the simple ratio for skimmed events", action="store_true")
+    parser.add_argument("--luminosity", help="Compute the luminosity for skimmed events", action="store_true")
     args = parser.parse_args()
 
     print('Loading task configuration: ...', end='\r')
@@ -212,5 +251,8 @@ def main():
     
     if args.simple_ratio:
         simple_ratio(inputCfg)
+    
+    if args.luminosity:
+        luminosity(inputCfg)
 
 main()
