@@ -45,8 +45,8 @@ def axe(config):
     histPtGen = histPtRapGen.ProjectionX(f'{sigGen}_Pt')
     histRapGen = histPtRapGen.ProjectionY(f'{sigGen}_Rap')
 
-    ptBinsRun3 = array.array('d', [0.0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 15, 20])
-    rapBinsRun3 = array.array('d', [2.50, 2.75, 3.00, 3.25, 3.50, 3.75, 4.00])
+    ptBinsRun3 = array.array('d', config["inputs"]["ptBins"])
+    rapBinsRun3 = array.array('d', config["inputs"]["rapBins"])
 
     histPtRebinGen = histPtGen.Rebin(len(ptBinsRun3) - 1, f'{histPtGen.GetName()}_rebin', ptBinsRun3)
     histRapRebinGen = histRapGen.Rebin(len(rapBinsRun3) - 1, f'{histRapGen.GetName()}_rebin', rapBinsRun3)
@@ -159,13 +159,21 @@ def axe(config):
     ROOT.gPad.SetLogy(False)
     histRapRebinAxes[0].Draw()
     
-    
-
     canvasAxe.cd(3)
     ROOT.gPad.SetLogy(False)
+    histPtRebinAxes[0].GetYaxis().SetRangeUser(0.001, 1.2)
     histPtRebinAxes[0].Draw()
 
     canvasAxe.Update()
+
+    print("x_min x_max val stat syst ")
+    for iPt in range(len(ptBinsRun3)):
+        x_min = histPtRebinAxes[0].GetBinLowEdge(iPt+1)
+        x_max = histPtRebinAxes[0].GetBinLowEdge(iPt+1) + histPtRebinAxes[0].GetBinWidth(iPt+1)
+        val = histPtRebinAxes[0].GetBinContent(iPt+1)
+        stat = histPtRebinAxes[0].GetBinError(iPt+1)
+        syst = 0.0
+        print("{:3.2f} {:3.2f} {:3.2f} {:3.2f} {:3.2f} ".format(x_min, x_max, val, stat, syst))
 
     input()
 
