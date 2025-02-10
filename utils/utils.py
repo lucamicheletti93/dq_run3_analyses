@@ -89,6 +89,56 @@ def merge(inputCfg):
         #print("hadd {}/merged_files/{}/AnalysisResults.root {}/{}/*/AnalysisResults.root".format(fInPath, run, fInPath, run))
         os.system(f'hadd {fInPath}/merged_files/{run}/{file_type} {fInPath}/{run}/*/{file_type}')
 
+def merge_ttree(inputCfg):
+    fInPath = inputCfg["input"]["file_path"]
+    input_file = os.path.join(fInPath, "AO2D.root")
+    output_file = os.path.join(fInPath, "AO2D_merged.root")
+
+    root_file = ROOT.TFile.Open(input_file, "READ")
+    if not root_file or root_file.IsZombie():
+        print(f"Error: impossible to open file {input_file}")
+        return
+
+    df_dirs = [key.GetName() for key in root_file.GetListOfKeys() if key.GetName().startswith("DF")]
+    if not df_dirs:
+        print("None DF folder DF found in file AO2D.root.")
+        return
+
+    print(f"{len(df_dirs)} folders DF* found: {df_dirs}")
+
+    tree_name = "O2rtdimuonall"
+
+    root_file.cd(df_dirs[0])  
+    if not root_file.Get(f"{df_dirs[0]}/{tree_name}"):
+        print(f"Error: TTree '{tree_name}' doesn't exist in {df_dirs[0]}")
+        return
+
+    print(f"TTree '{tree_name}' found")
+
+    temp_files = [] 
+
+    for df in df_dirs:
+        output_temp = os.path.join(fInPath, f"{df}_{tree_name}.root")
+        temp_files.append(output_temp)
+
+        output_root = ROOT.TFile(output_temp, "RECREATE")
+        tree = root_file.Get(f"{df}/{tree_name}")
+        if tree:
+            output_root.cd()
+            tree.CloneTree().Write() 
+            output_root.Close()
+        else:
+            print(f"{df}/{tree_name} Tree not found!")
+
+    hadd_command = f"hadd -f {output_file} {' '.join(temp_files)}"
+    print(f"Executing: {hadd_command}")
+    os.system(hadd_command)
+
+    for temp in temp_files:
+        os.remove(temp)
+
+    print(f"Merging completed. File saved in: {output_file}")
+
 ### ### ###
 def main():
     parser = argparse.ArgumentParser(description='Arguments to pass')
