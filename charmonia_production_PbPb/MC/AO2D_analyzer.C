@@ -76,9 +76,9 @@ void AO2D_analyzer() {
 
     TH2F *histMassPt = new TH2F("histMassPt", "", nMassBins, minMassRange, maxMassRange, 100, 0, 5);
     string pathIn = "/Users/saragaretti/cernbox/JPsi_Psi2S_ratio/MC/inputShapes_0.7";
-    string pathPlots = "/Users/saragaretti/dq_fitter_tails/inputShapes/plots_prova";
+    string pathPlots = "/Users/saragaretti/dq_fitter_tails/inputShapes/plots";
 
-	TFile *fIn = new TFile(Form("%s/AO2D_merged_prova.root",pathIn.c_str()),"READ");
+	TFile *fIn = new TFile(Form("%s/AO2D_merged.root",pathIn.c_str()),"READ");
 
     if (!fIn || fIn->IsZombie()) {
         cout << "Error: impossible to open the file AO2D_merged.root" << endl;
