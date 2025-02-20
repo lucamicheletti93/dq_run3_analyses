@@ -126,62 +126,73 @@ void AO2D_analyzer() {
 
     //--------------------------------------------------- Histograms  ---------------------------------------------------//
     TH1F *hMass = new TH1F("hMass", "fMass", 100, 0, 10);
-    TH2F *histPtRapRec = new TH2F("histPtRapRec", "p_T vs rapidity", 100, 0, 20, 100, 2.5, 4);
-    TH2F *histPtRapGen1 = new TH2F("histPtRapGen1", "p_T vs rapidity", 100, 0, 20, 100, 2.5, 4);
-    TH2F *histPtRapGen2 = new TH2F("histPtRapGen2", "p_T vs rapidity", 100, 0, 20, 100, 2.5, 4);
-    TH2F *histPtRapDimuonGen = new TH2F("histPtRapDimuonGen", "p_T vs rapidity", 100, 0, 20, 100, 2.5, 4);
+    TH2F *histPtRapRec = new TH2F("histPtRapRec", "p_T vs rapidity", 80, 0, 20, 60, 2.5, 4);
+    TH2F *histPtRapGen1 = new TH2F("histPtRapGen1", "p_T vs rapidity", 80, 0, 20, 60, 2.5, 4);
+    TH2F *histPtRapGen2 = new TH2F("histPtRapGen2", "p_T vs rapidity", 80, 0, 20, 60, 2.5, 4);
+    TH2F *histPtRapGen = new TH2F("histPtRapGen", "p_T vs rapidity", 80, 0, 20, 60, 2.5, 4);
 
-    TH1F *hPt1 = new TH1F("hPt1", "Pt Muon 1", 100, 0, 20);
-    TH1F *hPt2 = new TH1F("hPt2", "Pt Muon 2", 100, 0, 20);
-    TH1F *hPtDimuonRec = new TH1F("hPtDimuonRec", "Pt Dimuon", 100, 0, 20);
-    TH1F *hRap1 = new TH1F("hRap1", "Rapidity Muon 1", 100, 2.5,4);
-    TH1F *hRap2 = new TH1F("hRap2", "Rapidity Muon 2", 100, 2.5,4);
+    TH1F *hPt1 = new TH1F("hPt1", "Pt Muon 1", 80, 0, 20);
+    TH1F *hPt2 = new TH1F("hPt2", "Pt Muon 2", 80, 0, 20);
+    TH1F *hPtDimuonRec = new TH1F("hPtDimuonRec", "Pt Dimuon", 80, 0, 20);
+    TH1F *hPtDimuonGen = new TH1F("hPtDimuonGen", "Pt Dimuon", 80, 0, 20);
+    TH1F *hPtGenAll = new TH1F("hPtGenAll", "Pt Dimuon", 80, 0, 20);
+    TH1F *hRap1 = new TH1F("hRap1", "Rapidity Muon 1", 60, 2.5,4);
+    TH1F *hRap2 = new TH1F("hRap2", "Rapidity Muon 2", 60, 2.5,4);
     TH1F *hEta1 = new TH1F("hEta1", "Eta Muon 1", 100, -4, -2.5);
     TH1F *hEta2 = new TH1F("hEta2", "Eta Muon 2", 100, -4, -2.5);
-    TH1F *hRapDimuonRec = new TH1F("hRapDimuonRec", "Rapidity Dimuon Rec", 100, 2.5,4);
+    TH1F *hRapDimuonRec = new TH1F("hRapDimuonRec", "Rapidity Dimuon Rec", 60, 2.5,4);
     TH1F *hEtaDimuonRec = new TH1F("hEtaDimuonRec", "Eta Dimuon Rec", 100, -4, -2.5);
     TH1F *hPhiDimuonRec = new TH1F("hPhiDimuonRec", "Phi Dimuon Rec", 50, -3, 3);
-    TH1F *hRapDimuonGen = new TH1F("hRapDimuonGen", "Rapidity Dimuon Gen", 100, 2.5,4);
+    TH1F *hRapDimuonGen = new TH1F("hRapDimuonGen", "Rapidity Dimuon Gen", 60, 2.5,4);
     TH1F *hEtaDimuonGen = new TH1F("hEtaDimuonGen", "Eta Dimuon Gen", 100, -4, -2.5);
     TH1F *hPhiDimuonGen = new TH1F("hPhiDimuonGen", "Phi Dimuon Gen", 50, -3, 3);
-    TH1F *hRapRec = new TH1F("hRapRec", "Rapidity Rec", 100, 2.5,4);
-
-    TH1F *hRapRatio = new TH1F("hRapRatio", "Rapidity ratio", 100, 2.5,4);
-    TH1F *hPtRatio = new TH1F("hPtRatio", "Pt ratio", 100, 2.5,4);
+    TH1F *hRapRec = new TH1F("hRapRec", "Rapidity Rec", 60, 2.5,4);
 
     //--------------------------------------------------- Variables  ---------------------------------------------------//
     float px1, px2, py1, py2, pz1, pz2, rap1, rap2;
+    float px1All, px2All, py1All, py2All, pz1All, pz2All;
     float px1Rec, px2Rec, py1Rec, py2Rec, pz1Rec, pz2Rec;
     float rapRec, pxRec, pyRec, pzRec, fE;
 
     //--------------------------------------------------- Loop on tree entries  ---------------------------------------------------//
-
     for (int iEntry = 0;iEntry < tree -> GetEntries();iEntry++) {
         tree -> GetEntry(iEntry);
         //Apply mask for event selection
-        if (!eventSelection(fSelection)) continue;
+        px1All = fPtMC1*TMath::Cos(fPhiMC1);
+        px2All = fPtMC2*TMath::Cos(fPhiMC2);
+        py1All = fPtMC1*TMath::Sin(fPhiMC1);
+        py2All = fPtMC2*TMath::Sin(fPhiMC2);
+        pz1All = TMath::Sqrt(pow(fEMC1,2) - pow(fPtMC1,2) - pow(0.1057,2));
+        pz2All = TMath::Sqrt(pow(fEMC2,2) - pow(fPtMC2,2) - pow(0.1057,2));
+        //cout << "fPtMC1: " << fPtMC1 << ", fPtMC2: " << fPtMC2 << ", fEMC1: " << fEMC1 << ", fEMC2: " << fEMC2 << endl;
+        TLorentzVector muon1All(px1All, py1All, pz1All, fEMC1);
+        TLorentzVector muon2All(px2All, py2All, pz2All, fEMC2);
+        TLorentzVector dimuonGenAll = muon1All + muon2All;
+        hPtGenAll->Fill(dimuonGenAll.Pt());
+        //if (!eventSelection(fSelection)) continue;
         //Select signal
         if (fMcDecision > 0 && fSign == 0) {
             //Apply cuts on Pt and Eta for Generated
-            if (fPtMC1 > 0 && fPtMC1 < 20 && fPtMC2 > 0 && fPtMC2 < 20 && TMath::Abs(fEtaMC1) > 2.5 && TMath::Abs(fEtaMC1) < 4 && TMath::Abs(fEtaMC2) > 2.5 && TMath::Abs(fEtaMC2) < 4) {
-                px1 = fPtMC1*TMath::Cos(fPhiMC1);
-                px2 = fPtMC2*TMath::Cos(fPhiMC2);
-                py1 = fPtMC1*TMath::Sin(fPhiMC1);
-                py2 = fPtMC2*TMath::Sin(fPhiMC2);
-                pz1 = TMath::Sqrt(pow(fEMC1,2) - pow(fPtMC1,2) - pow(0.1057,2));
-                pz2 = TMath::Sqrt(pow(fEMC2,2) - pow(fPtMC2,2) - pow(0.1057,2));
-                //cout << "fPtMC1: " << fPtMC1 << ", fPtMC2: " << fPtMC2 << ", fEMC1: " << fEMC1 << ", fEMC2: " << fEMC2 << endl;
-                TLorentzVector muon1(px1, py1, pz1, fEMC1);
-                TLorentzVector muon2(px2, py2, pz2, fEMC2);
-                TLorentzVector dimuonGen = muon1 + muon2;
-                hRapDimuonGen->Fill(dimuonGen.Rapidity());
-                ROOT::Math::PtEtaPhiMVector muon1Eta(fPtMC1, fEtaMC1, fPhiMC1, 0.1057);
-                ROOT::Math::PtEtaPhiMVector muon2Eta(fPtMC2, fEtaMC2, fPhiMC2, 0.1057);
-                rap1 = muon1.Rapidity();
-                rap2 = muon2.Rapidity();
-                histPtRapGen1->Fill(fPtMC1, rap1);
-                histPtRapGen2->Fill(fPtMC2, rap2);
-                histPtRapDimuonGen->Fill(dimuonGen.Pt(), dimuonGen.Rapidity());
+            px1 = fPtMC1*TMath::Cos(fPhiMC1);
+            px2 = fPtMC2*TMath::Cos(fPhiMC2);
+            py1 = fPtMC1*TMath::Sin(fPhiMC1);
+            py2 = fPtMC2*TMath::Sin(fPhiMC2);
+            pz1 = TMath::Sqrt(pow(fEMC1,2) - pow(fPtMC1,2) - pow(0.1057,2));
+            pz2 = TMath::Sqrt(pow(fEMC2,2) - pow(fPtMC2,2) - pow(0.1057,2));
+            //cout << "fPtMC1: " << fPtMC1 << ", fPtMC2: " << fPtMC2 << ", fEMC1: " << fEMC1 << ", fEMC2: " << fEMC2 << endl;
+            TLorentzVector muon1(px1, py1, pz1, fEMC1);
+            TLorentzVector muon2(px2, py2, pz2, fEMC2);
+            TLorentzVector dimuonGen = muon1 + muon2;
+            hRapDimuonGen->Fill(dimuonGen.Rapidity());
+            ROOT::Math::PtEtaPhiMVector muon1Eta(fPtMC1, fEtaMC1, fPhiMC1, 0.1057);
+            ROOT::Math::PtEtaPhiMVector muon2Eta(fPtMC2, fEtaMC2, fPhiMC2, 0.1057);
+            rap1 = muon1.Rapidity();
+            rap2 = muon2.Rapidity();
+            histPtRapGen1->Fill(fPtMC1, rap1);
+            histPtRapGen2->Fill(fPtMC2, rap2);
+            if (dimuonGen.Rapidity() > 2.5 && dimuonGen.Rapidity() < 4) {
+                histPtRapGen->Fill(dimuonGen.Pt(), dimuonGen.Rapidity());
+                hPtDimuonGen->Fill(dimuonGen.Pt());
                 hPt1->Fill(fPtMC1);
                 hPt2->Fill(fPtMC2);
                 hRap1->Fill(rap1);
@@ -192,8 +203,17 @@ void AO2D_analyzer() {
                 hEtaDimuonGen->Fill(dimuonGenEta.Eta());
                 hPhiDimuonGen->Fill(dimuonGenEta.Phi());
             }
+        }
+    }
+
+    for (int iEntry = 0;iEntry < tree -> GetEntries();iEntry++) {
+        tree -> GetEntry(iEntry);
+        //Apply mask for event selection
+        if (!eventSelection(fSelection)) continue;
+        //Select signal
+        if (fMcDecision > 0 && fSign == 0) {
             //Apply cuts on Pt and Eta for Reconstructed
-            if (fPt > 0 && fPt < 20 && TMath::Abs(fEta) > 2.5 && TMath::Abs(fEta) < 4 && fPt1 > 0 && fPt1 < 20 && TMath::Abs(fEta1) > 2.5 && TMath::Abs(fEta1) < 4 && fPt2 > 0 && fPt2 < 20 && TMath::Abs(fEta2) > 2.5 && TMath::Abs(fEta2) < 4) {
+            if (TMath::Abs(fEta1) > 2.5 && TMath::Abs(fEta1) < 4 && TMath::Abs(fEta2) > 2.5 && TMath::Abs(fEta2) < 4) {
                 px1Rec = fPt1*TMath::Cos(fPhi1);
                 px2Rec = fPt2*TMath::Cos(fPhi2);
                 py1Rec = fPt1*TMath::Sin(fPhi1);
@@ -206,14 +226,17 @@ void AO2D_analyzer() {
                 TLorentzVector muon1Rec(px1Rec, py1Rec, pz1Rec, E1Rec);
                 TLorentzVector muon2Rec(px2Rec, py2Rec, pz2Rec, E2Rec);
                 TLorentzVector dimuonRec = muon1Rec + muon2Rec;
-                histMassPt -> Fill(fMass, fPt);
-                hMass->Fill(fMass);
-                ROOT::Math::PtEtaPhiMVector dimuonRecEta(fPt, fEta, fPhi, 0.2114);
-                histPtRapRec->Fill(dimuonRec.Pt(), dimuonRec.Rapidity());
-                hPtDimuonRec->Fill(dimuonRec.Pt());
-                hEtaDimuonRec->Fill(dimuonRecEta.Eta());
-                hRapDimuonRec->Fill(dimuonRec.Rapidity());
-                hPhiDimuonRec->Fill(dimuonRec.Phi());
+                if (dimuonRec.Rapidity() > 2.5 && dimuonRec.Rapidity() < 4) {
+                    histMassPt -> Fill(fMass, fPt);
+                    hMass->Fill(fMass);
+                    ROOT::Math::PtEtaPhiMVector dimuonRecEta(fPt, fEta, fPhi, 0.2114);
+
+                    histPtRapRec->Fill(dimuonRec.Pt(), dimuonRec.Rapidity());
+                    hPtDimuonRec->Fill(dimuonRec.Pt());
+                    hEtaDimuonRec->Fill(dimuonRecEta.Eta());
+                    hRapDimuonRec->Fill(dimuonRec.Rapidity());
+                    hPhiDimuonRec->Fill(dimuonRec.Phi());
+                }
             }
         }
     }
@@ -252,12 +275,14 @@ void AO2D_analyzer() {
     hPhiDimuonGen->SetStats(true);
     histPtRapGen1->SetStats(true);
     histPtRapGen2->SetStats(true);
-    histPtRapDimuonGen->SetStats(true);
+    histPtRapGen->SetStats(true);
+    hPtDimuonGen ->SetStats(true);
     histPtRapRec->SetStats(true);
     hPtDimuonRec->SetStats(true);
     hEtaDimuonRec->SetStats(true);
     hRapDimuonRec->SetStats(true);
     hPhiDimuonRec->SetStats(true);
+    hPtGenAll->SetStats(true);
 
     //--------------------------------------------------- Create Canvases  ---------------------------------------------------//
 
@@ -330,17 +355,20 @@ void AO2D_analyzer() {
     c17->SaveAs(Form("%s/hPhiDimuonRec.pdf", pathPlots.c_str()));
 
     TCanvas *c18 = new TCanvas("c18", "PtRapGen", 800, 600);
-    histPtRapDimuonGen->Draw("COLZ");
-    c18->SaveAs(Form("%s/histPtRapDimuonGen.pdf", pathPlots.c_str()));
+    histPtRapGen->Draw("COLZ");
+    c18->SaveAs(Form("%s/histPtRapGen.pdf", pathPlots.c_str()));
 
     //--------------------------------------------------- Save all plots in allPlots.root ---------------------------------------------------//
+    hPtDimuonRec->SetOption("EP");
+    hPtDimuonGen->SetOption("EP");
+    hPtGenAll->SetOption("EP");
 
     TFile *fOut = new TFile(Form("%s/allPlots.root", pathPlots.c_str()), "RECREATE");
     histMassPt->Write("histMassPt");
     hMass->Write("hMass");
     hPt1->Write("hPt1");
     hPt2->Write("hPt2");
-    hPtDimuonRec->Write("hPtDimuonRec");
+    hPtDimuonRec->Write("hPtRec");
     hRap1->Write("hRap1");
     hRap2->Write("hRap2");
     hEta1->Write("hEta1");
@@ -354,7 +382,9 @@ void AO2D_analyzer() {
     hEtaDimuonRec->Write("hEtaDimuonRec");
     hRapDimuonRec->Write("hRapDimuonRec");
     hPhiDimuonRec->Write("hPhiDimuonRec");
-    histPtRapDimuonGen->Write("histPtRapDimuonGen");
+    histPtRapGen->Write("histPtRapGen");
+    hPtDimuonGen->Write("hPtGen");
+    hPtGenAll->Write("hPtGenAll");
 
     fOut->Close();
 
@@ -373,7 +403,7 @@ void AO2D_analyzer() {
     hPhiDimuonRec->Write("hPhiDimuonRec");
     hEtaDimuonGen->Write("hEtaDimuonGen");
     hPhiDimuonGen->Write("hPhiDimuonGen");
-    histPtRapDimuonGen->Write("histPtRapDimuonGen");
+    histPtRapGen->Write("histPtRapGen");
 
     fIn->Close();
     fOut2->Close();
