@@ -29,6 +29,7 @@
 #include "TTreeReader.h"
 #include "TLine.h"
 #include "TGaxis.h"
+#include <TRandom3.h>
 #include <ROOT/RDataFrame.hxx>
 
 #endif
@@ -65,38 +66,26 @@ inline bool eventSelection(uint64_t selection) {
     return (selection & kTriggerMask) == kTriggerMask;
 }
 
-void resolution_smearer(double smearing = 0.03) {
-    TDatabasePDG *database = TDatabasePDG::Instance();
-    int pdgCode = 13;
-    double massMu = database -> GetParticle(pdgCode) -> Mass();
+inline void SetHistogram(TH1D *hist, Color_t color, int lineWidth = 1, int markerStyle = 0) {
+    hist -> SetLineColor(color); 
+    hist -> SetLineWidth(lineWidth);
+    hist -> SetMarkerColor(color);
+    hist -> SetMarkerStyle(markerStyle);
+    hist -> SetMarkerSize(0.8);
+}
 
-    uint64_t fSelection;
-    float fMass, fPt, fEta, fTauz, fTauxy, fU2Q2, fCos2DeltaPhi, fR2EP, fR2SP, fCentFT0C = -99999;
-    float fChi2pca, fSVertex, fEMC1, fEMC2, fPt1, fPt2, fPhi1, fPhi2, fEta1, fEta2, fPtMC1, fPtMC2, fPhiMC1, fPhiMC2, fPhi, fEtaMC1, fEtaMC2 = -99999;;
-    int fSign, fSign1, fSign2 = -99999;
-    UInt_t fMcDecision;
-    Int_t fIsAmbig1, fIsAmbig2;
+double FuncCB2(double *,double *);
 
-    TH1D *histMass = new TH1D("histMass", "", 120, 2, 5); histMass -> SetLineColor(kBlack);
-    TH1D *histMassJpsiGen = new TH1D("histMassJpsiGen", "", 120, 2, 5); histMassJpsiGen -> SetLineColor(kRed);
-    TH1D *histMassJpsiRec = new TH1D("histMassJpsiRec", "", 120, 2, 5); histMassJpsiRec -> SetLineColor(kBlue);
-    TH1D *histMassJpsiSmearRec = new TH1D("histMassJpsiSmearRec", "", 120, 2, 5); histMassJpsiSmearRec -> SetLineColor(kMagenta);
+//----------------------------------------------------------------------------------------------------//
+void prepare_tree() {
+    std::vector<std::pair<double,double>> ptBins = { 
+        {0.0, 0.5}, {0.5, 1.0}, {1.0, 1.5}, {1.5, 2.0}, {2.0, 3.0}, {3.0, 4.0}, {4.0, 5.0}, 
+        {5.0, 6.0}, {6.0, 7.0}, {7.0, 8.0}, {8.0, 10.0}, {10.0, 12.0}, {12.0, 15.0}, {15.0, 20.0} 
+    };
 
-    TH1D *histNormResoPx1 = new TH1D("histNormResoPx1", " ; (#it{p}_{x}^{rec} - #it{p}_{x}^{gen}) / #it{p}_{x}^{gen}", 500, -1, 1); histNormResoPx1 -> SetLineColor(kBlack);
-    TH1D *histNormResoPy1 = new TH1D("histNormResoPy1", " ; (#it{p}_{y}^{rec} - #it{p}_{y}^{gen}) / #it{p}_{y}^{gen}", 500, -1, 1); histNormResoPy1 -> SetLineColor(kBlack);
-    TH1D *histNormResoPz1 = new TH1D("histNormResoPz1", " ; (#it{p}_{z}^{rec} - #it{p}_{z}^{gen}) / #it{p}_{z}^{gen}", 500, -1, 1); histNormResoPz1 -> SetLineColor(kBlack);
-    TH1D *histNormResoPx2 = new TH1D("histNormResoPx2", " ; (#it{p}_{x}^{rec} - #it{p}_{x}^{gen}) / #it{p}_{x}^{gen}", 500, -1, 1); histNormResoPx2 -> SetLineColor(kBlack);
-    TH1D *histNormResoPy2 = new TH1D("histNormResoPy2", " ; (#it{p}_{y}^{rec} - #it{p}_{y}^{gen}) / #it{p}_{y}^{gen}", 500, -1, 1); histNormResoPy2 -> SetLineColor(kBlack);
-    TH1D *histNormResoPz2 = new TH1D("histNormResoPz2", " ; (#it{p}_{z}^{rec} - #it{p}_{z}^{gen}) / #it{p}_{z}^{gen}", 500, -1, 1); histNormResoPz2 -> SetLineColor(kBlack);
+    TFile *fOut = new TFile("reducedAO2D_splitted.root", "RECREATE");
 
-    TH1D *histNormResoSmearPx1 = new TH1D("histNormResoSmearPx1", " ; (#it{p}_{x}^{rec} - #it{p}_{x}^{gen}) / #it{p}_{x}^{gen}", 500, -1, 1); histNormResoSmearPx1 -> SetLineColor(kRed);
-    TH1D *histNormResoSmearPy1 = new TH1D("histNormResoSmearPy1", " ; (#it{p}_{y}^{rec} - #it{p}_{y}^{gen}) / #it{p}_{y}^{gen}", 500, -1, 1); histNormResoSmearPy1 -> SetLineColor(kRed);
-    TH1D *histNormResoSmearPz1 = new TH1D("histNormResoSmearPz1", " ; (#it{p}_{z}^{rec} - #it{p}_{z}^{gen}) / #it{p}_{z}^{gen}", 500, -1, 1); histNormResoSmearPz1 -> SetLineColor(kRed);
-    TH1D *histNormResoSmearPx2 = new TH1D("histNormResoSmearPx2", " ; (#it{p}_{x}^{rec} - #it{p}_{x}^{gen}) / #it{p}_{x}^{gen}", 500, -1, 1); histNormResoSmearPx2 -> SetLineColor(kRed);
-    TH1D *histNormResoSmearPy2 = new TH1D("histNormResoSmearPy2", " ; (#it{p}_{y}^{rec} - #it{p}_{y}^{gen}) / #it{p}_{y}^{gen}", 500, -1, 1); histNormResoSmearPy2 -> SetLineColor(kRed);
-    TH1D *histNormResoSmearPz2 = new TH1D("histNormResoSmearPz2", " ; (#it{p}_{z}^{rec} - #it{p}_{z}^{gen}) / #it{p}_{z}^{gen}", 500, -1, 1); histNormResoSmearPz2 -> SetLineColor(kRed);
-
-    string pathToFile = "/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_PbPb/MC/data/AO2D.root";
+    string pathToFile = "/Users/lucamicheletti/alice/local_train_test_mc/reducedAO2D_merged.root";
     TFile *fIn = new TFile(pathToFile.c_str(), "READ");
     TIter next(fIn -> GetListOfKeys()); 
     TKey *key; 
@@ -106,51 +95,267 @@ void resolution_smearer(double smearing = 0.03) {
             continue;
         }
 
-        TTree *tree = (TTree*) fIn -> Get(Form("%s/O2rtdimuonall", dirName.Data()));
-        tree -> SetBranchAddress("fSelection", &fSelection);
+        TTree *tree = (TTree*) fIn -> Get(Form("%s/O2rtdilmtreerec", dirName.Data()));
+
+        for (size_t i = 0;i < ptBins.size();i++) {
+            double low = ptBins[i].first;
+            double high = ptBins[i].second;
+
+            TString selection = Form("fPt > %f && fPt <= %f", low, high);
+            std::cout << "Selezione per range " << low << " - " << high << ": " << selection << std::endl;
+            TTree* treeSub = tree -> CopyTree(selection.Data());
+            if (!treeSub) {
+                std::cerr << "Errore nella copia dell'albero per il range " << low << " - " << high << std::endl;
+                continue;
+            }
+
+            treeSub -> SetName(Form("tree_pt_%2.1f_%2.1f", low, high));
+            fOut -> cd();
+            treeSub -> Write();
+        }
+    }
+    fOut -> Close();
+    fIn -> Close();
+}
+//----------------------------------------------------------------------------------------------------//
+void resolution_smearer(double smearingStep = 0.001, double minSmearing = 0.01, double maxSmearing = 0.03) {
+    TDatabasePDG *database = TDatabasePDG::Instance();
+    int muPdgCode = 13;
+    int jpsiPdgCode = 443;
+    double massMu = database -> GetParticle(muPdgCode) -> Mass();
+    double massJpsi = database -> GetParticle(jpsiPdgCode) -> Mass();
+
+    std::vector<std::pair<double,double>> vecPtBins = { 
+        {0.0, 0.5}, {0.5, 1.0}, {1.0, 1.5}, {1.5, 2.0}, {2.0, 3.0}, {3.0, 4.0}, {4.0, 5.0}, 
+        {5.0, 6.0}, {6.0, 7.0}, {7.0, 8.0}, {8.0, 10.0}, {10.0, 12.0}, {12.0, 15.0}, {15.0, 20.0} 
+    };
+    const int nPtBins = 14;
+    double ptBins[] = {0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0};
+    double refWidth[] = {0.076, 0.076, 0.076, 0.079, 0.080, 0.082, 0.084, 0.087, 0.090, 0.095, 0.099, 0.108, 0.112, 0.120};
+    TH1D *histRefWidth = new TH1D("histRefWidth",  " ; #it{p}_{T} (GeV/c) ; #sigma (GeV/c)", nPtBins, ptBins); SetHistogram(histRefWidth, kBlack, 1, 20);
+    TH1D *histWidth = new TH1D("histWidth",  " ; #it{p}_{T} (GeV/c) ; #sigma (GeV/c)", nPtBins, ptBins); SetHistogram(histWidth, kRed+1, 1, 20);
+    TH1D *histWidthSmear = new TH1D("histWidthSmear",  " ; #it{p}_{T} (GeV/c) ; #sigma (GeV/c)", nPtBins, ptBins); SetHistogram(histWidthSmear, kRed+1, 1, 24);
+
+    uint64_t fSelection;
+    float fMass, fPt, fEta, fCentFT0C = -99999;
+    float fPt1, fPt2, fPhi1, fPhi2, fEta1, fEta2, fPtMC1, fPtMC2, fPhiMC1, fPhiMC2, fPhi, fEtaMC1, fEtaMC2 = -99999;;
+    UInt_t fMcDecision;
+
+    string pathToFile = "reducedAO2D_splitted.root";
+    TFile *fIn = new TFile(pathToFile.c_str(), "READ");
+
+    TH1D *histMassJpsiRec[nPtBins];
+    TH1D *histMassJpsiSmearRec[nPtBins];
+    TF1 *funcMassJpsiRec[nPtBins];
+    TF1 *funcMassJpsiSmearRec[nPtBins];
+
+    for (size_t iPt = 0; iPt < vecPtBins.size();iPt++) {
+        double width = 0;
+        double errWidth = 0;
+        double widthSmear = 0;
+        double errWidthSmear = 0;
+        double low = vecPtBins[iPt].first;
+        double high = vecPtBins[iPt].second;
+
+        histMassJpsiRec[iPt] = new TH1D(Form("histMassJpsiRec_Pt_%2.1f_%2.1f", low, high), Form("%2.1f < #it{p}_{T} < %2.1f GeV/c ; #it{m}_{#mu#mu} (GeV/c^{2})", low, high), 120, 2, 5); SetHistogram(histMassJpsiRec[iPt], kBlack, 1, 20);
+        histMassJpsiSmearRec[iPt] = new TH1D(Form("histMassJpsiSmearRec_Pt_%2.1f_%2.1f", low, high), Form("%2.1f < #it{p}_{T} < %2.1f GeV/c ; #it{m}_{#mu#mu} (GeV/c^{2})", low, high), 120, 2, 5); SetHistogram(histMassJpsiSmearRec[iPt], kBlack, 1, 24);
+
+        TTree *tree = (TTree*) fIn -> Get(Form("tree_pt_%2.1f_%2.1f", low, high));
+        tree -> SetBranchAddress("fMcDecision", &fMcDecision);
         tree -> SetBranchAddress("fMass", &fMass);
         tree -> SetBranchAddress("fPt", &fPt);
         tree -> SetBranchAddress("fEta", &fEta);
         tree -> SetBranchAddress("fPhi", &fPhi);
-        tree -> SetBranchAddress("fSign", &fSign);
-        tree -> SetBranchAddress("fPt1", &fPt1);
-        tree -> SetBranchAddress("fEta1", &fEta1);
-        tree -> SetBranchAddress("fPhi1", &fPhi1);
-        tree -> SetBranchAddress("fSign1", &fSign1);
-        tree -> SetBranchAddress("fPt2", &fPt2);
-        tree -> SetBranchAddress("fEta2", &fEta2);
-        tree -> SetBranchAddress("fPhi2", &fPhi2);
-        tree -> SetBranchAddress("fSign2", &fSign2);
+        tree -> SetBranchAddress("fCentFT0C", &fCentFT0C);
         tree -> SetBranchAddress("fPtMC1", &fPtMC1);
         tree -> SetBranchAddress("fEtaMC1", &fEtaMC1);
         tree -> SetBranchAddress("fPhiMC1", &fPhiMC1);
         tree -> SetBranchAddress("fPtMC2", &fPtMC2);
         tree -> SetBranchAddress("fEtaMC2", &fEtaMC2);
         tree -> SetBranchAddress("fPhiMC2", &fPhiMC2);
+        tree -> SetBranchAddress("fPt1", &fPt1);
+        tree -> SetBranchAddress("fEta1", &fEta1);
+        tree -> SetBranchAddress("fPhi1", &fPhi1);
+        tree -> SetBranchAddress("fPt2", &fPt2);
+        tree -> SetBranchAddress("fEta2", &fEta2);
+        tree -> SetBranchAddress("fPhi2", &fPhi2);
+
+        int iteration = 0;
+        double smearing = minSmearing;
+        histRefWidth -> SetBinContent(iPt+1, refWidth[iPt]);
+        histRefWidth -> SetBinError(iPt+1, 0);
+        while (TMath::Abs(widthSmear - refWidth[iPt]) > 0.005 || std::isnan(widthSmear) || std::isnan(errWidthSmear)) {
+            histMassJpsiRec[iPt] -> Reset();
+            histMassJpsiSmearRec[iPt] -> Reset();
+
+            smearing += (iteration * smearingStep);
+            for (int iEntry = 0;iEntry < tree -> GetEntries();iEntry++) {
+                tree -> GetEntry(iEntry);
+                if (fMcDecision < 1) continue;
+                ROOT::Math::PtEtaPhiMVector vecMuRec1(fPt1, fEta1, fPhi1, massMu);
+                ROOT::Math::PtEtaPhiMVector vecMuRec2(fPt2, fEta2, fPhi2, massMu);
+
+                double pxRec1 = vecMuRec1.Px();
+                double pyRec1 = vecMuRec1.Py();
+                double pzRec1 = vecMuRec1.Pz();
+                double pxRec2 = vecMuRec2.Px();
+                double pyRec2 = vecMuRec2.Py();
+                double pzRec2 = vecMuRec2.Pz();
+
+                auto vecJpsiRec = vecMuRec1 + vecMuRec2;
+
+                double smearFactor = gRandom -> Gaus(0, smearing);
+                double pxSmearRec1 = pxRec1 + (pxRec1 * smearFactor);
+                double pySmearRec1 = pyRec1 + (pyRec1 * smearFactor);
+                double pzSmearRec1 = pzRec1 + (pzRec1 * smearFactor);
+                double pxSmearRec2 = pxRec2 + (pxRec2 * smearFactor);
+                double pySmearRec2 = pyRec2 + (pyRec2 * smearFactor);
+                double pzSmearRec2 = pzRec2 + (pzRec2 * smearFactor);
+
+                ROOT::Math::PxPyPzMVector vecMuSmearRec1(pxSmearRec1, pySmearRec1, pzSmearRec1, massMu);
+                ROOT::Math::PxPyPzMVector vecMuSmearRec2(pxSmearRec2, pySmearRec2, pzSmearRec2, massMu);
+
+                auto vecJpsiSmearRec = vecMuSmearRec1 + vecMuSmearRec2;
+
+                histMassJpsiRec[iPt] -> Fill(vecJpsiRec.M());
+                histMassJpsiSmearRec[iPt] -> Fill(vecJpsiSmearRec.M());
+            }
+
+            funcMassJpsiRec[iPt] = new TF1(Form("funcMassJpsiRec_Pt_%2.1f_%2.1f", low, high), FuncCB2, 2.5, 3.5, 7);
+            funcMassJpsiRec[iPt] -> SetLineColor(kRed+1);
+            funcMassJpsiRec[iPt] -> SetLineStyle(kSolid);
+            funcMassJpsiRec[iPt] -> SetParameters(100, 3.103, 0.074, 1.232, 2.079, 3.114, 0.527);
+            histMassJpsiRec[iPt] -> Fit(funcMassJpsiRec[iPt], "RQ0");
+
+            funcMassJpsiSmearRec[iPt] = new TF1(Form("funcMassJpsiSmearRec_Pt_%2.1f_%2.1f", low, high), FuncCB2, 2.5, 3.5, 7);
+            funcMassJpsiSmearRec[iPt] -> SetLineColor(kRed+1);
+            funcMassJpsiSmearRec[iPt] -> SetLineStyle(kDashed);
+            funcMassJpsiSmearRec[iPt] -> SetParameters(100, 3.103, 0.074, 1.232, 2.079, 3.114, 0.527);
+            histMassJpsiSmearRec[iPt] -> Fit(funcMassJpsiSmearRec[iPt], "RQ0");
+
+            width = funcMassJpsiRec[iPt] -> GetParameter(2);
+            errWidth = funcMassJpsiRec[iPt] -> GetParError(2);
+            widthSmear = funcMassJpsiSmearRec[iPt] -> GetParameter(2);
+            errWidthSmear = funcMassJpsiSmearRec[iPt] -> GetParError(2);
+            iteration++;
+
+            if (smearing > maxSmearing) break;
+        }
+        histWidth -> SetBinContent(iPt+1, width);
+        histWidth -> SetBinError(iPt+1, errWidth);
+        histWidthSmear -> SetBinContent(iPt+1, widthSmear);
+        histWidthSmear -> SetBinError(iPt+1, errWidthSmear);
+    }
+
+    TCanvas *canvasMassPt = new TCanvas("canvasMassPt", "", 3000, 1800);
+    canvasMassPt -> Divide(5, 3);
+
+    for (int iPt = 0;iPt < nPtBins;iPt++) {
+        gPad -> SetLogy(true);
+        canvasMassPt -> cd(iPt+1);
+        histMassJpsiRec[iPt] -> SetStats(0);
+
+        histMassJpsiRec[iPt] -> Draw("EP");
+        histMassJpsiSmearRec[iPt] -> Draw("EP SAME");
+        funcMassJpsiRec[iPt] -> Draw("L SAME");
+        funcMassJpsiSmearRec[iPt] -> Draw("L SAME");
+
+        TLatex latex1;
+        latex1.SetNDC();
+        latex1.SetTextSize(0.04);
+        latex1.SetTextFont(42);
+        latex1.DrawLatex(0.60, 0.85, Form("#mu = %.4f #pm %.4f", funcMassJpsiRec[iPt] -> GetParameter(1), funcMassJpsiRec[iPt] -> GetParError(1)));
+        latex1.DrawLatex(0.60, 0.80, Form("#sigma = %.4f #pm %.4f", funcMassJpsiRec[iPt] -> GetParameter(2), funcMassJpsiRec[iPt] -> GetParError(2)));
+
+        TLatex latex2;
+        latex2.SetNDC();
+        latex2.SetTextSize(0.04);
+        latex2.SetTextFont(42);
+        latex2.SetTextColor(kRed+1);
+        latex2.DrawLatex(0.60, 0.75, Form("#mu = %.4f #pm %.4f", funcMassJpsiSmearRec[iPt] -> GetParameter(1), funcMassJpsiSmearRec[iPt] -> GetParError(1)));
+        latex2.DrawLatex(0.60, 0.70, Form("#sigma = %.4f #pm %.4f", funcMassJpsiSmearRec[iPt] -> GetParameter(2), funcMassJpsiSmearRec[iPt] -> GetParError(2)));
+    }
+
+    TCanvas *canvasWidth = new TCanvas("canvasWidth", "", 800, 600);
+    histRefWidth -> GetYaxis() -> SetRangeUser(0, 0.150);
+    histRefWidth -> Draw("EP");
+    histWidth -> Draw("EP SAME");
+    histWidthSmear -> Draw("EP SAME");
+}
+//----------------------------------------------------------------------------------------------------//
+void check_momentum_resolution(double smearing = 0.015) {
+    TDatabasePDG *database = TDatabasePDG::Instance();
+    int muPdgCode = 13;
+    int jpsiPdgCode = 443;
+    double massMu = database -> GetParticle(muPdgCode) -> Mass();
+    double massJpsi = database -> GetParticle(jpsiPdgCode) -> Mass();
+
+    //------------------------//
+    // smearing configuration
+    const int nPtBins = 14;
+    double ptBins[] = {0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0};
+    TH2D *histMassPtJpsiRec = new TH2D("histMassPtJpsiRec", " ; #it{p}_{T} (GeV/c) ; #it{m}_{#mu#mu} (GeV/c^{2})", nPtBins, ptBins, 120, 2, 5);
+    TH2D *histMassPtJpsiSmearRec = new TH2D("histMassPtJpsiSmearRec", " ; #it{p}_{T} (GeV/c) ; #it{m}_{#mu#mu} (GeV/c^{2})", nPtBins, ptBins, 120, 2, 5);
+
+    uint64_t fSelection;
+    float fMass, fPt, fEta, fCentFT0C = -99999;
+    float fPt1, fPt2, fPhi1, fPhi2, fEta1, fEta2, fPtMC1, fPtMC2, fPhiMC1, fPhiMC2, fPhi, fEtaMC1, fEtaMC2 = -99999;;
+    UInt_t fMcDecision;
+
+    TH1D *histMassJpsiRec = new TH1D("histMassJpsiRec", " ; #it{m}_{#mu#mu} (GeV/c^{2})", 120, 2, 5); SetHistogram(histMassJpsiRec, kBlack, 1, 20);
+    TH1D *histMassJpsiSmearRec = new TH1D("histMassJpsiSmearRec", " ; #it{m}_{#mu#mu} (GeV/c^{2})", 120, 2, 5); SetHistogram(histMassJpsiSmearRec, kBlack, 1, 24);
+
+    TH1D *histNormResoPx1 = new TH1D("histNormResoPx1", " ; (#it{p}_{x}^{rec} - #it{p}_{x}^{gen}) / #it{p}_{x}^{gen}", 500, -1, 1); SetHistogram(histNormResoPx1, kBlack);
+    TH1D *histNormResoPy1 = new TH1D("histNormResoPy1", " ; (#it{p}_{y}^{rec} - #it{p}_{y}^{gen}) / #it{p}_{y}^{gen}", 500, -1, 1); SetHistogram(histNormResoPy1, kBlack);
+    TH1D *histNormResoPz1 = new TH1D("histNormResoPz1", " ; (#it{p}_{z}^{rec} - #it{p}_{z}^{gen}) / #it{p}_{z}^{gen}", 500, -1, 1); SetHistogram(histNormResoPz1, kBlack);
+    TH1D *histNormResoPx2 = new TH1D("histNormResoPx2", " ; (#it{p}_{x}^{rec} - #it{p}_{x}^{gen}) / #it{p}_{x}^{gen}", 500, -1, 1); SetHistogram(histNormResoPx2, kBlack);
+    TH1D *histNormResoPy2 = new TH1D("histNormResoPy2", " ; (#it{p}_{y}^{rec} - #it{p}_{y}^{gen}) / #it{p}_{y}^{gen}", 500, -1, 1); SetHistogram(histNormResoPy2, kBlack);
+    TH1D *histNormResoPz2 = new TH1D("histNormResoPz2", " ; (#it{p}_{z}^{rec} - #it{p}_{z}^{gen}) / #it{p}_{z}^{gen}", 500, -1, 1); SetHistogram(histNormResoPz2, kBlack);
+
+    TH1D *histNormResoSmearPx1 = new TH1D("histNormResoSmearPx1", " ; (#it{p}_{x}^{rec} - #it{p}_{x}^{gen}) / #it{p}_{x}^{gen}", 500, -1, 1); SetHistogram(histNormResoSmearPx1, kRed+1);
+    TH1D *histNormResoSmearPy1 = new TH1D("histNormResoSmearPy1", " ; (#it{p}_{y}^{rec} - #it{p}_{y}^{gen}) / #it{p}_{y}^{gen}", 500, -1, 1); SetHistogram(histNormResoSmearPy1, kRed+1);
+    TH1D *histNormResoSmearPz1 = new TH1D("histNormResoSmearPz1", " ; (#it{p}_{z}^{rec} - #it{p}_{z}^{gen}) / #it{p}_{z}^{gen}", 500, -1, 1); SetHistogram(histNormResoSmearPz1, kRed+1);
+    TH1D *histNormResoSmearPx2 = new TH1D("histNormResoSmearPx2", " ; (#it{p}_{x}^{rec} - #it{p}_{x}^{gen}) / #it{p}_{x}^{gen}", 500, -1, 1); SetHistogram(histNormResoSmearPx2, kRed+1);
+    TH1D *histNormResoSmearPy2 = new TH1D("histNormResoSmearPy2", " ; (#it{p}_{y}^{rec} - #it{p}_{y}^{gen}) / #it{p}_{y}^{gen}", 500, -1, 1); SetHistogram(histNormResoSmearPy2, kRed+1);
+    TH1D *histNormResoSmearPz2 = new TH1D("histNormResoSmearPz2", " ; (#it{p}_{z}^{rec} - #it{p}_{z}^{gen}) / #it{p}_{z}^{gen}", 500, -1, 1); SetHistogram(histNormResoSmearPz2, kRed+1);
+
+    string pathToFile = "/Users/lucamicheletti/alice/local_train_test_mc/reducedAO2D.root";
+    TFile *fIn = new TFile(pathToFile.c_str(), "READ");
+    TIter next(fIn -> GetListOfKeys()); 
+    TKey *key; 
+    while ((key = (TKey*) next())) { 
+        TString dirName = key -> GetName();
+        if (!dirName.Contains("DF_")) {
+            continue;
+        }
+
+        TTree *tree = (TTree*) fIn -> Get(Form("%s/O2rtdilmtreerec", dirName.Data()));
         tree -> SetBranchAddress("fMcDecision", &fMcDecision);
-        tree -> SetBranchAddress("fIsAmbig1", &fIsAmbig1);
-        tree -> SetBranchAddress("fIsAmbig2", &fIsAmbig2);
-        tree -> SetBranchAddress("fChi2pca", &fChi2pca);
+        tree -> SetBranchAddress("fMass", &fMass);
+        tree -> SetBranchAddress("fPt", &fPt);
+        tree -> SetBranchAddress("fEta", &fEta);
+        tree -> SetBranchAddress("fPhi", &fPhi);
+        tree -> SetBranchAddress("fCentFT0C", &fCentFT0C);
+        tree -> SetBranchAddress("fPtMC1", &fPtMC1);
+        tree -> SetBranchAddress("fEtaMC1", &fEtaMC1);
+        tree -> SetBranchAddress("fPhiMC1", &fPhiMC1);
+        tree -> SetBranchAddress("fPtMC2", &fPtMC2);
+        tree -> SetBranchAddress("fEtaMC2", &fEtaMC2);
+        tree -> SetBranchAddress("fPhiMC2", &fPhiMC2);
+        tree -> SetBranchAddress("fPt1", &fPt1);
+        tree -> SetBranchAddress("fEta1", &fEta1);
+        tree -> SetBranchAddress("fPhi1", &fPhi1);
+        tree -> SetBranchAddress("fPt2", &fPt2);
+        tree -> SetBranchAddress("fEta2", &fEta2);
+        tree -> SetBranchAddress("fPhi2", &fPhi2);
 
         for (int iEntry = 0;iEntry < tree -> GetEntries();iEntry++) {
             tree -> GetEntry(iEntry);
-            if (!eventSelection(fSelection)) continue;
             if (fMcDecision < 1) continue;
-            if (fSign != 0 || TMath::Abs(fEta) < 2.5 || TMath::Abs(fEta) > 4) continue;
-            if (TMath::Abs(fEta1) < 2.5 || TMath::Abs(fEta1) > 4) continue;
-            if (TMath::Abs(fEta2) < 2.5 || TMath::Abs(fEta2) > 4) continue;
-            if (fSign1 == fSign2) continue;
-            if (fChi2pca < 0) continue;
-
-            TLorentzVector vecMuGen1;
-            TLorentzVector vecMuGen2;
-            TLorentzVector vecMuRec1;
-            TLorentzVector vecMuRec2;
-
-            vecMuGen1.SetPtEtaPhiM(fPtMC1, fEtaMC1, fPhiMC1, massMu);
-            vecMuGen2.SetPtEtaPhiM(fPtMC2, fEtaMC2, fPhiMC2, massMu);
-            vecMuRec1.SetPtEtaPhiM(fPt1, fEta1, fPhi1, massMu);
-            vecMuRec2.SetPtEtaPhiM(fPt2, fEta2, fPhi2, massMu);
+            ROOT::Math::PtEtaPhiMVector vecMuGen1(fPtMC1, fEtaMC1, fPhiMC1, massMu);
+            ROOT::Math::PtEtaPhiMVector vecMuGen2(fPtMC2, fEtaMC2, fPhiMC2, massMu);
+            ROOT::Math::PtEtaPhiMVector vecMuRec1(fPt1, fEta1, fPhi1, massMu);
+            ROOT::Math::PtEtaPhiMVector vecMuRec2(fPt2, fEta2, fPhi2, massMu);
 
             double pxGen1 = vecMuGen1.Px();
             double pyGen1 = vecMuGen1.Py();
@@ -174,8 +379,8 @@ void resolution_smearer(double smearing = 0.03) {
             histNormResoPy2 -> Fill((pyRec2 - pyGen2) / pyGen2);
             histNormResoPz2 -> Fill((pzRec2 - pzGen2) / pzGen2);
 
-            TLorentzVector vecJpsiGen = vecMuGen1 + vecMuGen2;
-            TLorentzVector vecJpsiRec = vecMuRec1 + vecMuRec2;
+            auto vecJpsiGen = vecMuGen1 + vecMuGen2;
+            auto vecJpsiRec = vecMuRec1 + vecMuRec2;
 
             double smearFactor = gRandom -> Gaus(0, smearing);
             double pxSmearRec1 = pxRec1 + (pxRec1 * smearFactor);
@@ -198,10 +403,11 @@ void resolution_smearer(double smearing = 0.03) {
 
             auto vecJpsiSmearRec = vecMuSmearRec1 + vecMuSmearRec2;
 
-            histMass -> Fill(fMass);
-            histMassJpsiGen -> Fill(vecJpsiGen.M());
             histMassJpsiRec -> Fill(vecJpsiRec.M());
             histMassJpsiSmearRec -> Fill(vecJpsiSmearRec.M());
+
+            histMassPtJpsiRec -> Fill(vecJpsiRec.Pt(), vecJpsiRec.M());
+            histMassPtJpsiSmearRec -> Fill(vecJpsiSmearRec.Pt(), vecJpsiSmearRec.M());
         }
     }
     fIn -> Close();
@@ -211,38 +417,142 @@ void resolution_smearer(double smearing = 0.03) {
 
     canvasNormReso -> cd(1);
     gPad -> SetLogy(true);
-    histNormResoPx1 -> Draw("EP");
-    histNormResoSmearPx1 -> Draw("EP SAME");
+    histNormResoPx1 -> Draw("HIST L");
+    histNormResoSmearPx1 -> Draw("H SAME");
     
     canvasNormReso -> cd(2);
     gPad -> SetLogy(true);
-    histNormResoPy1 -> Draw("EP");
-    histNormResoSmearPy1 -> Draw("EP SAME");
+    histNormResoPy1 -> Draw("HIST L");
+    histNormResoSmearPy1 -> Draw("H SAME");
 
     canvasNormReso -> cd(3);
     gPad -> SetLogy(true);
-    histNormResoPz1 -> Draw("EP");
-    histNormResoSmearPz1 -> Draw("EP SAME");
+    histNormResoPz1 -> Draw("HIST L");
+    histNormResoSmearPz1 -> Draw("H SAME");
 
     canvasNormReso -> cd(4);
     gPad -> SetLogy(true);
-    histNormResoPx2 -> Draw("EP");
-    histNormResoSmearPx2 -> Draw("EP SAME");
+    histNormResoPx2 -> Draw("HIST L");
+    histNormResoSmearPx2 -> Draw("H SAME");
     
     canvasNormReso -> cd(5);
     gPad -> SetLogy(true);
-    histNormResoPy2 -> Draw("EP");
-    histNormResoSmearPy2 -> Draw("EP SAME");
+    histNormResoPy2 -> Draw("HIST L");
+    histNormResoSmearPy2 -> Draw("H SAME");
 
     canvasNormReso -> cd(6);
     gPad -> SetLogy(true);
-    histNormResoPz2 -> Draw("EP");
-    histNormResoSmearPz2 -> Draw("EP SAME");
+    histNormResoPz2 -> Draw("HIST L");
+    histNormResoSmearPz2 -> Draw("H SAME");
+
+
+    TF1 *funcMassJpsiRec = new TF1("funcMassJpsiRec", FuncCB2, 2.5, 3.5, 7);
+    funcMassJpsiRec -> SetLineColor(kRed+1);
+    funcMassJpsiRec -> SetLineStyle(kSolid);
+    funcMassJpsiRec -> SetParameters(1779, 3.103, 0.074, 1.232, 2.079, 3.114, 0.527);
+    histMassJpsiRec -> Fit(funcMassJpsiRec, "RQ0");
+
+    TF1 *funcMassJpsiSmearRec = new TF1("funcMassJpsiSmearRec", FuncCB2, 2.5, 3.5, 7);
+    funcMassJpsiSmearRec -> SetLineColor(kRed+1);
+    funcMassJpsiSmearRec -> SetLineStyle(kDashed);
+    funcMassJpsiSmearRec -> SetParameters(1779, 3.103, 0.074, 1.232, 2.079, 3.114, 0.527);
+    histMassJpsiSmearRec -> Fit(funcMassJpsiSmearRec, "RQ0");
 
     TCanvas *canvasMass = new TCanvas("canvasMass", "", 800, 600);
     gPad -> SetLogy(true);
-    histMassJpsiGen -> Draw("EP");
-    histMass -> Draw("EP SAME");
+    histMassJpsiRec -> SetStats(0);
+    histMassJpsiRec -> GetXaxis() -> SetRangeUser(2.5, 4);
     histMassJpsiRec -> Draw("EP SAME");
     histMassJpsiSmearRec -> Draw("EP SAME");
+    funcMassJpsiRec -> Draw("L SAME");
+    funcMassJpsiSmearRec -> Draw("L SAME");
+
+    TLatex latex1;
+    latex1.SetNDC();
+    latex1.SetTextSize(0.04);
+    latex1.SetTextFont(42);
+    latex1.DrawLatex(0.65, 0.85, Form("#mu = %.4f #pm %.4f", funcMassJpsiRec -> GetParameter(1), funcMassJpsiRec -> GetParError(1)));
+    latex1.DrawLatex(0.65, 0.80, Form("#sigma = %.4f #pm %.4f", funcMassJpsiRec -> GetParameter(2), funcMassJpsiRec -> GetParError(2)));
+
+    TLatex latex2;
+    latex2.SetNDC();
+    latex2.SetTextSize(0.04);
+    latex2.SetTextFont(42);
+    latex2.SetTextColor(kRed+1);
+    latex2.DrawLatex(0.65, 0.75, Form("#mu = %.4f #pm %.4f", funcMassJpsiSmearRec -> GetParameter(1), funcMassJpsiSmearRec -> GetParError(1)));
+    latex2.DrawLatex(0.65, 0.70, Form("#sigma = %.4f #pm %.4f", funcMassJpsiSmearRec -> GetParameter(2), funcMassJpsiSmearRec -> GetParError(2)));
+
+    // Project all histograms
+    TH1D *histMassProj[nPtBins];
+    for (int iPt = 0;iPt < nPtBins;iPt++) {
+        histMassProj[iPt] = histMassPtJpsiRec -> ProjectionY(Form("histMassPtJpsiRec_Pt_%i", iPt), iPt+1, iPt+1);
+        SetHistogram(histMassProj[iPt], kBlack, 1, 20);
+    }
+
+    TCanvas *canvasMassPt = new TCanvas("canvasMassPt", "", 3000, 1800);
+    canvasMassPt -> Divide(5, 3);
+
+    for (int iPt = 0;iPt < nPtBins;iPt++) {
+        canvasMassPt -> cd(iPt+1);
+        histMassProj[iPt] -> SetStats(0);
+        histMassProj[iPt] -> Draw("EP");
+
+        TF1 *funcMassJpsiRec = new TF1(Form("funcMassJpsiRec_Pt_%i", iPt), FuncCB2, 2.5, 3.5, 7);
+        funcMassJpsiRec -> SetLineColor(kRed+1);
+        funcMassJpsiRec -> SetLineStyle(kSolid);
+        funcMassJpsiRec -> SetParameters(1779, 3.103, 0.074, 1.232, 2.079, 3.114, 0.527);
+        histMassProj[iPt] -> Fit(funcMassJpsiRec, "RQ0");
+        funcMassJpsiRec -> Draw("L SAME");
+
+        TLatex latex;
+        latex.SetNDC();
+        latex.SetTextSize(0.04);
+        latex.SetTextFont(42);
+        latex.DrawLatex(0.60, 0.85, Form("#mu = %.4f #pm %.4f", funcMassJpsiRec -> GetParameter(1), funcMassJpsiRec -> GetParError(1)));
+        latex.DrawLatex(0.60, 0.80, Form("#sigma = %.4f #pm %.4f", funcMassJpsiRec -> GetParameter(2), funcMassJpsiRec -> GetParError(2)));
+    }
+
+    canvasMassPt -> cd(15);
+    histMassPtJpsiRec -> Draw("COLZ");
+}
+///////////////////////////////////////////////////////
+double FuncCB2(double *x,double *par)
+{
+  // Extended Crystal Ball : 7 parameters
+  //
+  // par[0] = Normalization
+  // par[1] = mean
+  // par[2] = sigma
+  // par[3] = alpha
+  // par[4] = n
+  // par[5] = alpha'
+  // par[6] = n'
+
+  double t = (x[0]-par[1])/par[2];
+  if (par[3] < 0) t = -t;
+
+  double absAlpha = fabs((double)par[3]);
+  double absAlpha2 = fabs((double)par[5]);
+
+  if (t >= -absAlpha && t < absAlpha2) // gaussian core
+  {
+    return par[0]*(exp(-0.5*t*t));
+  }
+
+  if (t < -absAlpha) //left tail
+  {
+    double a =  TMath::Power(par[4]/absAlpha,par[4])*exp(-0.5*absAlpha*absAlpha);
+    double b = par[4]/absAlpha - absAlpha;
+    return par[0]*(a/TMath::Power(b - t, par[4]));
+  }
+
+  if (t >= absAlpha2) //right tail
+  {
+
+    double c =  TMath::Power(par[6]/absAlpha2,par[6])*exp(-0.5*absAlpha2*absAlpha2);
+    double d = par[6]/absAlpha2 - absAlpha2;
+    return par[0]*(c/TMath::Power(d + t, par[6]));
+  }
+
+  return 0.;
 }
