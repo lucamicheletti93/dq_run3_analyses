@@ -31,11 +31,7 @@
 #include "TGaxis.h"
 #include <TRandom3.h>
 #include <ROOT/RDataFrame.hxx>
-
 #endif
-
-void LoadStyle();
-void SetLegend(TLegend *);
 
 const int kNsel = 51;
 
@@ -72,6 +68,16 @@ inline void SetHistogram(TH1D *hist, Color_t color, int lineWidth = 1, int marke
     hist -> SetMarkerColor(color);
     hist -> SetMarkerStyle(markerStyle);
     hist -> SetMarkerSize(0.8);
+}
+
+inline void SetLegend(TLegend *legend) {
+    legend -> SetBorderSize(0);
+    legend -> SetFillColor(10);
+    legend -> SetFillStyle(1);
+    legend -> SetLineStyle(0);
+    legend -> SetLineColor(0);
+    legend -> SetTextFont(42);
+    legend -> SetTextSize(0.045);
 }
 
 double FuncCB2(double *,double *);
@@ -118,7 +124,7 @@ void prepare_tree() {
     fIn -> Close();
 }
 //----------------------------------------------------------------------------------------------------//
-void resolution_smearer(double smearingStep = 0.001, double minSmearing = 0.01, double maxSmearing = 0.03) {
+void resolution_smearer(double smearingStep = 0.0005, double minSmearing = 0.001, double maxSmearing = 0.03) {
     TDatabasePDG *database = TDatabasePDG::Instance();
     int muPdgCode = 13;
     int jpsiPdgCode = 443;
@@ -131,10 +137,14 @@ void resolution_smearer(double smearingStep = 0.001, double minSmearing = 0.01, 
     };
     const int nPtBins = 14;
     double ptBins[] = {0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0};
+    double refMean[] = {3.08029, 3.08086, 3.08084, 3.08055, 3.08388, 3.08299, 3.08338, 3.08589, 3.08780, 3.08952, 3.09219, 3.09310, 3.09430, 3.09530};
     double refWidth[] = {0.076, 0.076, 0.076, 0.079, 0.080, 0.082, 0.084, 0.087, 0.090, 0.095, 0.099, 0.108, 0.112, 0.120};
-    TH1D *histRefWidth = new TH1D("histRefWidth",  " ; #it{p}_{T} (GeV/c) ; #sigma (GeV/c)", nPtBins, ptBins); SetHistogram(histRefWidth, kBlack, 1, 20);
-    TH1D *histWidth = new TH1D("histWidth",  " ; #it{p}_{T} (GeV/c) ; #sigma (GeV/c)", nPtBins, ptBins); SetHistogram(histWidth, kRed+1, 1, 20);
-    TH1D *histWidthSmear = new TH1D("histWidthSmear",  " ; #it{p}_{T} (GeV/c) ; #sigma (GeV/c)", nPtBins, ptBins); SetHistogram(histWidthSmear, kRed+1, 1, 24);
+    TH1D *histRefMean = new TH1D("histRefMean",  " ; #it{p}_{T} (GeV/c) ; #mu (GeV/c^{2})", nPtBins, ptBins); SetHistogram(histRefMean, kBlack, 1, 20);
+    TH1D *histMean = new TH1D("histMean",  " ; #it{p}_{T} (GeV/c) ; #mu (GeV/c^{2})", nPtBins, ptBins); SetHistogram(histMean, kRed+1, 1, 20);
+    TH1D *histMeanSmear = new TH1D("histMeanSmear",  " ; #it{p}_{T} (GeV/c) ; #mu (GeV/c^{2})", nPtBins, ptBins); SetHistogram(histMeanSmear, kRed+1, 1, 24);
+    TH1D *histRefWidth = new TH1D("histRefWidth",  " ; #it{p}_{T} (GeV/c) ; #sigma (GeV/c^{2})", nPtBins, ptBins); SetHistogram(histRefWidth, kBlack, 1, 20);
+    TH1D *histWidth = new TH1D("histWidth",  " ; #it{p}_{T} (GeV/c) ; #sigma (GeV/c^{2})", nPtBins, ptBins); SetHistogram(histWidth, kRed+1, 1, 20);
+    TH1D *histWidthSmear = new TH1D("histWidthSmear",  " ; #it{p}_{T} (GeV/c) ; #sigma (GeV/c^{2})", nPtBins, ptBins); SetHistogram(histWidthSmear, kRed+1, 1, 24);
 
     uint64_t fSelection;
     float fMass, fPt, fEta, fCentFT0C = -99999;
@@ -150,6 +160,10 @@ void resolution_smearer(double smearingStep = 0.001, double minSmearing = 0.01, 
     TF1 *funcMassJpsiSmearRec[nPtBins];
 
     for (size_t iPt = 0; iPt < vecPtBins.size();iPt++) {
+        double mean = 0;
+        double errMean = 0;
+        double meanSmear = 0;
+        double errMeanSmear = 0;
         double width = 0;
         double errWidth = 0;
         double widthSmear = 0;
@@ -181,14 +195,19 @@ void resolution_smearer(double smearingStep = 0.001, double minSmearing = 0.01, 
         tree -> SetBranchAddress("fPhi2", &fPhi2);
 
         int iteration = 0;
-        double smearing = minSmearing;
+        double smearingMean = minSmearing;
+        double smearingWidth = minSmearing;
+        histRefMean -> SetBinContent(iPt+1, refMean[iPt]);
+        histRefMean -> SetBinError(iPt+1, 0);
         histRefWidth -> SetBinContent(iPt+1, refWidth[iPt]);
         histRefWidth -> SetBinError(iPt+1, 0);
-        while (TMath::Abs(widthSmear - refWidth[iPt]) > 0.005 || std::isnan(widthSmear) || std::isnan(errWidthSmear)) {
+        while (TMath::Abs(widthSmear - refWidth[iPt]) > 0.005 || std::isnan(widthSmear) || std::isnan(errWidthSmear) ) {
             histMassJpsiRec[iPt] -> Reset();
             histMassJpsiSmearRec[iPt] -> Reset();
 
-            smearing += (iteration * smearingStep);
+            //smearingMean += (iteration * (-smearingStep / 10));
+            smearingMean += 0;
+            smearingWidth += (iteration * smearingStep);
             for (int iEntry = 0;iEntry < tree -> GetEntries();iEntry++) {
                 tree -> GetEntry(iEntry);
                 if (fMcDecision < 1) continue;
@@ -204,7 +223,7 @@ void resolution_smearer(double smearingStep = 0.001, double minSmearing = 0.01, 
 
                 auto vecJpsiRec = vecMuRec1 + vecMuRec2;
 
-                double smearFactor = gRandom -> Gaus(0, smearing);
+                double smearFactor = gRandom -> Gaus(0, smearingWidth);
                 double pxSmearRec1 = pxRec1 + (pxRec1 * smearFactor);
                 double pySmearRec1 = pyRec1 + (pyRec1 * smearFactor);
                 double pzSmearRec1 = pzRec1 + (pzRec1 * smearFactor);
@@ -221,26 +240,47 @@ void resolution_smearer(double smearingStep = 0.001, double minSmearing = 0.01, 
                 histMassJpsiSmearRec[iPt] -> Fill(vecJpsiSmearRec.M());
             }
 
-            funcMassJpsiRec[iPt] = new TF1(Form("funcMassJpsiRec_Pt_%2.1f_%2.1f", low, high), FuncCB2, 2.5, 3.5, 7);
-            funcMassJpsiRec[iPt] -> SetLineColor(kRed+1);
-            funcMassJpsiRec[iPt] -> SetLineStyle(kSolid);
-            funcMassJpsiRec[iPt] -> SetParameters(100, 3.103, 0.074, 1.232, 2.079, 3.114, 0.527);
-            histMassJpsiRec[iPt] -> Fit(funcMassJpsiRec[iPt], "RQ0");
+            for (int iIter = 0;iIter < 100;iIter++) {
+                funcMassJpsiRec[iPt] = new TF1(Form("funcMassJpsiRec_Pt_%2.1f_%2.1f", low, high), FuncCB2, 2.5, 3.5, 7);
+                funcMassJpsiRec[iPt] -> SetLineColor(kRed+1);
+                funcMassJpsiRec[iPt] -> SetLineStyle(kSolid);
+                if (iIter == 0) {
+                    funcMassJpsiRec[iPt] -> SetParameters(1000, 3.103, 0.074, 1.232, 2.079, 3.114, 0.527);
+                } else {
+                    funcMassJpsiRec[iPt] -> SetParameters(funcMassJpsiRec[iPt] -> GetParameter(0), 3.103, 0.074, 1.232, 2.079, 3.114, 0.527);
+                }
+                TFitResultPtr fitRes = histMassJpsiRec[iPt] -> Fit(funcMassJpsiRec[iPt], "RQ0S");
 
-            funcMassJpsiSmearRec[iPt] = new TF1(Form("funcMassJpsiSmearRec_Pt_%2.1f_%2.1f", low, high), FuncCB2, 2.5, 3.5, 7);
-            funcMassJpsiSmearRec[iPt] -> SetLineColor(kRed+1);
-            funcMassJpsiSmearRec[iPt] -> SetLineStyle(kDashed);
-            funcMassJpsiSmearRec[iPt] -> SetParameters(100, 3.103, 0.074, 1.232, 2.079, 3.114, 0.527);
-            histMassJpsiSmearRec[iPt] -> Fit(funcMassJpsiSmearRec[iPt], "RQ0");
+                funcMassJpsiSmearRec[iPt] = new TF1(Form("funcMassJpsiSmearRec_Pt_%2.1f_%2.1f", low, high), FuncCB2, 2.5, 3.5, 7);
+                funcMassJpsiSmearRec[iPt] -> SetLineColor(kRed+1);
+                funcMassJpsiSmearRec[iPt] -> SetLineStyle(kDashed);
+                if (iIter == 0) {
+                    funcMassJpsiSmearRec[iPt] -> SetParameters(1000, 3.103, 0.074, 1.232, 2.079, 3.114, 0.527);
+                } else {
+                    funcMassJpsiSmearRec[iPt] -> SetParameters(funcMassJpsiSmearRec[iPt] -> GetParameter(0), 3.103, 0.074, 1.232, 2.079, 3.114, 0.527);
+                }
+                TFitResultPtr fitResSmear = histMassJpsiSmearRec[iPt] -> Fit(funcMassJpsiSmearRec[iPt], "RQ0S");
 
+                if (fitRes -> CovMatrixStatus() == 3 && fitResSmear -> CovMatrixStatus() == 3) break;
+            }
+            mean = funcMassJpsiRec[iPt] -> GetParameter(1);
+            errMean = funcMassJpsiRec[iPt] -> GetParError(1);
+            meanSmear = funcMassJpsiSmearRec[iPt] -> GetParameter(1);
+            errMeanSmear = funcMassJpsiSmearRec[iPt] -> GetParError(1);
+                
             width = funcMassJpsiRec[iPt] -> GetParameter(2);
             errWidth = funcMassJpsiRec[iPt] -> GetParError(2);
             widthSmear = funcMassJpsiSmearRec[iPt] -> GetParameter(2);
             errWidthSmear = funcMassJpsiSmearRec[iPt] -> GetParError(2);
+
             iteration++;
 
-            if (smearing > maxSmearing) break;
+            if (smearingWidth > maxSmearing) break;
         }
+        histMean -> SetBinContent(iPt+1, mean);
+        histMean -> SetBinError(iPt+1, errMean);
+        histMeanSmear -> SetBinContent(iPt+1, meanSmear);
+        histMeanSmear -> SetBinError(iPt+1, errMeanSmear);
         histWidth -> SetBinContent(iPt+1, width);
         histWidth -> SetBinError(iPt+1, errWidth);
         histWidthSmear -> SetBinContent(iPt+1, widthSmear);
@@ -276,11 +316,33 @@ void resolution_smearer(double smearingStep = 0.001, double minSmearing = 0.01, 
         latex2.DrawLatex(0.60, 0.70, Form("#sigma = %.4f #pm %.4f", funcMassJpsiSmearRec[iPt] -> GetParameter(2), funcMassJpsiSmearRec[iPt] -> GetParError(2)));
     }
 
+    TCanvas *canvasMean = new TCanvas("canvasMean", "", 800, 600);
+    histRefMean -> GetYaxis() -> SetRangeUser(2.9, 3.2);
+    histRefMean -> SetStats(0);
+    histRefMean -> Draw("EP");
+    histMean -> Draw("EP SAME");
+    histMeanSmear -> Draw("EP SAME");
+
+    TLegend *legendMean = new TLegend(0.60, 0.25, 0.80, 0.45);
+    SetLegend(legendMean);
+    legendMean -> AddEntry(histRefMean, "Data", "PL");
+    legendMean -> AddEntry(histMean, "MC", "PL");
+    legendMean -> AddEntry(histMeanSmear, "MC + smearing", "PL");
+    legendMean -> Draw("SAME");
+
     TCanvas *canvasWidth = new TCanvas("canvasWidth", "", 800, 600);
     histRefWidth -> GetYaxis() -> SetRangeUser(0, 0.150);
+    histRefWidth -> SetStats(0);
     histRefWidth -> Draw("EP");
     histWidth -> Draw("EP SAME");
     histWidthSmear -> Draw("EP SAME");
+
+    TLegend *legendWidth = new TLegend(0.60, 0.25, 0.80, 0.45);
+    SetLegend(legendWidth);
+    legendWidth -> AddEntry(histRefWidth, "Data", "PL");
+    legendWidth -> AddEntry(histWidth, "MC", "PL");
+    legendWidth -> AddEntry(histWidthSmear, "MC + smearing", "PL");
+    legendWidth -> Draw("SAME");
 }
 //----------------------------------------------------------------------------------------------------//
 void check_momentum_resolution(double smearing = 0.015) {
