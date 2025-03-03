@@ -13,6 +13,11 @@ void alignment_fit() {
     TCanvas *canvasFit = new TCanvas("canvasFit","", 800, 600);
     histGrid -> Draw();
     graMassVsDeltaP -> Draw("EP SAME");
+
+    TLine *lineM0 = new TLine(-90, funcAlign -> GetParameter(0), 90, funcAlign -> GetParameter(0));
+    lineM0 -> SetLineColor(kRed);
+    lineM0 -> SetLineStyle(kDashed);
+    lineM0 -> Draw("SAME");
     
 }
 ///////////////////////////////////////////////////////
