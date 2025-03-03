@@ -24,18 +24,19 @@ TH1D* ProjectTH2(TH2D *, double , double );
 void projections() {
     // MC settings
     //string dataset = "MC";
-    //string productionName = "LHC24e5";
-    //string associationType = "time_association";
+    //string productionName = "LHC24l7";
+    //string associationType = "time_assoc";
     // Data settings
-    string dataset = "2024"; //
+    string dataset = "2024"; // <----- Default
     //string dataset = "2023";
-    string productionName = "LHC24aj_pass1_skimmed"; //
+    string productionName = "LHC24_pass1_min_bias"; // LHC24af_pass1_skimmed, LHC24_pass1_min_bias // <----- Default
     //string productionName = "LHC23_pass4_thinned";
     //string associationType = "time_association";
-    string associationType = "time_assoc_fDiMuon"; // fDiMuon,fSingleMuLow,std_assoc_fSingleMuLow,time_assoc_fSingleMuLow,std_assoc_fDiMuon,time_assoc_fDiMuon
+    string associationType = "time_assoc"; // fDiMuon,fSingleMuLow,std_assoc_fSingleMuLow,time_assoc_fSingleMuLow,std_assoc_fDiMuon,time_assoc_fDiMuon // <----- Default
     //string pathName = "/Users/lucamicheletti/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/data"; //
     //string pathName = "/Users/lucamicheletti/cernbox/JPSI/Run3";
-    string pathName = "/Users/lucamicheletti/cernbox/JPSI/Jpsi_pp_cross_section_run3/data";
+    string pathName = "/Users/lucamicheletti/cernbox/JPSI/Jpsi_pp_cross_section_run3/data"; // <----- Default
+    //string pathName = "/Users/lucamicheletti/cernbox/JPSI/Jpsi_pp_cross_section_run3";
 
     string histName = "Mass_Pt_Rapidity";
     //string histName = "Mass_Pt";
@@ -68,32 +69,32 @@ void projections() {
     double minRapBins2[] = {2.50, 2.75, 3.00, 3.25, 3.50, 3.75};
     double maxRapBins2[] = {2.75, 3.00, 3.25, 3.50, 3.75, 4.00};
 
-    /*
-    string fInName = "AnalysisResults_dq_efficiency";
-    string cuts[] = {
-        "PairsMuonSEPM_matchedMchMid",
-        "PairsMuonSEPP_matchedMchMid",
-        "PairsMuonSEMM_matchedMchMid",
-        "PairsMuonSEPM_matchedMchMid_mumuFromJpsi",
-        "PairsMuonSEPM_matchedMchMid_mumuFromPsi2S",
-        "PairsMuonSEPM_muonLowPt210SigmaPDCA",
-        "PairsMuonSEPP_muonLowPt210SigmaPDCA",
-        "PairsMuonSEMM_muonLowPt210SigmaPDCA"
-        //"PairsMuonSEPM_muonLowPt10SigmaPDCA_mumuFromPsi2S",
-        //"PairsMuonSEPM_muonLowPt210SigmaPDCA_mumuFromPsi2S",
-        //"PairsMuonSEPM_muonLowPt510SigmaPDCA_mumuFromPsi2S"
-    };
-    */
-
     string fInName = "AnalysisResults";
     string cuts[] = {
-        /*"PairsMuonSEPM_matchedMchMid",
-        "PairsMuonSEPP_matchedMchMid",
-        "PairsMuonSEMM_matchedMchMid",*/
+        //"PairsMuonSEPM_matchedMchMid",
+        //"PairsMuonSEPP_matchedMchMid",
+        //"PairsMuonSEMM_matchedMchMid",
+        //"PairsMuonSEPM_matchedMchMid_mumuFromJpsi",
+        //"PairsMuonSEPM_matchedMchMid_mumuFromPsi2S",
+        "PairsMuonSEPM_muonLowPt210SigmaPDCA",
+        "PairsMuonSEPP_muonLowPt210SigmaPDCA",
+        "PairsMuonSEMM_muonLowPt210SigmaPDCA"
+        //"PairsMuonSEPM_muonLowPt10SigmaPDCA_mumuFromJpsi",
+        //"PairsMuonSEPM_muonLowPt210SigmaPDCA_mumuFromJpsi"
+        //"PairsMuonSEPM_muonLowPt510SigmaPDCA_mumuFromPsi2S"
+    };
+
+    /*
+    string fInName = "AnalysisResults";
+    string cuts[] = {
+        //"PairsMuonSEPM_matchedMchMid",
+        //"PairsMuonSEPP_matchedMchMid",
+        //"PairsMuonSEMM_matchedMchMid",
         "PairsMuonSEPM_muonLowPt210SigmaPDCA",
         "PairsMuonSEPP_muonLowPt210SigmaPDCA",
         "PairsMuonSEMM_muonLowPt210SigmaPDCA"
     };
+    */
 
     TFile *fIn = new TFile(Form("%s/%s/%s/%s_%s.root", pathName.c_str(), dataset.c_str(), productionName.c_str(), fInName.c_str(), associationType.c_str()), "READ");
     fIn -> ls();
@@ -137,7 +138,7 @@ void projections() {
 
             for (int iPt = 0;iPt < nPtBins1;iPt++) {
                 TH1D *histProjPt = (TH1D*) ProjectTH2(hist2D, minPtBins1[iPt], maxPtBins1[iPt]);
-                histProjPt -> Write(Form("Proj_%s__Pt_%1.0f_%1.0f", cut.c_str(), minPtBins1[iPt], maxPtBins1[iPt]));
+                histProjPt -> Write(Form("Proj_%s__Pt_%2.1f_%2.1f", cut.c_str(), minPtBins1[iPt], maxPtBins1[iPt]));
             }
         }
 
