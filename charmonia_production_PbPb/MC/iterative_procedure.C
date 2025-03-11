@@ -56,9 +56,6 @@
 
 #endif
 
-void LoadStyle();
-void SetLegend(TLegend *);
-
 const int kNsel = 51;
 
 // Taken from O2Physics/Common/CCDB/EventSelectionParams.cxx
@@ -135,9 +132,18 @@ inline void SetHistogram(TH1D *hist, Color_t color) {
     hist -> SetMarkerStyle(20);
 }
 
+inline void SetLegend(TLegend *legend) {
+    legend -> SetBorderSize(0);
+    legend -> SetFillColor(10);
+    legend -> SetFillStyle(1);
+    legend -> SetLineStyle(0);
+    legend -> SetLineColor(0);
+    legend -> SetTextFont(42);
+    legend -> SetTextSize(0.045);
+}
+
 
 void iterative_procedure(double ptCut = 0.7) {
-    //LoadStyle();
     bool isPbPb = false;
     TDatabasePDG *database = TDatabasePDG::Instance();
     int muPdgCode = 13;
@@ -293,15 +299,6 @@ void iterative_procedure(double ptCut = 0.7) {
     histPtJpsiData -> Scale(1 / histPtJpsiData -> Integral(), "WIDTH");
     TH1D *histPtJpsiDataCorr = (TH1D*) histPtJpsiData -> Clone("histPtJpsiDataCorr");
     histPtJpsiDataCorr -> Divide(histPtJpsiAxe);
-    
-    TCanvas *canvasData = new TCanvas("canvasData", "", 1800, 1200);
-    canvasData -> Divide(3, 2);
-    canvasData -> cd(1);
-    gPad -> SetLogy(true);
-    histPtJpsiData -> Draw("EP");
-    canvasData -> cd(2);
-    gPad -> SetLogy(true);
-    histPtJpsiDataCorr -> Draw("EP");
 
     TF1 *fitFunctionPt = PtJPsiPbPb5TeV_Func();
     fitFunctionPt -> SetParameter(0, 2.37317e+06);
@@ -309,11 +306,11 @@ void iterative_procedure(double ptCut = 0.7) {
     fitFunctionPt -> SetParameter(2, 2.6687);
     fitFunctionPt -> SetParameter(3, 2.37032);
     fitFunctionPt -> SetLineColor(kRed+1);
-    histPtJpsiDataCorr->Fit(fitFunctionPt, "R"); 
+    histPtJpsiDataCorr->Fit(fitFunctionPt, "R0"); 
     fitFunctionPt->Draw("SAME");
 
-    TH1D *histW = (TH1D*) fitFunctionPt -> GetHistogram();
-    histW -> Draw("HIST SAME");
+    TH1D *histFromFuncRecPt = (TH1D*) fitFunctionPt -> GetHistogram();
+    histFromFuncRecPt -> SetName("histFromFuncRecPt");
     
 
     TF1 *fitFunctionPtOriginal = PtJPsiPbPb5TeV_Func();
@@ -324,10 +321,42 @@ void iterative_procedure(double ptCut = 0.7) {
     fitFunctionPtOriginal -> SetLineColor(kBlue+1);
     fitFunctionPtOriginal->Draw("SAME");
 
-    TH1D *histWGen = (TH1D*) fitFunctionPtOriginal -> GetHistogram();
-    histWGen -> Draw("HIST SAME");
+    TH1D *histFromFuncGenPt = (TH1D*) fitFunctionPtOriginal -> GetHistogram();
+    histFromFuncGenPt -> SetName("histFromFuncGenPt");
+
+    TH1D *histFromFuncRatio = (TH1D*) histFromFuncRecPt -> Clone("histFromFuncRatio");
+    histFromFuncRatio -> Divide(histFromFuncGenPt);
+    histFromFuncRatio -> SetTitle("Weights ; #it{p}_{T} (GeV/c)");
+    histFromFuncRatio -> GetYaxis() -> SetRangeUser(0., 2.);
+    SetHistogram(histFromFuncRatio, kBlack);
     
+    TCanvas *canvasData = new TCanvas("canvasData", "", 1800, 1200);
+    canvasData -> Divide(3, 2);
 
+    canvasData -> cd(1);
+    gPad -> SetLogy(true);
+    histPtJpsiData -> SetStats(0);
+    histPtJpsiData -> SetTitle("Data ; #it{p}_{T} (GeV/c)");
+    histPtJpsiData -> Draw("EP");
 
+    canvasData -> cd(2);
+    gPad -> SetLogy(true);
+    histPtJpsiDataCorr -> SetStats(0);
+    histPtJpsiDataCorr -> SetTitle("Data / Axe ; #it{p}_{T} (GeV/c)");
+    histPtJpsiDataCorr -> Draw("EP");
+    histFromFuncGenPt -> Draw("HIST SAME");
+    histFromFuncRecPt -> Draw("HIST SAME");
+
+    TLegend *legendFromFit = new TLegend(0.50, 0.55, 0.70, 0.75);
+    SetLegend(legendFromFit);
+    legendFromFit -> AddEntry(histPtJpsiDataCorr, "Data / Axe", "PL");
+    legendFromFit -> AddEntry(histFromFuncGenPt, "Original Pt shape", "PL");
+    legendFromFit -> AddEntry(histFromFuncRecPt, "0 iter Pt shape", "PL");
+    legendFromFit -> Draw("SAME");
+
+    canvasData -> cd(3);
+    histFromFuncRatio -> Draw("P");
+    TLine *lineUnity = new TLine(0, 1, 12, 1);
+    lineUnity -> Draw();
 
 }
