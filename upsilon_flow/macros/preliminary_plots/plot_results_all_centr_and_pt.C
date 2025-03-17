@@ -83,16 +83,16 @@ void plot_results_all_centr_and_pt() {
     double systV2Ups1sVsPtCentr560Run2[] = {0.016, 0.008, 0.006};
 
     TGraphErrors *graStatV2Ups1sVsPtCentr560Run2 = new TGraphErrors(nPtBinsRun2, ptCentrRun2, v2Ups1sVsPtCentr560Run2, ptWidthStatRun2, statV2Ups1sVsPtCentr560Run2);
-    graStatV2Ups1sVsPtCentr560Run2 -> SetLineColor(kOrange+1);
+    graStatV2Ups1sVsPtCentr560Run2 -> SetLineColor(kGray+2);
     graStatV2Ups1sVsPtCentr560Run2 -> SetLineWidth(2);
     graStatV2Ups1sVsPtCentr560Run2 -> SetMarkerStyle(20);
-    graStatV2Ups1sVsPtCentr560Run2 -> SetMarkerColor(kOrange+1);
+    graStatV2Ups1sVsPtCentr560Run2 -> SetMarkerColor(kGray+2);
 
     TGraphErrors *graSystV2Ups1sVsPtCentr560Run2 = new TGraphErrors(nPtBinsRun2, ptCentrRun2, v2Ups1sVsPtCentr560Run2, ptWidthSystRun2, systV2Ups1sVsPtCentr560Run2);
-    graSystV2Ups1sVsPtCentr560Run2 -> SetLineColor(kOrange+1);
+    graSystV2Ups1sVsPtCentr560Run2 -> SetLineColor(kGray+2);
     graSystV2Ups1sVsPtCentr560Run2 -> SetLineWidth(2);
     graSystV2Ups1sVsPtCentr560Run2 -> SetMarkerStyle(20);
-    graSystV2Ups1sVsPtCentr560Run2 -> SetMarkerColor(kOrange+1);
+    graSystV2Ups1sVsPtCentr560Run2 -> SetMarkerColor(kGray+2);
     graSystV2Ups1sVsPtCentr560Run2 -> SetFillStyle(0);
 
 
