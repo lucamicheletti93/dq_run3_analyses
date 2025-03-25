@@ -163,7 +163,8 @@ void extrapolation(double mySqrts = 5.36, double confLevel = 0.68) {
     fitterFuncErrAllExpCl -> GetConfidenceIntervals(graFuncErrAllExpCl, 0.68);
     graFuncErrAllExpCl -> SetFillColorAlpha(kBlue+1, 0.3);
 
-    TF1 *funcErrStatExp = new TF1("funcErrStatExp", "pol1", 2, 15);
+    TF1 *funcErrStatExp = new TF1("funcErrStatExp", "[0]*(1-exp(-[1]*x))", 2, 15);
+    funcErrStatExp -> SetParameters(0.150018, 1.01242);
     funcErrStatExp -> SetLineStyle(kDashed);
     funcErrStatExp -> SetLineColor(kBlue+1);
     graStatRatioVsSqrts -> Fit(funcErrStatExp, "R0");
@@ -217,7 +218,7 @@ void extrapolation(double mySqrts = 5.36, double confLevel = 0.68) {
     fitterFuncErrAllPowerLowCl -> GetConfidenceIntervals(graFuncErrAllPowerLowCl, 0.68);
     graFuncErrAllPowerLowCl -> SetFillColorAlpha(kGreen+1, 0.3);
 
-    TF1 *funcErrStatPowerLow = new TF1("funcErrStatPowerLow", "pol1", 2, 15);
+    TF1 *funcErrStatPowerLow = new TF1("funcErrStatPowerLow", "[0]*x**([1])", 2, 15);
     funcErrStatPowerLow -> SetLineStyle(kDashed);
     funcErrStatPowerLow -> SetLineColor(kGreen+1);
     graStatRatioVsSqrts -> Fit(funcErrStatPowerLow, "R0");
@@ -266,52 +267,62 @@ void extrapolation(double mySqrts = 5.36, double confLevel = 0.68) {
     TF1 *funcPol0ErrStat = new TF1("funcPol0ErrStat", "pol0", 0, 3);
     histRatiosErrStat -> Fit(funcPol0ErrStat, "R0");
 
-
     TCanvas *canvasRatioVsSqrts = new TCanvas("canvasRatioVsSqrts", "", 1200, 1200);
     canvasRatioVsSqrts -> Divide(2, 2);
 
+    TLatex *latexTitle = new TLatex();
+    latexTitle -> SetTextSize(0.050);
+    latexTitle -> SetNDC();
+    latexTitle -> SetTextFont(42);
+
     TH2D *histGridVsSqrts = new TH2D("histGridVsSqrts", "; #sqrt{#it{s}} (GeV) ; #sigma_{#psi(2S)} / #sigma_{J/#psi}", 100, 4, 14, 100, 0.1, 0.2);
     TH2D *histGridVsTrials = new TH2D("histGridVsTrials", "; Trial ; #sigma_{#psi(2S)} / #sigma_{J/#psi}", 3, 0, 3, 100, 0.1, 0.2);
+    histGridVsTrials -> GetXaxis() -> SetBinLabel(1, "Pol1");
+    histGridVsTrials -> GetXaxis() -> SetBinLabel(2, "Exp");
+    histGridVsTrials -> GetXaxis() -> SetBinLabel(3, "Pow. Low");
 
     canvasRatioVsSqrts -> cd(1);
     histGridVsSqrts -> Draw();
+    latexTitle -> DrawLatex(0.2, 0.87, "Polynomial 1");
     graStatRatioVsSqrts -> Draw("EP SAME");
     graSystAllRatioVsSqrts -> Draw("E2 SAME");
-    funcErrAllPol1 -> Draw("SAME");
-    //funcErrStatPol1 -> Draw("SAME");
-    graFuncErrAllPol1Cl -> Draw("3 SAME");
-    //graFuncErrStatPol1Cl -> Draw("3 SAME");
-    graExtrRatioErrAllPol1 -> Draw("EP SAME");
-    //graExtrRatioErrStatPol1 -> Draw("EP SAME");
+    //funcErrAllPol1 -> Draw("SAME");
+    funcErrStatPol1 -> Draw("SAME");
+    //graFuncErrAllPol1Cl -> Draw("3 SAME");
+    graFuncErrStatPol1Cl -> Draw("3 SAME");
+    //graExtrRatioErrAllPol1 -> Draw("EP SAME");
+    graExtrRatioErrStatPol1 -> Draw("EP SAME");
 
     canvasRatioVsSqrts -> cd(2);
     histGridVsSqrts -> Draw();
+    latexTitle -> DrawLatex(0.2, 0.87, "Exponential");
     graStatRatioVsSqrts -> Draw("EP SAME");
     graSystAllRatioVsSqrts -> Draw("E2 SAME");
-    funcErrAllExp -> Draw("SAME");
-    //funcErrStatExp -> Draw("SAME");
-    graFuncErrAllExpCl -> Draw("3 SAME");
-    //graFuncErrStatExpCl -> Draw("3 SAME");
-    graExtrRatioErrAllExp -> Draw("EP SAME");
-    //graExtrRatioErrStatExp -> Draw("EP SAME");
+    //funcErrAllExp -> Draw("SAME");
+    funcErrStatExp -> Draw("SAME");
+    //graFuncErrAllExpCl -> Draw("3 SAME");
+    graFuncErrStatExpCl -> Draw("3 SAME");
+    //graExtrRatioErrAllExp -> Draw("EP SAME");
+    graExtrRatioErrStatExp -> Draw("EP SAME");
 
     canvasRatioVsSqrts -> cd(3);
     histGridVsSqrts -> Draw();
+    latexTitle -> DrawLatex(0.2, 0.87, "Power low");
     graStatRatioVsSqrts -> Draw("EP SAME");
     graSystAllRatioVsSqrts -> Draw("E2 SAME");
-    funcErrAllPowerLow -> Draw("SAME");
-    //funcErrStatPowerLow -> Draw("SAME");
-    graFuncErrAllPowerLowCl -> Draw("3 SAME");
-    //graFuncErrStatPowerLowCl -> Draw("3 SAME");
-    graExtrRatioErrAllPowerLow -> Draw("EP SAME");
-    //graExtrRatioErrStatPowerLow -> Draw("EP SAME");
+    //funcErrAllPowerLow -> Draw("SAME");
+    funcErrStatPowerLow -> Draw("SAME");
+    //graFuncErrAllPowerLowCl -> Draw("3 SAME");
+    graFuncErrStatPowerLowCl -> Draw("3 SAME");
+    //graExtrRatioErrAllPowerLow -> Draw("EP SAME");
+    graExtrRatioErrStatPowerLow -> Draw("EP SAME");
 
     canvasRatioVsSqrts -> cd(4);
     histGridVsTrials -> Draw();
-    funcPol0ErrAll -> Draw("SAME");
+    //funcPol0ErrAll -> Draw("SAME");
     funcPol0ErrStat -> Draw("SAME");
-    histRatiosErrAll -> Draw("EP SAME");
-    //histRatiosErrStat -> Draw("EP SAME");
+    //histRatiosErrAll -> Draw("EP SAME");
+    histRatiosErrStat -> Draw("EP SAME");
 
     double meanErrStat = 0, meanErrAll = 0;
     for (int iTrial = 0;iTrial < 3;iTrial++) {
@@ -321,13 +332,29 @@ void extrapolation(double mySqrts = 5.36, double confLevel = 0.68) {
     meanErrStat = meanErrStat / 3.;
     meanErrAll = meanErrAll / 3.;
 
-    TLatex *latexTitle = new TLatex();
-    latexTitle -> SetTextSize(0.050);
-    latexTitle -> SetNDC();
-    latexTitle -> SetTextFont(42);
+    double meanErrSystRel = 0;
+    for (int iSqrts = 0;iSqrts < 4;iSqrts++) {
+        meanErrSystRel += systRatioVsSqrts[iSqrts] / ratioVsSqrts[iSqrts];
+    }
+    meanErrSystRel = meanErrSystRel / 4.;
+
+    double diffPol1 = TMath::Abs(funcPol0ErrStat -> GetParameter(0) - extrRatioErrStatPol1[0]);
+    double diffExp = TMath::Abs(funcPol0ErrStat -> GetParameter(0) - extrRatioErrStatExp[0]);
+    double diffPowerLow = TMath::Abs(funcPol0ErrStat -> GetParameter(0) - extrRatioErrStatPowerLow[0]);
+
+    std::cout << diffPol1 << " | " << diffExp << " | " << diffPowerLow << std::endl;
+    
+    std::cout << funcPol0ErrStat -> GetParameter(0) << " +/- " << meanErrStat << " +/- " << meanErrSystRel * funcPol0ErrStat -> GetParameter(0) << std::endl;
+
+    double extrValue = funcPol0ErrStat -> GetParameter(0);
+    double statExtrValue = meanErrStat;
+    double systExtrValue = TMath::Sqrt(meanErrSystRel*meanErrSystRel*extrValue*extrValue + diffPol1*diffPol1);
+
     //latexTitle -> DrawLatex(0.2, 0.87, Form("#sigma_{#psi(2S)}/#sigma_{J/#psi} = %f #pm %f #pm %f", funcPol0ErrAll -> GetParameter(0), funcPol0ErrAll -> GetParError(0), meanErrAll));
     //latexTitle -> DrawLatex(0.2, 0.82, Form("#sigma_{#psi(2S)}/#sigma_{J/#psi} = %f #pm %f #pm %f", funcPol0ErrStat -> GetParameter(0), funcPol0ErrStat -> GetParError(0), meanErrStat));
-    latexTitle -> DrawLatex(0.25, 0.87, Form("#sigma_{#psi(2S)}/#sigma_{J/#psi} = %f #pm %f", funcPol0ErrAll -> GetParameter(0), funcPol0ErrAll -> GetParError(0)));
+    //latexTitle -> DrawLatex(0.2, 0.87, Form("[stat+syst] #sigma_{#psi(2S)}/#sigma_{J/#psi} = %f #pm %f", funcPol0ErrAll -> GetParameter(0), funcPol0ErrAll -> GetParError(0)));
+    latexTitle -> DrawLatex(0.2, 0.82, Form("#sigma_{#psi(2S)}/#sigma_{J/#psi} = %f #pm %f #pm %f", extrValue, statExtrValue, systExtrValue));
+    //latexTitle -> DrawLatex(0.25, 0.87, Form("#sigma_{#psi(2S)}/#sigma_{J/#psi} = %f #pm %f", funcPol0ErrAll -> GetParameter(0), funcPol0ErrAll -> GetParError(0)));
 
     canvasRatioVsSqrts -> SaveAs("extrapolation.pdf");
 }
