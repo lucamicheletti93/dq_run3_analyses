@@ -62,6 +62,27 @@ void plot_results() {
     TGraphErrors *graShmCor2Psi2sToJpsiRatioVsNpart = (TGraphErrors*) fInShm -> Get("psi2S2Jpsi_cor2");
     graShmCor2Psi2sToJpsiRatioVsNpart -> Scale(BrPsi2sToJpsiRatio);
 
+    int n = graShmCor1Psi2sToJpsiRatioVsNpart->GetN();
+    TGraph *graBandShmPsi2sToJpsiRatioVsNpart = new TGraph(2 * n);
+    graBandShmPsi2sToJpsiRatioVsNpart->SetFillColorAlpha(kBlue+1, 0.3);
+    graBandShmPsi2sToJpsiRatioVsNpart->SetFillStyle(3352);
+    graBandShmPsi2sToJpsiRatioVsNpart->SetLineColorAlpha(kBlue+1, 0.3);
+
+    double x, yUpper, yLower, eyUpper, eyLower;
+
+    for (int i = 0; i < n; i++) {
+        graShmCor1Psi2sToJpsiRatioVsNpart->GetPoint(i, x, yUpper);
+        eyUpper = graShmCor1Psi2sToJpsiRatioVsNpart->GetErrorY(i);
+        graBandShmPsi2sToJpsiRatioVsNpart->SetPoint(i, x, yUpper + eyUpper);
+    }
+
+    for (int i = 0; i < n; i++) {
+        graShmCor2Psi2sToJpsiRatioVsNpart->GetPoint(n - 1 - i, x, yLower);
+        eyLower = graShmCor2Psi2sToJpsiRatioVsNpart->GetErrorY(n - 1 - i);
+        graBandShmPsi2sToJpsiRatioVsNpart->SetPoint(n + i, x, yLower - eyLower);
+    }
+
+
     const int n_TAMU = 29;
 
     Double_t Npart_TAMU_low[n_TAMU]={7.135433,11.518662,17.575771,25.432085,35.100117,46.516098,59.574142,74.144707,
@@ -96,6 +117,16 @@ void plot_results() {
         TAMU_centr[iBin] = (TAMU_low[iBin] + TAMU_high[iBin]) / 2.;
         TAMU_err_low[iBin] = TAMU_centr[iBin] - TAMU_low[iBin];
         TAMU_err_high[iBin] = TAMU_high[iBin] - TAMU_centr[iBin];
+    }
+
+    TGraph *graBandTamuPsi2sToJpsiRatioVsNpart = new TGraph(2 * n_TAMU);
+    graBandTamuPsi2sToJpsiRatioVsNpart->SetFillColorAlpha(kOrange-3, 0.4);
+    graBandTamuPsi2sToJpsiRatioVsNpart->SetLineWidth(0);
+    graBandTamuPsi2sToJpsiRatioVsNpart->SetLineColorAlpha(kOrange-3, 0.4);
+
+    for (int i = 0; i < n_TAMU; i++) {
+        graBandTamuPsi2sToJpsiRatioVsNpart->SetPoint(i, Npart_TAMU_high[i], TAMU_high[i]);
+        graBandTamuPsi2sToJpsiRatioVsNpart->SetPoint(n_TAMU + i, Npart_TAMU_low[n_TAMU - 1 - i], TAMU_low[n_TAMU - 1 - i]);
     }
 
 
@@ -139,13 +170,13 @@ void plot_results() {
 
     TGraphErrors *graRun2 = new TGraphErrors(4, Npart_data_Run2, &ratioRun2[0], 0, &statratioRun2[0]);
     graRun2->SetMarkerStyle(20);
-    graRun2->SetMarkerColor(kBlue);
-    graRun2->SetLineColor(kBlue);
+    graRun2->SetMarkerColor(kGray+2);
+    graRun2->SetLineColor(kGray+2);
 
     TGraphErrors *graRun3 = new TGraphErrors(4, Npart_data, &ratioRun3[0], 0, &statratioRun3[0]);
-    graRun3->SetMarkerStyle(21);
-    graRun3->SetMarkerColor(kRed);
-    graRun3->SetLineColor(kRed);
+    graRun3->SetMarkerStyle(20);
+    graRun3->SetMarkerColor(kRed+1);
+    graRun3->SetLineColor(kRed+1);
 
     TGraphErrors *graPP = new TGraphErrors(1, Npart_data_pp, &ratiopp[0], 0, &statratiopp[0]);
     graPP->SetMarkerStyle(20);
@@ -157,18 +188,23 @@ void plot_results() {
     TCanvas *canvasPsi2sToJpsiRatioVsNpart = new TCanvas("canvasPsi2sToJpsiRatioVsNpart", "", 800, 600);
     canvasPsi2sToJpsiRatioVsNpart -> SetTicks(1, 1);
 
-    TH2D *histGridV2JpsiVsPtRun2VsRun3 = new TH2D("histGridV2JpsiVsPtRun2VsRun3", "", 100, -10, 400, 100, 0, 0.025);
+    gStyle->SetHatchesSpacing(0.4); // Valore più basso = linee più fitte
+    gStyle->SetHatchesLineWidth(1); // Spessore delle linee
+
+    TH2D *histGridV2JpsiVsPtRun2VsRun3 = new TH2D("histGridV2JpsiVsPtRun2VsRun3", "", 100, -10, 400, 100, 0, 0.030);
     histGridV2JpsiVsPtRun2VsRun3 -> GetXaxis() -> SetTitle("<#it{N}_{part}>");
     histGridV2JpsiVsPtRun2VsRun3 -> GetYaxis() -> SetTitle("BR_{#psi(2S)#rightarrow#mu^{+}#mu^{-}} #sigma_{#psi(2S)} / BR_{J/#psi#rightarrow#mu^{+}#mu^{-}} #sigma_{J/#psi}");
     histGridV2JpsiVsPtRun2VsRun3 -> GetYaxis() -> SetTitleOffset(1.6);
     histGridV2JpsiVsPtRun2VsRun3 -> Draw();
-    graTamuPsi2sToJpsiRatioVsNpart -> Draw("E3 SAME");
-    graTamuLowPsi2sToJpsiRatioVsNpart -> Draw("L SAME");
-    graTamuHighPsi2sToJpsiRatioVsNpart -> Draw("L SAME");
-    graShmCor1Psi2sToJpsiRatioVsNpart -> Draw("L SAME");
-    graShmCor2Psi2sToJpsiRatioVsNpart -> Draw("L SAME");
-    PlotSystErrors(Npart_data_vector_Run2, 4, ratioRun2, systratioRun2, kBlue);
-    PlotSystErrors(Npart_data_vector, 4, ratioRun3, systratioRun3, kRed);
+    //graTamuPsi2sToJpsiRatioVsNpart -> Draw("E3 SAME");
+    //graTamuLowPsi2sToJpsiRatioVsNpart -> Draw("L SAME");
+    //graTamuHighPsi2sToJpsiRatioVsNpart -> Draw("L SAME");
+    graBandTamuPsi2sToJpsiRatioVsNpart -> Draw("F SAME");
+    //graShmCor1Psi2sToJpsiRatioVsNpart -> Draw("L SAME");
+    //graShmCor2Psi2sToJpsiRatioVsNpart -> Draw("L SAME");
+    graBandShmPsi2sToJpsiRatioVsNpart -> Draw("F SAME");
+    PlotSystErrors(Npart_data_vector_Run2, 4, ratioRun2, systratioRun2, kGray+2);
+    PlotSystErrors(Npart_data_vector, 4, ratioRun3, systratioRun3, kRed+1);
     double ylow = ratiopp_double - systratiopp_double;
     double yhigh = ratiopp_double + systratiopp_double;
     TBox *box = new TBox(-2, ylow, 6, yhigh);
@@ -179,19 +215,37 @@ void plot_results() {
     graRun2->Draw("P SAME");
     graRun3->Draw("P SAME");
     graPP->Draw("P SAME");
-    graShmCor1Psi2sToJpsiRatioVsNpart -> Draw("L SAME");
-    graShmCor2Psi2sToJpsiRatioVsNpart -> Draw("L SAME");
+    //graShmCor1Psi2sToJpsiRatioVsNpart -> Draw("L SAME");
+    //graShmCor2Psi2sToJpsiRatioVsNpart -> Draw("L SAME");
 
-    TLegend *legendPsi2sToJpsiRatioVsNpart = new TLegend(0.55, 0.65, 0.90, 0.90, " ", "brNDC");
-    SetLegend(legendPsi2sToJpsiRatioVsNpart);
-    legendPsi2sToJpsiRatioVsNpart->SetTextSize(0.03);
-    legendPsi2sToJpsiRatioVsNpart->SetEntrySeparation(0.03); 
-    legendPsi2sToJpsiRatioVsNpart -> AddEntry(graTamuPsi2sToJpsiRatioVsNpart, "TAMU, #sqrt{#it{s}_{NN}} = 5.02 TeV", "F");
-    legendPsi2sToJpsiRatioVsNpart -> AddEntry(graShmCor1Psi2sToJpsiRatioVsNpart, "SHMc, #sqrt{#it{s}_{NN}} = 5.02 TeV", "L");
-    legendPsi2sToJpsiRatioVsNpart -> AddEntry(graRun2, "Run 2, #sqrt{#it{s}_{NN}} = 5.02 TeV", "P");
-    legendPsi2sToJpsiRatioVsNpart -> AddEntry(graRun3, "Run 3, #sqrt{#it{s}_{NN}} = 5.36 TeV", "P");
-    legendPsi2sToJpsiRatioVsNpart -> AddEntry(graPP, "Extr. pp, #sqrt{#it{s}} = 5.36 TeV", "P");
-    legendPsi2sToJpsiRatioVsNpart -> Draw();
+    TLatex *latexTitle1 = new TLatex();
+    latexTitle1 -> SetTextSize(0.050);
+    latexTitle1 -> SetNDC();
+    latexTitle1 -> SetTextFont(42);
+    latexTitle1 -> DrawLatex(0.22, 0.88, "ALICE Preliminary, Pb#minusPb");
+    latexTitle1 -> DrawLatex(0.22, 0.82, "J/#psi#rightarrow#mu^{+}#mu^{-}, 2.5 < y < 4, #it{p}_{T}^{#mu#mu} < 20 GeV/#it{c}");
+
+    TLegend *legend1 = new TLegend(0.30, 0.55, 0.6, 0.75, " ", "brNDC");
+    SetLegend(legend1);
+    legend1->SetTextSize(0.045);
+    legend1 -> AddEntry(graRun2, "Run 2", "EP");
+    legend1 -> AddEntry(graBandTamuPsi2sToJpsiRatioVsNpart, "TAMU", "F");
+    legend1 -> AddEntry(graBandShmPsi2sToJpsiRatioVsNpart, "SHMc", "F");
+    legend1 -> Draw();
+
+    TLegend *legend2 = new TLegend(0.60, 0.60, 0.9, 0.75, " ", "brNDC");
+    SetLegend(legend2);
+    legend2->SetTextSize(0.045);
+    legend2 -> AddEntry(graRun3, "Run 3", "EP");
+    legend2 -> AddEntry(graPP, "pp extrapolated", "EP");
+    legend2 -> Draw();
+
+    TLatex *latexTitle2 = new TLatex();
+    latexTitle2 -> SetTextSize(0.045);
+    latexTitle2 -> SetNDC();
+    latexTitle2 -> SetTextFont(42);
+    latexTitle2 -> DrawLatex(0.30, 0.73, "#sqrt{#it{s}_{NN}} = 5.02 TeV");
+    latexTitle2 -> DrawLatex(0.60, 0.73, "#sqrt{#it{s}_{NN}} = 5.36 TeV");
 
 
     canvasPsi2sToJpsiRatioVsNpart -> SaveAs("Psi2S_to_Jpsi_ratio_vs_npart_Fin.pdf");
