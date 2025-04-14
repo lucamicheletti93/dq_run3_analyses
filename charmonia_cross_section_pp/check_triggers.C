@@ -3,7 +3,10 @@
 #include <TTree.h>
 #include <TTreeReader.h>
 #include <TGrid.h>
+#include <TH1.h>
+#include <TH2.h>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <filesystem>
 
@@ -40,38 +43,37 @@ void check_triggers() {
         vecRunList.push_back(alienRunListName);
     }
 
-    TH1D *histInfoCounterTVX = new TH1D("histInfoCounterTVX", "", vecInfoCounterTVX.size(), 0, vecInfoCounterTVX.size());
-    TH1D *histInfoCounterScalTrig = new TH1D("histInfoCounterScalTrig", "", vecInfoCounterScalTrig.size(), 0, vecInfoCounterScalTrig.size());
-    TH1D *histInfoCounterSelTrig = new TH1D("histInfoCounterSelTrig", "", vecInfoCounterSelTrig.size(), 0, vecInfoCounterSelTrig.size());
-    TH1D *histSelCounterSelTOI = new TH1D("histSelCounterSelTOI", "", vecInfoCounterSelTrig.size(), 0, vecInfoCounterSelTrig.size());
-    TH1D *histSelCounterAnalysedTrig = new TH1D("histSelCounterAnalysedTrig", "", vecSelCounterAnalysedTrig.size(), 0, vecSelCounterAnalysedTrig.size());
+    TH1D *histInfoCounterTVX = new TH1D("histInfoCounterTVX", "", vecRunList.size(), 0, vecRunList.size());
+    TH1D *histInfoCounterScalTrig = new TH1D("histInfoCounterScalTrig", "", vecRunList.size(), 0, vecRunList.size());
+    TH1D *histInfoCounterSelTrig = new TH1D("histInfoCounterSelTrig", "", vecRunList.size(), 0, vecRunList.size());
+    TH1D *histSelCounterSelTOI = new TH1D("histSelCounterSelTOI", "", vecRunList.size(), 0, vecRunList.size());
+    TH1D *histSelCounterAnalysedTrig = new TH1D("histSelCounterAnalysedTrig", "", vecRunList.size(), 0, vecRunList.size());
 
     string alienPathName;
+    string runNumber;
+    int runCounter = 0;
     while (getline(fInAlienInputPath, alienPathName)) {
         RetrieveTriggerInfo(alienPathName.c_str(), true, triggerMask, counters);
         //RetrieveTriggerInfo(Form("%s/AOD", alienPathName.c_str()), true, triggerMask, counters);
-        vecInfoCounterTVX.push_back(counters[0]);
-        vecInfoCounterScalTrig.push_back(counters[1]);
-        vecInfoCounterSelTrig.push_back(counters[2]);
-        vecSelCounterSelTOI.push_back(counters[3]);
-        vecSelCounterAnalysedTrig.push_back(counters[4]);
-    }
+        
+        runNumber = vecRunList.at(runCounter).c_str();
 
-    for (int iRun = 0;iRun < vecInfoCounterTVX.size();iRun++) {
-        histInfoCounterTVX -> SetBinContent(iRun+1, vecInfoCounterTVX.at(iRun));
-        histInfoCounterTVX -> GetXaxis() -> SetBinLabel(iRun+1, vecRunList.at(iRun).c_str());
+        histInfoCounterTVX -> SetBinContent(runCounter+1, counters[0]);
+        histInfoCounterTVX -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
 
-        histInfoCounterScalTrig -> SetBinContent(iRun+1, vecInfoCounterScalTrig.at(iRun));
-        histInfoCounterScalTrig -> GetXaxis() -> SetBinLabel(iRun+1, vecRunList.at(iRun).c_str());
+        histInfoCounterScalTrig -> SetBinContent(runCounter+1, counters[1]);
+        histInfoCounterScalTrig -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
 
-        histInfoCounterSelTrig -> SetBinContent(iRun+1, vecInfoCounterSelTrig.at(iRun));
-        histInfoCounterSelTrig -> GetXaxis() -> SetBinLabel(iRun+1, vecRunList.at(iRun).c_str());
+        histInfoCounterSelTrig -> SetBinContent(runCounter+1, counters[2]);
+        histInfoCounterSelTrig -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
 
-        histSelCounterSelTOI -> SetBinContent(iRun+1, vecSelCounterSelTOI.at(iRun));
-        histSelCounterSelTOI -> GetXaxis() -> SetBinLabel(iRun+1, vecRunList.at(iRun).c_str());
+        histSelCounterSelTOI -> SetBinContent(runCounter+1, counters[3]);
+        histSelCounterSelTOI -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
 
-        histSelCounterAnalysedTrig -> SetBinContent(iRun+1, vecSelCounterAnalysedTrig.at(iRun));
-        histSelCounterAnalysedTrig -> GetXaxis() -> SetBinLabel(iRun+1, vecRunList.at(iRun).c_str());
+        histSelCounterAnalysedTrig -> SetBinContent(runCounter+1, counters[4]);
+        histSelCounterAnalysedTrig -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
+
+        runCounter++;
     }
 
     TFile *fOut = new TFile(Form("run_lists/%s/%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str()), "RECREATE");
@@ -113,7 +115,7 @@ void RetrieveTriggerInfo(TString dirName = "path/to/file", bool fromAlien = true
             std::cout << "THE FILE EXISTS!" << std::endl;
         }
 
-        for (auto const& dirKey : *fIn -> GetListOfKeys()) {
+        for (auto dirKey : *fIn -> GetListOfKeys()) {
             if (TString(dirKey -> GetName()).Contains("table-maker")) {
                 TList *list = (TList*) fIn -> Get("table-maker/Statistics");
                 TH2D *histZorroInfo = (TH2D*) list -> FindObject("ZorroInfo");
