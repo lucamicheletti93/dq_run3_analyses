@@ -10,7 +10,7 @@
 #include <vector>
 #include <filesystem>
 
-void RetrieveTriggerInfo(TString , bool , string, double [5]);
+void RetrieveTriggerInfo(TString , bool , string, double [10]);
 
 void check_triggers() {
     string year = "2024";
@@ -29,7 +29,7 @@ void check_triggers() {
         return;
     }
 
-    double counters[] = {0, 0, 0, 0, 0};
+    double counters[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     std::vector <double> vecInfoCounterTVX;
     std::vector <double> vecInfoCounterScalTrig;
@@ -43,11 +43,16 @@ void check_triggers() {
         vecRunList.push_back(alienRunListName);
     }
 
-    TH1D *histInfoCounterTVX = new TH1D("histInfoCounterTVX", "", vecRunList.size(), 0, vecRunList.size());
-    TH1D *histInfoCounterScalTrig = new TH1D("histInfoCounterScalTrig", "", vecRunList.size(), 0, vecRunList.size());
-    TH1D *histInfoCounterSelTrig = new TH1D("histInfoCounterSelTrig", "", vecRunList.size(), 0, vecRunList.size());
-    TH1D *histSelCounterSelTOI = new TH1D("histSelCounterSelTOI", "", vecRunList.size(), 0, vecRunList.size());
-    TH1D *histSelCounterAnalysedTrig = new TH1D("histSelCounterAnalysedTrig", "", vecRunList.size(), 0, vecRunList.size());
+    TH1D *histZorroInfoCounterTVX = new TH1D("histZorroInfoCounterTVX", "", vecRunList.size(), 0, vecRunList.size());
+    TH1D *histZorroInfoCounterScalTrig = new TH1D("histZorroInfoCounterScalTrig", "", vecRunList.size(), 0, vecRunList.size());
+    TH1D *histZorroInfoCounterSelTrig = new TH1D("histZorroInfoCounterSelTrig", "", vecRunList.size(), 0, vecRunList.size());
+    TH1D *histZorroSelCounterSelTOI = new TH1D("histZorroSelCounterSelTOI", "", vecRunList.size(), 0, vecRunList.size());
+    TH1D *histZorroSelCounterAnalysedTrig = new TH1D("histZorroSelCounterAnalysedTrig", "", vecRunList.size(), 0, vecRunList.size());
+    TH1D *histEvSelCollisionBeforeFiltering = new TH1D("histEvSelCollisionBeforeFiltering", "", vecRunList.size(), 0, vecRunList.size());
+    TH1D *histEvSelCollisionBeforeCuts = new TH1D("histEvSelCollisionBeforeCuts", "", vecRunList.size(), 0, vecRunList.size());
+    TH1D *histEvSelCollisionAfterCuts = new TH1D("histEvSelCollisionAfterCuts", "", vecRunList.size(), 0, vecRunList.size());
+    TH1D *histBcSelCounterTVX = new TH1D("histBcSelCounterTVX", "", vecRunList.size(), 0, vecRunList.size());
+    TH1D *histBcSelCounterTVXafterBCcuts = new TH1D("histBcSelCounterTVXafterBCcuts", "", vecRunList.size(), 0, vecRunList.size());
 
     string alienPathName;
     string runNumber;
@@ -58,42 +63,67 @@ void check_triggers() {
         
         runNumber = vecRunList.at(runCounter).c_str();
 
-        histInfoCounterTVX -> SetBinContent(runCounter+1, counters[0]);
-        histInfoCounterTVX -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
+        histZorroInfoCounterTVX -> SetBinContent(runCounter+1, counters[0]);
+        histZorroInfoCounterTVX -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
 
-        histInfoCounterScalTrig -> SetBinContent(runCounter+1, counters[1]);
-        histInfoCounterScalTrig -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
+        histZorroInfoCounterScalTrig -> SetBinContent(runCounter+1, counters[1]);
+        histZorroInfoCounterScalTrig -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
 
-        histInfoCounterSelTrig -> SetBinContent(runCounter+1, counters[2]);
-        histInfoCounterSelTrig -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
+        histZorroInfoCounterSelTrig -> SetBinContent(runCounter+1, counters[2]);
+        histZorroInfoCounterSelTrig -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
 
-        histSelCounterSelTOI -> SetBinContent(runCounter+1, counters[3]);
-        histSelCounterSelTOI -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
+        histZorroSelCounterSelTOI -> SetBinContent(runCounter+1, counters[3]);
+        histZorroSelCounterSelTOI -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
 
-        histSelCounterAnalysedTrig -> SetBinContent(runCounter+1, counters[4]);
-        histSelCounterAnalysedTrig -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
+        histZorroSelCounterAnalysedTrig -> SetBinContent(runCounter+1, counters[4]);
+        histZorroSelCounterAnalysedTrig -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
+
+        histEvSelCollisionBeforeFiltering -> SetBinContent(runCounter+1, counters[5]);
+        histEvSelCollisionBeforeFiltering -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
+
+        histEvSelCollisionBeforeCuts -> SetBinContent(runCounter+1, counters[6]);
+        histEvSelCollisionBeforeCuts -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
+
+        histEvSelCollisionAfterCuts -> SetBinContent(runCounter+1, counters[7]);
+        histEvSelCollisionAfterCuts -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
+
+        histBcSelCounterTVX -> SetBinContent(runCounter+1, counters[8]);
+        histBcSelCounterTVX -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
+
+        histBcSelCounterTVXafterBCcuts -> SetBinContent(runCounter+1, counters[9]);
+        histBcSelCounterTVXafterBCcuts -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
 
         runCounter++;
     }
 
     TFile *fOut = new TFile(Form("run_lists/%s/%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str()), "RECREATE");
-    histInfoCounterTVX -> Write();
-    histInfoCounterScalTrig -> Write();
-    histInfoCounterSelTrig -> Write();
-    histSelCounterSelTOI -> Write();
-    histSelCounterAnalysedTrig -> Write();
+    histZorroInfoCounterTVX -> Write();
+    histZorroInfoCounterScalTrig -> Write();
+    histZorroInfoCounterSelTrig -> Write();
+    histZorroSelCounterSelTOI -> Write();
+    histZorroSelCounterAnalysedTrig -> Write();
+    histEvSelCollisionBeforeFiltering -> Write();
+    histEvSelCollisionBeforeCuts -> Write();
+    histEvSelCollisionAfterCuts -> Write();
+    histBcSelCounterTVX -> Write();
+    histBcSelCounterTVXafterBCcuts -> Write();
     fOut -> Close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void RetrieveTriggerInfo(TString dirName = "path/to/file", bool fromAlien = true, string triggerMask = "fDiMuon", double counters[5] = 0) {
+void RetrieveTriggerInfo(TString dirName = "path/to/file", bool fromAlien = true, string triggerMask = "fDiMuon", double counters[10] = 0) {
 
     TString fInName;
+    double collisionsBeforeFiltering = 0;
+    double collisionsBeforeCuts = 0;
+    double collisionsAfterCuts = 0;
     double infoTVX = 0;
     double infoScalTrig = 0;
     double infoSelTrig = 0;
     double selTOI = 0;
     double analysedTriggers = 0;
+    double counterTVX = 0;
+    double counterTVXafterBCcuts = 0;
 
     if (fromAlien) {
         TGrid::Connect("alien://");
@@ -120,23 +150,29 @@ void RetrieveTriggerInfo(TString dirName = "path/to/file", bool fromAlien = true
                 TList *list = (TList*) fIn -> Get("table-maker/Statistics");
                 TH2D *histZorroInfo = (TH2D*) list -> FindObject("ZorroInfo");
                 TH2D *histZorroSel = (TH2D*) list -> FindObject("ZorroSel");
+                TH2D *histEventStats = (TH2D*) list -> FindObject("EventStats");
     
                 //std::cout << "inspected TVX: " << histZorroInfo -> GetBinContent(1, histZorroInfo -> GetYaxis() -> FindBin("inspected TVX")) << std::endl;
                 //std::cout << triggerMask << " scalers: " << histZorroInfo -> GetBinContent(1, histZorroInfo -> GetYaxis() -> FindBin(Form("%s scalers", triggerMask.c_str()))) << std::endl;
                 //std::cout << triggerMask << " fSingleMuLow selections: " << histZorroInfo -> GetBinContent(1, histZorroInfo -> GetYaxis() -> FindBin(Form("%s selections", triggerMask.c_str()))) << std::endl;
                 //std::cout << triggerMask << " fSingleMuLow scalers (SEL): " << histZorroSel -> GetBinContent(1, histZorroSel -> GetYaxis() -> FindBin(Form("%s", triggerMask.c_str()))) << std::endl;
-    
-                counters[0] = histZorroInfo -> GetBinContent(1, histZorroInfo -> GetYaxis() -> FindBin("inspected TVX"));
-                counters[1] = histZorroInfo -> GetBinContent(1, histZorroInfo -> GetYaxis() -> FindBin(Form("%s scalers", triggerMask.c_str())));
-                counters[2] = histZorroInfo -> GetBinContent(1, histZorroInfo -> GetYaxis() -> FindBin(Form("%s selections", triggerMask.c_str())));
-                counters[3] = histZorroSel -> GetBinContent(1, histZorroSel -> GetYaxis() -> FindBin(Form("%s", triggerMask.c_str())));
-                counters[4] = histZorroSel -> GetBinContent(1, histZorroSel -> GetYaxis() -> FindBin(Form("%s AnalysedTriggers", triggerMask.c_str())));
 
                 infoTVX += histZorroInfo -> GetBinContent(1, histZorroInfo -> GetYaxis() -> FindBin("inspected TVX"));
                 infoScalTrig += histZorroInfo -> GetBinContent(1, histZorroInfo -> GetYaxis() -> FindBin(Form("%s scalers", triggerMask.c_str())));
                 infoSelTrig += histZorroInfo -> GetBinContent(1, histZorroInfo -> GetYaxis() -> FindBin(Form("%s selections", triggerMask.c_str())));
                 selTOI += histZorroSel -> GetBinContent(1, histZorroSel -> GetYaxis() -> FindBin(Form("%s", triggerMask.c_str())));
                 analysedTriggers += histZorroSel -> GetBinContent(1, histZorroSel -> GetYaxis() -> FindBin(Form("%s AnalysedTriggers", triggerMask.c_str())));
+
+                collisionsBeforeFiltering += histEventStats -> GetBinContent(2, histEventStats -> GetYaxis() -> FindBin("Total"));
+                collisionsBeforeCuts += histEventStats -> GetBinContent(3, histEventStats -> GetYaxis() -> FindBin("Total"));
+                collisionsAfterCuts += histEventStats -> GetBinContent(4, histEventStats -> GetYaxis() -> FindBin("Total"));
+            }
+            if (TString(dirKey -> GetName()).Contains("bc-selection-task")) {
+                TH1D *histCounterTVX = (TH1D*) fIn -> Get("bc-selection-task/hCounterTVX");
+                TH1D *histCounterTVXafterBCcuts = (TH1D*) fIn -> Get("bc-selection-task/hCounterTVXafterBCcuts");
+
+                counterTVX += histCounterTVX -> GetBinContent(1);
+                counterTVXafterBCcuts += histCounterTVXafterBCcuts -> GetBinContent(1);
             }
         }
 
@@ -145,5 +181,12 @@ void RetrieveTriggerInfo(TString dirName = "path/to/file", bool fromAlien = true
         counters[2] = infoSelTrig;
         counters[3] = selTOI;
         counters[4] = analysedTriggers;
+        counters[5] = collisionsBeforeFiltering;
+        counters[6] = collisionsBeforeCuts;
+        counters[7] = collisionsAfterCuts;
+        counters[8] = counterTVX;
+        counters[9] = counterTVXafterBCcuts;
+
+        fIn -> Close();
     }
 }
