@@ -12,11 +12,7 @@
 
 void RetrieveTriggerInfo(TString , bool , string, double [10]);
 
-void check_triggers() {
-    string year = "2024";
-    string period = "LHC24";
-    string triggerMask = "fDiMuon"; // fDiMuon,fSingleMuLow
-
+void get_info_from_zorro(string year = "2024", string period = "LHC24", string triggerMask = "fDiMuon") {
     ifstream fInAlienInputPath(Form("run_lists/%s/%s/alien_input_path.txt", year.c_str(), triggerMask.c_str()));
     if (!fInAlienInputPath.is_open()) {
         std::cout << "Error opening the file!" << std::endl;
