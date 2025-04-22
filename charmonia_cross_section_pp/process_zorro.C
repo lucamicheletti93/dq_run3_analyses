@@ -13,14 +13,14 @@
 
 void RetrieveTriggerInfo(TString , bool , string, double [10]);
 
-void get_info_from_zorro(string year = "2024", string period = "LHC24", string subPeriod = "None", string triggerMask = "fDiMuon") {
-    ifstream fInAlienInputPath(Form("run_lists/%s/%s/alien_input_path.txt", year.c_str(), triggerMask.c_str()));
+void get_info_from_zorro(string year = "2024", string period = "LHC24", string subPeriod = "None", string triggerMask = "fDiMuon", string assocType = "time_assoc") {
+    ifstream fInAlienInputPath(Form("run_lists/%s/%s/%s/alien_input_path.txt", year.c_str(), triggerMask.c_str(), assocType.c_str()));
     if (!fInAlienInputPath.is_open()) {
         std::cout << "Error opening the file!" << std::endl;
         return;
     }
 
-    ifstream fInAlienRunList(Form("run_lists/%s/%s/alien_run_list.txt", year.c_str(), triggerMask.c_str()));
+    ifstream fInAlienRunList(Form("run_lists/%s/%s/%s/alien_run_list.txt", year.c_str(), triggerMask.c_str(), assocType.c_str()));
     if (!fInAlienRunList.is_open()) {
         std::cout << "Error opening the file!" << std::endl;
         return;
@@ -28,7 +28,7 @@ void get_info_from_zorro(string year = "2024", string period = "LHC24", string s
 
     string subRunListName;
     if (subPeriod == "None") {
-        subRunListName = Form("run_lists/%s/%s/alien_run_list.txt", year.c_str(), triggerMask.c_str());
+        subRunListName = Form("run_lists/%s/%s/%s/alien_run_list.txt", year.c_str(), triggerMask.c_str(), assocType.c_str());
     } else {
         subRunListName = Form("run_lists/%s/%s/%s.txt", year.c_str(), triggerMask.c_str(), subPeriod.c_str());
     }
@@ -120,9 +120,9 @@ void get_info_from_zorro(string year = "2024", string period = "LHC24", string s
 
     string fOutName;
     if (subPeriod == "None") {
-        fOutName = Form("run_lists/%s/%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str());
+        fOutName = Form("run_lists/%s/%s_%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str());
     } else {
-        fOutName = Form("run_lists/%s/%s_%s_trigger_summary.root", year.c_str(), subPeriod.c_str(), triggerMask.c_str());
+        fOutName = Form("run_lists/%s/%s_%s_%s_trigger_summary.root", year.c_str(), subPeriod.c_str(), triggerMask.c_str(), assocType.c_str());
     }
 
     TFile *fOut = new TFile(fOutName.c_str(), "RECREATE");
