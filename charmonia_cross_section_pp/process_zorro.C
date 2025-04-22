@@ -9,10 +9,11 @@
 #include <fstream>
 #include <vector>
 #include <filesystem>
+#include <algorithm>
 
 void RetrieveTriggerInfo(TString , bool , string, double [10]);
 
-void get_info_from_zorro(string year = "2024", string period = "LHC24", string triggerMask = "fDiMuon") {
+void get_info_from_zorro(string year = "2024", string period = "LHC24", string subPeriod = "None", string triggerMask = "fDiMuon") {
     ifstream fInAlienInputPath(Form("run_lists/%s/%s/alien_input_path.txt", year.c_str(), triggerMask.c_str()));
     if (!fInAlienInputPath.is_open()) {
         std::cout << "Error opening the file!" << std::endl;
@@ -25,6 +26,19 @@ void get_info_from_zorro(string year = "2024", string period = "LHC24", string t
         return;
     }
 
+    string subRunListName;
+    if (subPeriod == "None") {
+        subRunListName = Form("run_lists/%s/%s/alien_run_list.txt", year.c_str(), triggerMask.c_str());
+    } else {
+        subRunListName = Form("run_lists/%s/%s/%s.txt", year.c_str(), triggerMask.c_str(), subPeriod.c_str());
+    }
+
+    ifstream fInAlienSubRunList(subRunListName);
+    if (!fInAlienSubRunList.is_open()) {
+        std::cout << "Error opening the file!" << std::endl;
+        return;
+    }
+
     double counters[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     std::vector <double> vecInfoCounterTVX;
@@ -33,10 +47,16 @@ void get_info_from_zorro(string year = "2024", string period = "LHC24", string t
     std::vector <double> vecSelCounterSelTOI;
     std::vector <double> vecSelCounterAnalysedTrig;
     std::vector <string> vecRunList;
+    std::vector <string> vecSubRunList;
 
     string alienRunListName;
     while (getline(fInAlienRunList, alienRunListName)) {
         vecRunList.push_back(alienRunListName);
+    }
+
+    string alienSubRunListName;
+    while (getline(fInAlienSubRunList, alienSubRunListName)) {
+        vecSubRunList.push_back(alienSubRunListName);
     }
 
     TH1D *histZorroInfoCounterTVX = new TH1D("histZorroInfoCounterTVX", "", vecRunList.size(), 0, vecRunList.size());
@@ -54,10 +74,16 @@ void get_info_from_zorro(string year = "2024", string period = "LHC24", string t
     string runNumber;
     int runCounter = 0;
     while (getline(fInAlienInputPath, alienPathName)) {
+        runNumber = vecRunList.at(runCounter).c_str();
+
+        std::cout << "Processing Run " << runNumber << " ..." << std::endl;
+        if (std::find(vecSubRunList.begin(), vecSubRunList.end(), runNumber) == vecSubRunList.end()) {
+            runCounter++;
+            continue;
+        }
+
         RetrieveTriggerInfo(alienPathName.c_str(), true, triggerMask, counters);
         //RetrieveTriggerInfo(Form("%s/AOD", alienPathName.c_str()), true, triggerMask, counters);
-        
-        runNumber = vecRunList.at(runCounter).c_str();
 
         histZorroInfoCounterTVX -> SetBinContent(runCounter+1, counters[0]);
         histZorroInfoCounterTVX -> GetXaxis() -> SetBinLabel(runCounter+1, runNumber.c_str());
@@ -92,7 +118,14 @@ void get_info_from_zorro(string year = "2024", string period = "LHC24", string t
         runCounter++;
     }
 
-    TFile *fOut = new TFile(Form("run_lists/%s/%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str()), "RECREATE");
+    string fOutName;
+    if (subPeriod == "None") {
+        fOutName = Form("run_lists/%s/%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str());
+    } else {
+        fOutName = Form("run_lists/%s/%s_%s_trigger_summary.root", year.c_str(), subPeriod.c_str(), triggerMask.c_str());
+    }
+
+    TFile *fOut = new TFile(fOutName.c_str(), "RECREATE");
     histZorroInfoCounterTVX -> Write();
     histZorroInfoCounterScalTrig -> Write();
     histZorroInfoCounterSelTrig -> Write();
@@ -104,6 +137,36 @@ void get_info_from_zorro(string year = "2024", string period = "LHC24", string t
     histBcSelCounterTVX -> Write();
     histBcSelCounterTVXafterBCcuts -> Write();
     fOut -> Close();
+}
+////////////////////////////////////////////////////////////////////////////////
+void luminosity(string year = "2024", string period = "LHC24", string triggerMask = "fDiMuon") {
+    TFile *fIn = new TFile(Form("run_lists/%s/%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str()), "READ");
+    TH1D *histZorroInfoCounterTVX = (TH1D*) fIn -> Get("histZorroInfoCounterTVX");
+    TH1D *histZorroInfoCounterScalTrig = (TH1D*) fIn -> Get("histZorroInfoCounterScalTrig");
+    TH1D *histZorroInfoCounterSelTrig = (TH1D*) fIn -> Get("histZorroInfoCounterSelTrig");
+    TH1D *histZorroSelCounterSelTOI = (TH1D*) fIn -> Get("histZorroSelCounterSelTOI");
+    TH1D *histZorroSelCounterAnalysedTrig = (TH1D*) fIn -> Get("histZorroSelCounterAnalysedTrig");
+    TH1D *histEvSelCollisionBeforeFiltering = (TH1D*) fIn -> Get("histEvSelCollisionBeforeFiltering");
+    TH1D *histEvSelCollisionBeforeCuts = (TH1D*) fIn -> Get("histEvSelCollisionBeforeCuts");
+    TH1D *histEvSelCollisionAfterCuts = (TH1D*) fIn -> Get("histEvSelCollisionAfterCuts");
+    TH1D *histBcSelCounterTVX = (TH1D*) fIn -> Get("histBcSelCounterTVX");
+    TH1D *histBcSelCounterTVXafterBCcuts = (TH1D*) fIn -> Get("histBcSelCounterTVXafterBCcuts");
+
+    const int nRuns = histZorroInfoCounterTVX -> GetEntries();
+    double inspectedTVX = histZorroInfoCounterTVX -> Integral();
+    double selectionsZorroInfo = histZorroInfoCounterSelTrig -> Integral();
+    double selectionsZorroSel = histZorroSelCounterSelTOI -> Integral();
+    double selectionsAnalysedTrig = histZorroSelCounterAnalysedTrig -> Integral();
+    double scalers = histZorroInfoCounterScalTrig -> Integral();
+
+    double luminosityZorroInfo = (inspectedTVX * (selectionsZorroInfo / scalers)) / 59.4e9;
+    double luminosityZorroSel = (inspectedTVX * (selectionsZorroSel / scalers)) / 59.4e9;
+    double luminosityAnalysedTrig = (inspectedTVX * (selectionsAnalysedTrig / scalers)) / 59.4e9;
+
+    std::cout << "luminosityZorroInfo    = " << luminosityZorroInfo << " pb-1" << std::endl;
+    std::cout << "luminosityZorroSel     = " << luminosityZorroSel << " pb-1" << std::endl;
+    std::cout << "luminosityAnalysedTrig = " << luminosityAnalysedTrig << " pb-1" << std::endl;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
