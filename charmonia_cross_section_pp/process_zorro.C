@@ -339,6 +339,15 @@ void luminosity(string year = "2024", string period = "LHC24af", string triggerM
     double bcCounterTVXafterBCcuts = histBcSelCounterTVXafterBCcuts -> Integral();
     double evColCounterTVX = histEvSelColCounterTVX -> Integral();
 
+    TH1D *histLumiSummary = new TH1D("histLumiSummary", "", 7, 0, 7);
+    histLumiSummary -> GetXaxis() -> SetBinLabel(1, "bcCounterTVX");
+    histLumiSummary -> GetXaxis() -> SetBinLabel(2, "bcCounterTVXafterBCcuts");
+    histLumiSummary -> GetXaxis() -> SetBinLabel(3, "bcCounterEfficiency");
+    histLumiSummary -> GetXaxis() -> SetBinLabel(4, "nEvtsBcSel");
+    histLumiSummary -> GetXaxis() -> SetBinLabel(5, "nEvtsBcSelAfterCuts");
+    histLumiSummary -> GetXaxis() -> SetBinLabel(6, "luminosityBcSel");
+    histLumiSummary -> GetXaxis() -> SetBinLabel(7, "luminosityBcSelAfterCuts");
+
     std::cout << "****************************************************" << std::endl;
     std::cout << "nRuns = " << nRuns << std::endl;
     std::cout << "inspectedTVX = " << inspectedTVX << std::endl;
@@ -354,7 +363,16 @@ void luminosity(string year = "2024", string period = "LHC24af", string triggerM
     std::cout << "evColCounterTVX = " << evColCounterTVX << std::endl;
     std::cout << "****************************************************" << std::endl;
 
+    const double ppCrossSection = 59.4e9; // pb-1
+    double bcCounterEfficiency = bcCounterTVXafterBCcuts / bcCounterTVX;
+    double nEvtsBcSel, nEvtsBcSelAfterCuts = -999;
+    double luminosityBcSel, luminosityBcSelAfterCuts = -999;
     if (triggerMask.find("minBias") != std::string::npos) {
+        nEvtsBcSel = (bcCounterTVX * (collsAfterCuts / collsBeforeCuts));
+        nEvtsBcSelAfterCuts = (bcCounterTVXafterBCcuts * (collsAfterCuts / collsBeforeCuts));
+        luminosityBcSel = nEvtsBcSel / ppCrossSection;
+        luminosityBcSelAfterCuts = nEvtsBcSelAfterCuts / ppCrossSection;
+
         double luminosityBcSelMinBias = (bcCounterTVX * (collsAfterCuts / collsBeforeCuts)) / 59.4e9;
         double luminosityBcSelAfterCutsMinBias = (bcCounterTVXafterBCcuts * (collsAfterCuts / collsBeforeCuts)) / 59.4e9;
         double luminosityEvSelMinBias = (evColCounterTVX * (collsAfterCuts / collsBeforeCuts)) / 59.4e9;
@@ -368,25 +386,41 @@ void luminosity(string year = "2024", string period = "LHC24af", string triggerM
         double luminosityZorroInfo = (inspectedTVX * (selectionsZorroInfo / scalers)) / 59.4e9;
         double luminosityZorroSel = (inspectedTVX * (selectionsZorroSel / scalers)) / 59.4e9;
         double luminosityAnalysedTrig = (inspectedTVX * (selectionsAnalysedTrig / scalers)) / 59.4e9;
-
         std::cout << "BC selection efficiency = " << bcCounterTVXafterBCcuts / bcCounterTVX << std::endl;
         std::cout << "N. events TOI           = " << (inspectedTVX * (selectionsZorroSel / scalers)) << std::endl;
         std::cout << "N. events AnalysedTrig  = " << (inspectedTVX * (selectionsAnalysedTrig / scalers)) << std::endl;
-        //std::cout << "luminosityZorroInfo    = " << luminosityZorroInfo << " pb-1" << std::endl;
+        std::cout << "luminosityZorroInfo    = " << luminosityZorroInfo << " pb-1" << std::endl;
         std::cout << "luminosity TOI          = " << luminosityZorroSel << " pb-1" << std::endl;
         std::cout << "luminosity AnalysedTrig = " << luminosityAnalysedTrig << " pb-1" << std::endl;
+
+        nEvtsBcSel = (inspectedTVX * (selectionsAnalysedTrig / scalers));
+        nEvtsBcSelAfterCuts = (inspectedTVX * (selectionsZorroSel / scalers));
+        luminosityBcSel = nEvtsBcSel / ppCrossSection;
+        luminosityBcSelAfterCuts = nEvtsBcSelAfterCuts / ppCrossSection;
     }
+    histLumiSummary -> SetBinContent(1, bcCounterTVX);
+    histLumiSummary -> SetBinContent(2, bcCounterTVXafterBCcuts);
+    histLumiSummary -> SetBinContent(3, bcCounterEfficiency);
+    histLumiSummary -> SetBinContent(4, nEvtsBcSel);
+    histLumiSummary -> SetBinContent(5, nEvtsBcSelAfterCuts);
+    histLumiSummary -> SetBinContent(6, luminosityBcSel);
+    histLumiSummary -> SetBinContent(7, luminosityBcSelAfterCuts);
+
+    TFile *fOut = new TFile(Form("data/%s/%s_%s_%s_luminosity.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str()), "RECREATE");
+    histLumiSummary -> Write();
+    fOut -> Close();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void check_normalization() {
     LoadStyle();
 
     // Skimmed, std. assoc.
-    //double lumiSkimStdAssoc = 1.88237; //pb-1
-    double lumiSkimStdAssoc = 2.70804;
-    double bcSelEffSkimStdAssoc = 0.825918;
-    //double bcSelEffSkimStdAssoc = 1;
-    double collsAfterCutsSkimStdAssoc = 1.11813e+11;
+    TFile *fInLumiSkimStdAssoc = TFile::Open("data/2024/LHC24af_fDiMuon_std_assoc_luminosity.root");
+    TH1D *histLumiSkimStdAssoc = (TH1D*) fInLumiSkimStdAssoc -> Get("histLumiSummary");
+    double bcSelEffSkimStdAssoc = histLumiSkimStdAssoc -> GetBinContent(histLumiSkimStdAssoc -> GetXaxis() -> FindBin("bcCounterEfficiency"));
+    double nEvtsSkimStdAssoc = histLumiSkimStdAssoc -> GetBinContent(histLumiSkimStdAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
+    double lumiSkimStdAssoc = histLumiSkimStdAssoc -> GetBinContent(histLumiSkimStdAssoc -> GetXaxis() -> FindBin("luminosityBcSel"));
+
     TFile *fInSkimStdAssoc = TFile::Open("data/2024/LHC24af_fDiMuon_std_assoc.root");
     TList *listSkimStdAssoc = (TList*) fInSkimStdAssoc -> Get("analysis-same-event-pairing/output");
     TList *listSkimStdAssocSE = (TList*) listSkimStdAssoc -> FindObject("PairsMuonSEPM_muonLowPt210SigmaPDCA");
@@ -396,35 +430,19 @@ void check_normalization() {
     TH1D *histProjIntSkimStdAssoc = (TH1D*) histSparseSkimStdAssoc -> Projection(0, "Proj_Mass_Pt_Rapidity");
     TH1D *histProjIntSkimStdAssocNormToColl = (TH1D*) histProjIntSkimStdAssoc -> Clone("histProjIntSkimStdAssocNormToColl");
     histProjIntSkimStdAssoc -> Scale(1 / (bcSelEffSkimStdAssoc * lumiSkimStdAssoc));
-    //histProjIntSkimStdAssoc -> Scale(bcSelEffSkimStdAssoc / lumiSkimStdAssoc);
     SetHist(histProjIntSkimStdAssoc, kRed+1, 20, 0.8, kRed+1);
-    histProjIntSkimStdAssocNormToColl -> Scale(1. / (bcSelEffSkimStdAssoc * collsAfterCutsSkimStdAssoc));
+    histProjIntSkimStdAssocNormToColl -> Scale(1. / (bcSelEffSkimStdAssoc * nEvtsSkimStdAssoc));
     SetHist(histProjIntSkimStdAssocNormToColl, kRed+1, 20, 0.8, kRed+1);
 
-    // Skimmed, std. assoc. old
-    double lumiSkimStdAssocOld = 1.8008; //pb-1
-    double bcSelEffSkimStdAssocOld = 0.82617;
-    //double bcSelEffSkimStdAssocOld = 1;
-    double collsAfterCutsSkimStdAssocOld = 1.06967e+11;
-    TFile *fInSkimStdAssocOld = TFile::Open("data/2024/LHC24af_fDiMuon_std_assoc_old.root");
-    TList *listSkimStdAssocOld = (TList*) fInSkimStdAssocOld -> Get("analysis-same-event-pairing/output");
-    TList *listSkimStdAssocOldSE = (TList*) listSkimStdAssocOld -> FindObject("PairsMuonSEPM_muonLowPt210SigmaPDCA");
-    THnSparseD *histSparseSkimStdAssocOld = (THnSparseD*) listSkimStdAssocOldSE -> FindObject("Mass_Pt_Rapidity");
-    histSparseSkimStdAssocOld -> GetAxis(1) -> SetRangeUser(0., 20.);
-    histSparseSkimStdAssocOld -> GetAxis(2) -> SetRangeUser(2.5, 4);
-    TH1D *histProjIntSkimStdAssocOld = (TH1D*) histSparseSkimStdAssocOld -> Projection(0, "Proj_Mass_Pt_Rapidity");
-    TH1D *histProjIntSkimStdAssocOldNormToColl = (TH1D*) histProjIntSkimStdAssocOld -> Clone("histProjIntSkimStdAssocOldNormToColl");
-    histProjIntSkimStdAssocOld -> Scale(1 / (bcSelEffSkimStdAssocOld * lumiSkimStdAssocOld));
-    //histProjIntSkimStdAssocOld -> Scale(bcSelEffSkimStdAssocOld / lumiSkimStdAssocOld);
-    SetHist(histProjIntSkimStdAssocOld, kRed+1, 21, 0.8, kRed+1);
-    histProjIntSkimStdAssocOldNormToColl -> Scale(1. / (bcSelEffSkimStdAssocOld * collsAfterCutsSkimStdAssocOld));
-    SetHist(histProjIntSkimStdAssocOldNormToColl, kRed+1, 21, 0.8, kRed+1);
-
     // Skimmed, time assoc.
-    double lumiSkimTimeAssoc = 2.38122; //pb-1
-    double bcSelEffSkimTimeAssoc = 0.822208;
-    //double bcSelEffSkimTimeAssoc = 1;
-    double collsAfterCutsSkimTimeAssoc = 1.41444e+11;
+    // WARNING! for the time association you have to take into account the duplication using zorro
+    TFile *fInLumiSkimTimeAssoc = TFile::Open("data/2024/LHC24af_fDiMuon_time_assoc_luminosity.root");
+    TH1D *histLumiSkimTimeAssoc = (TH1D*) fInLumiSkimTimeAssoc -> Get("histLumiSummary");
+    double bcSelEffSkimTimeAssoc = histLumiSkimTimeAssoc -> GetBinContent(histLumiSkimTimeAssoc -> GetXaxis() -> FindBin("bcCounterEfficiency"));
+    double nEvtsSkimTimeAssoc = histLumiSkimTimeAssoc -> GetBinContent(histLumiSkimTimeAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
+    double nEvtsAfterCutsSkimTimeAssoc = histLumiSkimTimeAssoc -> GetBinContent(histLumiSkimTimeAssoc -> GetXaxis() -> FindBin("nEvtsBcSelAfterCuts"));
+    double lumiSkimTimeAssoc = histLumiSkimTimeAssoc -> GetBinContent(histLumiSkimTimeAssoc -> GetXaxis() -> FindBin("luminosityBcSel"));
+
     TFile *fInSkimTimeAssoc = TFile::Open("data/2024/LHC24af_fDiMuon_time_assoc.root");
     TList *listSkimTimeAssoc = (TList*) fInSkimTimeAssoc -> Get("analysis-same-event-pairing/output");
     TList *listSkimTimeAssocSE = (TList*) listSkimTimeAssoc -> FindObject("PairsMuonSEPM_muonLowPt210SigmaPDCA");
@@ -433,19 +451,19 @@ void check_normalization() {
     histSparseSkimTimeAssoc -> GetAxis(2) -> SetRangeUser(2.5, 4);
     TH1D *histProjIntSkimTimeAssoc = (TH1D*) histSparseSkimTimeAssoc -> Projection(0, "Proj_Mass_Pt_Rapidity");
     TH1D *histProjIntSkimTimeAssocNormToColl = (TH1D*) histProjIntSkimTimeAssoc -> Clone("histProjIntSkimTimeAssocNormToColl");
-    histProjIntSkimTimeAssoc -> Scale((1.65831/2.38122) / (bcSelEffSkimTimeAssoc * lumiSkimTimeAssoc));
-    //histProjIntSkimTimeAssoc -> Scale(bcSelEffSkimTimeAssoc / lumiSkimTimeAssoc);
+    histProjIntSkimTimeAssoc -> Scale((nEvtsAfterCutsSkimTimeAssoc / nEvtsSkimTimeAssoc) / (bcSelEffSkimTimeAssoc * lumiSkimTimeAssoc));
     SetHist(histProjIntSkimTimeAssoc, kRed+1, 24, 0.8, kRed+1);
-    histProjIntSkimTimeAssocNormToColl -> Scale(1. / (bcSelEffSkimTimeAssoc * collsAfterCutsSkimTimeAssoc));
+    histProjIntSkimTimeAssocNormToColl -> Scale((nEvtsAfterCutsSkimTimeAssoc / nEvtsSkimTimeAssoc) / (bcSelEffSkimTimeAssoc * nEvtsSkimTimeAssoc));
     SetHist(histProjIntSkimTimeAssocNormToColl, kRed+1, 24, 0.8, kRed+1);
 
     // Min. Bias, std. assoc.
-    double lumiMinBiasStdAssoc = 0.253183; //pb-1
-    //double lumiMinBiasStdAssoc = 0.21952; //pb-1
-    //double lumiMinBiasStdAssoc = 0.197651; //pb-1
-    //double bcSelEffMinBiasStdAssoc = 0.780665;
-    double bcSelEffMinBiasStdAssoc = 1;
-    double collsAfterCutsMinBiasStdAssoc = 1.46801e+10;
+    // WARNING! event selection already computed, bcSelCutEfficiecny not taken into account (already included in the event selection)
+    // this correction is necessary in the trigger for inspectedTVX, for minBias it should not be necessary
+    TFile *fInLumiMinBiasStdAssoc = TFile::Open("data/2024/LHC24_minBias_std_assoc_luminosity.root");
+    TH1D *histLumiMinBiasStdAssoc = (TH1D*) fInLumiMinBiasStdAssoc -> Get("histLumiSummary");
+    double nEvtsMinBiasStdAssoc = histLumiMinBiasStdAssoc -> GetBinContent(histLumiMinBiasStdAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
+    double lumiMinBiasStdAssoc = histLumiMinBiasStdAssoc -> GetBinContent(histLumiMinBiasStdAssoc -> GetXaxis() -> FindBin("luminosityBcSel"));
+
     TFile *fInMinBiasStdAssoc = TFile::Open("data/2024/LHC24_minBias_std_assoc.root");
     TList *listMinBiasStdAssoc = (TList*) fInMinBiasStdAssoc -> Get("analysis-same-event-pairing/output");
     TList *listMinBiasStdAssocSE = (TList*) listMinBiasStdAssoc -> FindObject("PairsMuonSEPM_muonLowPt210SigmaPDCA");
@@ -455,15 +473,17 @@ void check_normalization() {
     TH1D *histProjIntMinBiasStdAssoc = (TH1D*) histSparseMinBiasStdAssoc -> Projection(0, "Proj_Mass_Pt_Rapidity");
     TH1D *histProjIntMinBiasStdAssocNormToColl = (TH1D*) histProjIntMinBiasStdAssoc -> Clone("histProjIntMinBiasStdAssocNormToColl");
     double countsMinBiasStdAssoc = histProjIntMinBiasStdAssoc -> Integral();
-    histProjIntMinBiasStdAssoc -> Scale(1. / (lumiMinBiasStdAssoc * bcSelEffMinBiasStdAssoc));
+    histProjIntMinBiasStdAssoc -> Scale(1. / (lumiMinBiasStdAssoc));
     SetHist(histProjIntMinBiasStdAssoc, kBlue+1, 20, 0.8, kBlue+1);
-    histProjIntMinBiasStdAssocNormToColl -> Scale(1. / collsAfterCutsMinBiasStdAssoc);
+    histProjIntMinBiasStdAssocNormToColl -> Scale(1. / nEvtsMinBiasStdAssoc);
     SetHist(histProjIntMinBiasStdAssocNormToColl, kBlue+1, 20, 0.8, kBlue+1);
 
     // Min. Bias, std. assoc. + sel8
-    double lumiMinBiasSel8StdAssoc = 0.185891; //pb-1
-    double bcSelEffMinBiasSel8StdAssoc = 1;
-    double collsAfterCutsMinBiasSel8StdAssoc = 1.07787e+10;
+    TFile *fInLumiMinBiasSel8StdAssoc = TFile::Open("data/2024/LHC24_minBiasSel8_std_assoc_luminosity.root");
+    TH1D *histLumiMinBiasSel8StdAssoc = (TH1D*) fInLumiMinBiasSel8StdAssoc -> Get("histLumiSummary");
+    double nEvtsMinBiasSel8StdAssoc = histLumiMinBiasSel8StdAssoc -> GetBinContent(histLumiMinBiasSel8StdAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
+    double lumiMinBiasSel8StdAssoc = histLumiMinBiasSel8StdAssoc -> GetBinContent(histLumiMinBiasSel8StdAssoc -> GetXaxis() -> FindBin("luminosityBcSel"));
+
     TFile *fInMinBiasSel8StdAssoc = TFile::Open("data/2024/LHC24_minBiasSel8_std_assoc.root");
     TList *listMinBiasSel8StdAssoc = (TList*) fInMinBiasSel8StdAssoc -> Get("analysis-same-event-pairing/output");
     TList *listMinBiasSel8StdAssocSE = (TList*) listMinBiasSel8StdAssoc -> FindObject("PairsMuonSEPM_muonLowPt210SigmaPDCA");
@@ -473,19 +493,17 @@ void check_normalization() {
     TH1D *histProjIntMinBiasSel8StdAssoc = (TH1D*) histSparseMinBiasSel8StdAssoc -> Projection(0, "Proj_Mass_Pt_Rapidity");
     TH1D *histProjIntMinBiasSel8StdAssocNormToColl = (TH1D*) histProjIntMinBiasSel8StdAssoc -> Clone("histProjIntMinBiasSel8StdAssocNormToColl");
     double countsMinBiasSel8StdAssoc = histProjIntMinBiasSel8StdAssoc -> Integral();
-    histProjIntMinBiasSel8StdAssoc -> Scale(1. / (lumiMinBiasSel8StdAssoc * bcSelEffMinBiasSel8StdAssoc));
+    histProjIntMinBiasSel8StdAssoc -> Scale(1. / (lumiMinBiasSel8StdAssoc));
     SetHist(histProjIntMinBiasSel8StdAssoc, kAzure+4, 20, 0.8, kAzure+4);
-    histProjIntMinBiasSel8StdAssocNormToColl -> Scale(1. / collsAfterCutsMinBiasSel8StdAssoc);
+    histProjIntMinBiasSel8StdAssocNormToColl -> Scale(1. / nEvtsMinBiasSel8StdAssoc);
     SetHist(histProjIntMinBiasSel8StdAssocNormToColl, kAzure+4, 20, 0.8, kAzure+4);
 
     // Min. Bias, time assoc.
-    //double lumiMinBiasTimeAssoc = 0.246436;
-    double lumiMinBiasTimeAssoc = 0.246436 * (lumiSkimTimeAssoc / lumiSkimStdAssoc); //pb-1
-    //double lumiMinBiasTimeAssoc = 0.213682 * (lumiSkimTimeAssoc / lumiSkimStdAssoc); //pb-1
-    //double lumiMinBiasTimeAssoc = 0.192402 * (lumiSkimTimeAssoc / lumiSkimStdAssoc); //pb-1
-    //double bcSelEffMinBiasTimeAssoc = 0.780739;
-    double bcSelEffMinBiasTimeAssoc = 1;
-    double collsAfterCutsMinBiasTimeAssoc = 1.42887e+10;
+    TFile *fInLumiMinBiasTimeAssoc = TFile::Open("data/2024/LHC24_minBias_time_assoc_luminosity.root");
+    TH1D *histLumiMinBiasTimeAssoc = (TH1D*) fInLumiMinBiasTimeAssoc -> Get("histLumiSummary");
+    double nEvtsMinBiasTimeAssoc = histLumiMinBiasTimeAssoc -> GetBinContent(histLumiMinBiasTimeAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
+    double lumiMinBiasTimeAssoc = histLumiMinBiasTimeAssoc -> GetBinContent(histLumiMinBiasTimeAssoc -> GetXaxis() -> FindBin("luminosityBcSel"));
+
     TFile *fInMinBiasTimeAssoc = TFile::Open("data/2024/LHC24_minBias_time_assoc.root");
     TList *listMinBiasTimeAssoc = (TList*) fInMinBiasTimeAssoc -> Get("analysis-same-event-pairing/output");
     TList *listMinBiasTimeAssocSE = (TList*) listMinBiasTimeAssoc -> FindObject("PairsMuonSEPM_muonLowPt210SigmaPDCA");
@@ -494,16 +512,21 @@ void check_normalization() {
     histSparseMinBiasTimeAssoc -> GetAxis(2) -> SetRangeUser(2.5, 4);
     TH1D *histProjIntMinBiasTimeAssoc = (TH1D*) histSparseMinBiasTimeAssoc -> Projection(0, "Proj_Mass_Pt_Rapidity");
     TH1D *histProjIntMinBiasTimeAssocNormToColl = (TH1D*) histProjIntMinBiasTimeAssoc -> Clone("histProjIntMinBiasTimeAssocNormToColl");
+
     double countsMinBiasTimeAssoc = histProjIntMinBiasTimeAssoc -> Integral();
-    histProjIntMinBiasTimeAssoc -> Scale(1. / (lumiMinBiasTimeAssoc * bcSelEffMinBiasTimeAssoc));
+    double duplCorrFactorMinBiasTimeAssoc = (countsMinBiasStdAssoc / nEvtsMinBiasStdAssoc) / (countsMinBiasTimeAssoc / nEvtsMinBiasTimeAssoc);
+    
+    histProjIntMinBiasTimeAssoc -> Scale(duplCorrFactorMinBiasTimeAssoc / (lumiMinBiasTimeAssoc));
     SetHist(histProjIntMinBiasTimeAssoc, kBlue+1, 24, 0.8, kBlue+1);
-    histProjIntMinBiasTimeAssocNormToColl -> Scale(1. / collsAfterCutsMinBiasTimeAssoc);
+    histProjIntMinBiasTimeAssocNormToColl -> Scale(duplCorrFactorMinBiasTimeAssoc / nEvtsMinBiasTimeAssoc);
     SetHist(histProjIntMinBiasTimeAssocNormToColl, kBlue+1, 24, 0.8, kBlue+1);
 
     // Min. Bias, time assoc. + sel8
-    double lumiMinBiasSel8TimeAssoc = 0.181515 * (lumiSkimTimeAssoc / lumiSkimStdAssoc); //pb-1
-    double bcSelEffMinBiasSel8TimeAssoc = 1;
-    double collsAfterCutsMinBiasSel8TimeAssoc = 1.05237e+10;
+    TFile *fInLumiMinBiasSel8TimeAssoc = TFile::Open("data/2024/LHC24_minBiasSel8_time_assoc_luminosity.root");
+    TH1D *histLumiMinBiasSel8TimeAssoc = (TH1D*) fInLumiMinBiasSel8TimeAssoc -> Get("histLumiSummary");
+    double nEvtsMinBiasSel8TimeAssoc = histLumiMinBiasSel8TimeAssoc -> GetBinContent(histLumiMinBiasSel8TimeAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
+    double lumiMinBiasSel8TimeAssoc = histLumiMinBiasSel8TimeAssoc -> GetBinContent(histLumiMinBiasSel8TimeAssoc -> GetXaxis() -> FindBin("luminosityBcSel"));
+
     TFile *fInMinBiasSel8TimeAssoc = TFile::Open("data/2024/LHC24_minBiasSel8_time_assoc.root");
     TList *listMinBiasSel8TimeAssoc = (TList*) fInMinBiasSel8TimeAssoc -> Get("analysis-same-event-pairing/output");
     TList *listMinBiasSel8TimeAssocSE = (TList*) listMinBiasSel8TimeAssoc -> FindObject("PairsMuonSEPM_muonLowPt210SigmaPDCA");
@@ -512,16 +535,19 @@ void check_normalization() {
     histSparseMinBiasSel8TimeAssoc -> GetAxis(2) -> SetRangeUser(2.5, 4);
     TH1D *histProjIntMinBiasSel8TimeAssoc = (TH1D*) histSparseMinBiasSel8TimeAssoc -> Projection(0, "Proj_Mass_Pt_Rapidity");
     TH1D *histProjIntMinBiasSel8TimeAssocNormToColl = (TH1D*) histProjIntMinBiasSel8TimeAssoc -> Clone("histProjIntMinBiasSel8TimeAssocNormToColl");
+
     double countsMinBiasSel8TimeAssoc = histProjIntMinBiasSel8TimeAssoc -> Integral();
-    histProjIntMinBiasSel8TimeAssoc -> Scale(1. / (lumiMinBiasSel8TimeAssoc * bcSelEffMinBiasSel8TimeAssoc));
+    double duplCorrFactorMinBiasSel8TimeAssoc = (countsMinBiasSel8StdAssoc / nEvtsMinBiasSel8StdAssoc) / (countsMinBiasSel8TimeAssoc / nEvtsMinBiasSel8TimeAssoc);
+    
+    histProjIntMinBiasSel8TimeAssoc -> Scale(duplCorrFactorMinBiasSel8TimeAssoc / (lumiMinBiasSel8TimeAssoc));
     SetHist(histProjIntMinBiasSel8TimeAssoc, kAzure+4, 24, 0.8, kAzure+4);
-    histProjIntMinBiasSel8TimeAssocNormToColl -> Scale(1. / collsAfterCutsMinBiasSel8TimeAssoc);
+    histProjIntMinBiasSel8TimeAssocNormToColl -> Scale(duplCorrFactorMinBiasSel8TimeAssoc / nEvtsMinBiasSel8TimeAssoc);
     SetHist(histProjIntMinBiasSel8TimeAssocNormToColl, kAzure+4, 24, 0.8, kAzure+4);
 
-    std::cout << "Min Bias dimuons time assoc. = " << countsMinBiasTimeAssoc << " ; coll. after cuts = " << collsAfterCutsMinBiasTimeAssoc << std::endl;
-    std::cout << "Min Bias dimuons std. assoc. = " << countsMinBiasStdAssoc << " ; coll. after cuts = " << collsAfterCutsMinBiasStdAssoc << std::endl;
-    std::cout << "Correction factor from inv. mass = " << (countsMinBiasTimeAssoc / collsAfterCutsMinBiasTimeAssoc) / (countsMinBiasStdAssoc / collsAfterCutsMinBiasStdAssoc) << std::endl;
-    std::cout << "Correction factor from zorro     = " << lumiSkimTimeAssoc / lumiSkimStdAssoc << std::endl;
+    //std::cout << "Min Bias dimuons time assoc. = " << countsMinBiasTimeAssoc << " ; coll. after cuts = " << collsAfterCutsMinBiasTimeAssoc << std::endl;
+    //std::cout << "Min Bias dimuons std. assoc. = " << countsMinBiasStdAssoc << " ; coll. after cuts = " << collsAfterCutsMinBiasStdAssoc << std::endl;
+    //std::cout << "Correction factor from inv. mass = " << (countsMinBiasTimeAssoc / collsAfterCutsMinBiasTimeAssoc) / (countsMinBiasStdAssoc / collsAfterCutsMinBiasStdAssoc) << std::endl;
+    //std::cout << "Correction factor from zorro     = " << lumiSkimTimeAssoc / lumiSkimStdAssoc << std::endl;
 
     TCanvas *canvasCompMassSpectra = new TCanvas("canvasCompMassSpectra", "", 800, 600);
     gPad -> SetLogy(true);
@@ -530,12 +556,11 @@ void check_normalization() {
     histProjIntSkimStdAssoc -> GetXaxis() -> SetTitle("#it{M}_{#mu#mu} (GeV/#it{c})");
     histProjIntSkimStdAssoc -> GetYaxis() -> SetTitle("Counts");
     histProjIntSkimStdAssoc -> Draw("EP");
-    //histProjIntSkimStdAssocOld -> Draw("EP SAME");
     histProjIntSkimTimeAssoc -> Draw("EP SAME");
     histProjIntMinBiasStdAssoc -> Draw("EP SAME");
     histProjIntMinBiasTimeAssoc -> Draw("EP SAME");
-    histProjIntMinBiasSel8StdAssoc -> Draw("EP SAME");
-    histProjIntMinBiasSel8TimeAssoc -> Draw("EP SAME");
+    //histProjIntMinBiasSel8StdAssoc -> Draw("EP SAME");
+    //histProjIntMinBiasSel8TimeAssoc -> Draw("EP SAME");
 
     TLegend *legendCompMassSpectra = new TLegend(0.6, 0.57, 0.8, 0.82, " ", "brNDC");
     SetLegend(legendCompMassSpectra);
@@ -543,8 +568,8 @@ void check_normalization() {
     legendCompMassSpectra -> AddEntry(histProjIntSkimTimeAssoc, "Skimmed, time assoc", "EP");
     legendCompMassSpectra -> AddEntry(histProjIntMinBiasStdAssoc, "MB, std. assoc", "EP");
     legendCompMassSpectra -> AddEntry(histProjIntMinBiasTimeAssoc, "MB, time assoc", "EP");
-    legendCompMassSpectra -> AddEntry(histProjIntMinBiasSel8StdAssoc, "MB, std. assoc + sel8", "EP");
-    legendCompMassSpectra -> AddEntry(histProjIntMinBiasSel8TimeAssoc, "MB, time assoc + sel8", "EP");
+    //legendCompMassSpectra -> AddEntry(histProjIntMinBiasSel8StdAssoc, "MB, std. assoc + sel8", "EP");
+    //legendCompMassSpectra -> AddEntry(histProjIntMinBiasSel8TimeAssoc, "MB, time assoc + sel8", "EP");
     legendCompMassSpectra -> Draw();
 
     // Compute the ratio
@@ -566,7 +591,7 @@ void check_normalization() {
 
     TCanvas *canvasRatioMassSpectra = new TCanvas("canvasRatioMassSpectra", "", 800, 600);
     histRatioIntSkimStdSkimTimeAssoc -> GetXaxis() -> SetRangeUser(2, 5);
-    histRatioIntSkimStdSkimTimeAssoc -> GetYaxis() -> SetRangeUser(0.0, 2.0);
+    histRatioIntSkimStdSkimTimeAssoc -> GetYaxis() -> SetRangeUser(0.5, 1.5);
     histRatioIntSkimStdSkimTimeAssoc -> GetYaxis() -> SetTitle("Ratio");
     histRatioIntSkimStdSkimTimeAssoc -> Draw("EP");
     histRatioIntSkimStdMinBiasStdAssoc -> Draw("EP SAME");
