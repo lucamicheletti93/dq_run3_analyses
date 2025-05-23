@@ -20,28 +20,28 @@
 
 void RetrieveTriggerInfo(TString , bool , string, double [11]);
 
-void get_normalization_from_grid(string year = "2024", string period = "LHC24", string subPeriod = "None", string triggerMask = "fDiMuon", string assocType = "time_assoc") {
-    ifstream fInAlienInputPath(Form("run_lists/%s/%s/%s/alien_input_path.txt", year.c_str(), triggerMask.c_str(), assocType.c_str()));
-    if (!fInAlienInputPath.is_open()) {
+void get_normalization_from_multiple_files(string year = "2024", string period = "LHC24", string subPeriod = "None", string triggerMask = "fDiMuon", string assocType = "time_assoc", string location = "alien") {
+    ifstream fInInputPath(Form("run_lists/%s/%s/%s/%s_input_path.txt", year.c_str(), triggerMask.c_str(), assocType.c_str(), location.c_str()));
+    if (!fInInputPath.is_open()) {
         std::cout << "Error opening the file!" << std::endl;
         return;
     }
 
-    ifstream fInAlienRunList(Form("run_lists/%s/%s/%s/alien_run_list.txt", year.c_str(), triggerMask.c_str(), assocType.c_str()));
-    if (!fInAlienRunList.is_open()) {
+    ifstream fInRunList(Form("run_lists/%s/%s/%s/%s_run_list.txt", year.c_str(), triggerMask.c_str(), assocType.c_str(), location.c_str()));
+    if (!fInRunList.is_open()) {
         std::cout << "Error opening the file!" << std::endl;
         return;
     }
 
     string subRunListName;
     if (subPeriod == "None") {
-        subRunListName = Form("run_lists/%s/%s/%s/alien_run_list.txt", year.c_str(), triggerMask.c_str(), assocType.c_str());
+        subRunListName = Form("run_lists/%s/%s/%s/%s_run_list.txt", year.c_str(), triggerMask.c_str(), assocType.c_str(), location.c_str());
     } else {
         subRunListName = Form("run_lists/%s/%s/%s.txt", year.c_str(), triggerMask.c_str(), subPeriod.c_str());
     }
 
-    ifstream fInAlienSubRunList(subRunListName);
-    if (!fInAlienSubRunList.is_open()) {
+    ifstream fInSubRunList(subRunListName);
+    if (!fInSubRunList.is_open()) {
         std::cout << "Error opening the file!" << std::endl;
         return;
     }
@@ -57,12 +57,12 @@ void get_normalization_from_grid(string year = "2024", string period = "LHC24", 
     std::vector <string> vecSubRunList;
 
     string alienRunListName;
-    while (getline(fInAlienRunList, alienRunListName)) {
+    while (getline(fInRunList, alienRunListName)) {
         vecRunList.push_back(alienRunListName);
     }
 
     string alienSubRunListName;
-    while (getline(fInAlienSubRunList, alienSubRunListName)) {
+    while (getline(fInSubRunList, alienSubRunListName)) {
         vecSubRunList.push_back(alienSubRunListName);
     }
 
@@ -78,11 +78,11 @@ void get_normalization_from_grid(string year = "2024", string period = "LHC24", 
     TH1D *histBcSelCounterTVXafterBCcuts = new TH1D("histBcSelCounterTVXafterBCcuts", "", vecSubRunList.size(), 0, vecSubRunList.size());
     TH1D *histEvSelColCounterTVX = new TH1D("histEvSelColCounterTVX", "", vecSubRunList.size(), 0, vecSubRunList.size());
 
-    string alienPathName;
+    string pathName;
     string runNumber;
     int runCounter = 0;
     int subRunCounter = 0;
-    while (getline(fInAlienInputPath, alienPathName)) {
+    while (getline(fInInputPath, pathName)) {
         runNumber = vecRunList.at(runCounter).c_str();
 
         std::cout << "Processing Run " << runNumber << " ..." << std::endl;
@@ -91,8 +91,11 @@ void get_normalization_from_grid(string year = "2024", string period = "LHC24", 
             continue;
         }
 
-        RetrieveTriggerInfo(alienPathName.c_str(), true, triggerMask, counters);
-        //RetrieveTriggerInfo(Form("%s/AOD", alienPathName.c_str()), true, triggerMask, counters);
+        if (location == "alien") {
+            RetrieveTriggerInfo(pathName.c_str(), true, triggerMask, counters);
+        } else {
+            RetrieveTriggerInfo(pathName.c_str(), false, triggerMask, counters);
+        }
 
         histZorroInfoCounterTVX -> SetBinContent(subRunCounter+1, counters[0]);
         histZorroInfoCounterTVX -> GetXaxis() -> SetBinLabel(subRunCounter+1, runNumber.c_str());
@@ -153,7 +156,7 @@ void get_normalization_from_grid(string year = "2024", string period = "LHC24", 
     fOut -> Close();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void get_normalization_from_local(string year = "2024", string period = "LHC24af", string triggerMask = "fDiMuon", string assocType = "std_assoc") {
+void get_normalization_from_single_file(string year = "2024", string period = "LHC24af", string triggerMask = "fDiMuon", string assocType = "std_assoc") {
     string fInName = Form("data/%s/%s_%s_%s.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str());
     string fOutName = Form("data/%s/%s_%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str());
 
@@ -430,14 +433,14 @@ void RetrieveTriggerInfo(TString dirName = "path/to/file", bool fromAlien = true
     if (fromAlien) {
         TGrid::Connect("alien://");
         if (!dirName.Contains("alien://")) {
-            dirName = "alien://" + dirName;
+            dirName = "alien://" + dirName + "/AOD";
         }
     }
 
     for (int iDir = 0;iDir < 1000;iDir++) {
         fInName.Clear();
-        if (iDir < 10) {fInName = dirName + Form("/AOD/00%i/AnalysisResults.root", iDir+1);}
-        if (iDir >= 10 && iDir < 100) {fInName = dirName + Form("/AOD/0%i/AnalysisResults.root", iDir+1);}
+        if (iDir < 10) {fInName = dirName + Form("/00%i/AnalysisResults.root", iDir+1);}
+        if (iDir >= 10 && iDir < 100) {fInName = dirName + Form("/0%i/AnalysisResults.root", iDir+1);}
 
         TFile *fIn = TFile::Open(fInName.Data());
         if (!fIn || fIn -> IsZombie()) {

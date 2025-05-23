@@ -33,9 +33,6 @@ inline void SetHist(auto *hist, Color_t mkrCol = kBlack, int mkrSty = 20, double
 void check_normalization() {
     LoadStyle();
 
-    //string fInLumiNameSkim2024StdAssoc = "data/2024/LHC24af_fDiMuon_std_assoc_luminosity.root";
-    //string fInNameSkim2024StdAssoc = "data/2024/LHC24af_fDiMuon_std_assoc.root";
-
     string fInLumiNameSkim2024StdAssoc = "data/2024/LHC24_CBT_muon_fDiMuon_std_assoc_luminosity.root";
     string fInNameSkim2024StdAssoc = "data/2024/LHC24_CBT_muon_fDiMuon_std_assoc.root";
 
