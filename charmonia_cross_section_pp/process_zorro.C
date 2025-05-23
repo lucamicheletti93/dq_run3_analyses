@@ -2,6 +2,12 @@
 #include <TDirectoryFile.h>
 #include <TTree.h>
 #include <TTreeReader.h>
+#include <TLegend.h>
+#include <THnSparse.h>
+#include <TCanvas.h>
+#include <TLine.h>
+#include <TLatex.h>
+#include <TStyle.h>
 #include <TGrid.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -137,9 +143,9 @@ void get_normalization_from_grid(string year = "2024", string period = "LHC24", 
 
     string fOutName;
     if (subPeriod == "None") {
-        fOutName = Form("run_lists/%s/%s_%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str());
+        fOutName = Form("data/%s/%s_%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str());
     } else {
-        fOutName = Form("run_lists/%s/%s_%s_%s_trigger_summary.root", year.c_str(), subPeriod.c_str(), triggerMask.c_str(), assocType.c_str());
+        fOutName = Form("data/%s/%s_%s_%s_trigger_summary.root", year.c_str(), subPeriod.c_str(), triggerMask.c_str(), assocType.c_str());
     }
 
     TFile *fOut = new TFile(fOutName.c_str(), "RECREATE");
@@ -166,17 +172,17 @@ void get_normalization_from_local(string year = "2024", string period = "LHC24af
         return;
     }
 
-    TH1D *histZorroInfoCounterTVX;
-    TH1D *histZorroInfoCounterScalTrig;
-    TH1D *histZorroInfoCounterSelTrig;
-    TH1D *histZorroSelCounterSelTOI;
-    TH1D *histZorroSelCounterAnalysedTrig;
-    TH1D *histEvSelCollisionBeforeFiltering;
-    TH1D *histEvSelCollisionBeforeCuts;
-    TH1D *histEvSelCollisionAfterCuts;
-    TH1D *histBcSelCounterTVX;
-    TH1D *histBcSelCounterTVXafterBCcuts;
-    TH1D *histEvSelColCounterTVX;
+    TH1D *histZorroInfoCounterTVX = nullptr;
+    TH1D *histZorroInfoCounterScalTrig = nullptr;
+    TH1D *histZorroInfoCounterSelTrig = nullptr;
+    TH1D *histZorroSelCounterSelTOI = nullptr;
+    TH1D *histZorroSelCounterAnalysedTrig = nullptr;
+    TH1D *histEvSelCollisionBeforeFiltering = nullptr;
+    TH1D *histEvSelCollisionBeforeCuts = nullptr;
+    TH1D *histEvSelCollisionAfterCuts = nullptr;
+    TH1D *histBcSelCounterTVX = nullptr;
+    TH1D *histBcSelCounterTVXafterBCcuts = nullptr;
+    TH1D *histEvSelColCounterTVX = nullptr;
 
     for (auto const& dirKey : *fIn -> GetListOfKeys()) {
         if (TString(dirKey -> GetName()).Contains("table-maker")) {
@@ -339,14 +345,16 @@ void luminosity(string year = "2024", string period = "LHC24af", string triggerM
     double bcCounterTVXafterBCcuts = histBcSelCounterTVXafterBCcuts -> Integral();
     double evColCounterTVX = histEvSelColCounterTVX -> Integral();
 
-    TH1D *histLumiSummary = new TH1D("histLumiSummary", "", 7, 0, 7);
+    TH1D *histLumiSummary = new TH1D("histLumiSummary", "", 9, 0, 9);
     histLumiSummary -> GetXaxis() -> SetBinLabel(1, "bcCounterTVX");
     histLumiSummary -> GetXaxis() -> SetBinLabel(2, "bcCounterTVXafterBCcuts");
     histLumiSummary -> GetXaxis() -> SetBinLabel(3, "bcCounterEfficiency");
     histLumiSummary -> GetXaxis() -> SetBinLabel(4, "nEvtsBcSel");
     histLumiSummary -> GetXaxis() -> SetBinLabel(5, "nEvtsBcSelAfterCuts");
-    histLumiSummary -> GetXaxis() -> SetBinLabel(6, "luminosityBcSel");
-    histLumiSummary -> GetXaxis() -> SetBinLabel(7, "luminosityBcSelAfterCuts");
+    histLumiSummary -> GetXaxis() -> SetBinLabel(6, "collsBeforeCuts");
+    histLumiSummary -> GetXaxis() -> SetBinLabel(7, "collsAfterCuts");
+    histLumiSummary -> GetXaxis() -> SetBinLabel(8, "luminosityBcSel");
+    histLumiSummary -> GetXaxis() -> SetBinLabel(9, "luminosityBcSelAfterCuts");
 
     std::cout << "****************************************************" << std::endl;
     std::cout << "nRuns = " << nRuns << std::endl;
@@ -403,8 +411,10 @@ void luminosity(string year = "2024", string period = "LHC24af", string triggerM
     histLumiSummary -> SetBinContent(3, bcCounterEfficiency);
     histLumiSummary -> SetBinContent(4, nEvtsBcSel);
     histLumiSummary -> SetBinContent(5, nEvtsBcSelAfterCuts);
-    histLumiSummary -> SetBinContent(6, luminosityBcSel);
-    histLumiSummary -> SetBinContent(7, luminosityBcSelAfterCuts);
+    histLumiSummary -> SetBinContent(6, collsBeforeCuts);
+    histLumiSummary -> SetBinContent(7, collsAfterCuts);
+    histLumiSummary -> SetBinContent(8, luminosityBcSel);
+    histLumiSummary -> SetBinContent(9, luminosityBcSelAfterCuts);
 
     TFile *fOut = new TFile(Form("data/%s/%s_%s_%s_luminosity.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str()), "RECREATE");
     histLumiSummary -> Write();
@@ -414,14 +424,30 @@ void luminosity(string year = "2024", string period = "LHC24af", string triggerM
 void check_normalization() {
     LoadStyle();
 
+    //string fInLumiNameSkim2024StdAssoc = "data/2024/LHC24af_fDiMuon_std_assoc_luminosity.root";
+    //string fInNameSkim2024StdAssoc = "data/2024/LHC24af_fDiMuon_std_assoc.root";
+
+    string fInLumiNameSkim2024StdAssoc = "data/2024/LHC24_CBT_muon_fDiMuon_std_assoc_luminosity.root";
+    string fInNameSkim2024StdAssoc = "data/2024/LHC24_CBT_muon_fDiMuon_std_assoc.root";
+
+    string fInLumiNameSkim2023StdAssoc = "data/2023/LHC23zs_fDiMuon_std_assoc_luminosity.root";
+    string fInNameSkim2023StdAssoc = "data/2023/LHC23zs_fDiMuon_std_assoc.root";
+
+    string fInLumiNameSkim2024TimeAssoc = "data/2024/LHC24af_fDiMuon_time_assoc_luminosity.root";
+    string fInNameSkim2024TimeAssoc = "data/2024/LHC24af_fDiMuon_time_assoc.root";
+
+    string fInLumiNameSkim2023TimeAssoc = "data/2023/LHC23zs_fDiMuon_time_assoc_luminosity.root";
+    string fInNameSkim2023TimeAssoc = "data/2023/LHC23zs_fDiMuon_time_assoc.root";
+
     // Skimmed 2024, std. assoc.
-    TFile *fInLumiSkim2024StdAssoc = TFile::Open("data/2024/LHC24af_fDiMuon_std_assoc_luminosity.root");
+    TFile *fInLumiSkim2024StdAssoc = TFile::Open(fInLumiNameSkim2024StdAssoc.c_str());
     TH1D *hist2024LumiSkim2024StdAssoc = (TH1D*) fInLumiSkim2024StdAssoc -> Get("histLumiSummary");
     double bcSelEffSkim2024StdAssoc = hist2024LumiSkim2024StdAssoc -> GetBinContent(hist2024LumiSkim2024StdAssoc -> GetXaxis() -> FindBin("bcCounterEfficiency"));
     double nEvtsSkim2024StdAssoc = hist2024LumiSkim2024StdAssoc -> GetBinContent(hist2024LumiSkim2024StdAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
     double lumiSkim2024StdAssoc = hist2024LumiSkim2024StdAssoc -> GetBinContent(hist2024LumiSkim2024StdAssoc -> GetXaxis() -> FindBin("luminosityBcSel"));
+    double collsAfterCuts = hist2024LumiSkim2024StdAssoc -> GetBinContent(hist2024LumiSkim2024StdAssoc -> GetXaxis() -> FindBin("collsAfterCuts"));
 
-    TFile *fInSkim2024StdAssoc = TFile::Open("data/2024/LHC24af_fDiMuon_std_assoc.root");
+    TFile *fInSkim2024StdAssoc = TFile::Open(fInNameSkim2024StdAssoc.c_str());
     // Events histograms
     TList *listSkim2024StdAssocEvSel = (TList*) fInSkim2024StdAssoc -> Get("analysis-event-selection/output");
     TList *listSkim2024StdAssocEvBefCuts = (TList*) listSkim2024StdAssocEvSel -> FindObject("Event_BeforeCuts");
@@ -429,6 +455,7 @@ void check_normalization() {
     TH1D *histSkim2024StdAssocEvBefCuts = (TH1D*) listSkim2024StdAssocEvBefCuts -> FindObject("VtxZ");
     TH1D *histSkim2024StdAssocEvAftCuts = (TH1D*) listSkim2024StdAssocEvAftCuts -> FindObject("VtxZ");
     double evSelCorrSkim2024StdAssoc = (double) histSkim2024StdAssocEvBefCuts -> GetEntries() / (double) histSkim2024StdAssocEvAftCuts -> GetEntries();
+    double collSelCorrSkim2024StdAssoc = (double) histSkim2024StdAssocEvBefCuts -> GetEntries() / collsAfterCuts;
     // Dimuon histograms
     TList *listSkim2024StdAssoc = (TList*) fInSkim2024StdAssoc -> Get("analysis-same-event-pairing/output");
     TList *listSkim2024StdAssocSE = (TList*) listSkim2024StdAssoc -> FindObject("PairsMuonSEPM_muonLowPt210SigmaPDCA");
@@ -442,6 +469,9 @@ void check_normalization() {
 
     std::cout << "---------------------------" << std::endl;
     std::cout << "[Skimmed 2024, std. assoc.]" << std::endl;
+    std::cout << "eff. ev. sel.    = " << evSelCorrSkim2024StdAssoc << std::endl;
+    std::cout << "eff. job         = " << collSelCorrSkim2024StdAssoc << std::endl;
+    std::cout << "Luminosity       = " << lumiSkim2024StdAssoc * bcSelEffSkim2024StdAssoc << std::endl;
     std::cout << "N. evts.         = " << nEvtsSkim2024StdAssoc * bcSelEffSkim2024StdAssoc << std::endl;
     std::cout << "Luminosity       = " << lumiSkim2024StdAssoc * bcSelEffSkim2024StdAssoc << std::endl;
     std::cout << "N. evts. corr.   = " << nEvtsSkim2024StdAssoc * bcSelEffSkim2024StdAssoc << std::endl;
@@ -450,14 +480,14 @@ void check_normalization() {
 
     // Skimmed 2024, time assoc.
     // WARNING! for the time association you have to take into account the duplication using zorro
-    TFile *fInLumiSkim2024TimeAssoc = TFile::Open("data/2024/LHC24af_fDiMuon_time_assoc_luminosity.root");
+    TFile *fInLumiSkim2024TimeAssoc = TFile::Open(fInLumiNameSkim2024TimeAssoc.c_str());
     TH1D *histLumiSkim2024TimeAssoc = (TH1D*) fInLumiSkim2024TimeAssoc -> Get("histLumiSummary");
     double bcSelEffSkim2024TimeAssoc = histLumiSkim2024TimeAssoc -> GetBinContent(histLumiSkim2024TimeAssoc -> GetXaxis() -> FindBin("bcCounterEfficiency"));
     double nEvtsSkim2024TimeAssoc = histLumiSkim2024TimeAssoc -> GetBinContent(histLumiSkim2024TimeAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
     double nEvtsAfterCutsSkim2024TimeAssoc = histLumiSkim2024TimeAssoc -> GetBinContent(histLumiSkim2024TimeAssoc -> GetXaxis() -> FindBin("nEvtsBcSelAfterCuts"));
     double lumiSkim2024TimeAssoc = histLumiSkim2024TimeAssoc -> GetBinContent(histLumiSkim2024TimeAssoc -> GetXaxis() -> FindBin("luminosityBcSel"));
 
-    TFile *fInSkim2024TimeAssoc = TFile::Open("data/2024/LHC24af_fDiMuon_time_assoc.root");
+    TFile *fInSkim2024TimeAssoc = TFile::Open(fInNameSkim2024TimeAssoc.c_str());
     // Events histograms
     TList *listSkim2024TimeAssocEvSel = (TList*) fInSkim2024TimeAssoc -> Get("analysis-event-selection/output");
     TList *listSkim2024TimeAssocEvBefCuts = (TList*) listSkim2024TimeAssocEvSel -> FindObject("Event_BeforeCuts");
@@ -492,16 +522,49 @@ void check_normalization() {
     std::cout << "---------------------------" << std::endl;
 
 
+    // Skimmed 2023, std. assoc.
+    TFile *fInLumiSkim2023StdAssoc = TFile::Open(fInLumiNameSkim2023StdAssoc.c_str());
+    TH1D *hist2023LumiSkim2023StdAssoc = (TH1D*) fInLumiSkim2023StdAssoc -> Get("histLumiSummary");
+    double bcSelEffSkim2023StdAssoc = hist2023LumiSkim2023StdAssoc -> GetBinContent(hist2023LumiSkim2023StdAssoc -> GetXaxis() -> FindBin("bcCounterEfficiency"));
+    double nEvtsSkim2023StdAssoc = hist2023LumiSkim2023StdAssoc -> GetBinContent(hist2023LumiSkim2023StdAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
+    double lumiSkim2023StdAssoc = hist2023LumiSkim2023StdAssoc -> GetBinContent(hist2023LumiSkim2023StdAssoc -> GetXaxis() -> FindBin("luminosityBcSel"));
+
+    TFile *fInSkim2023StdAssoc = TFile::Open(fInNameSkim2023StdAssoc.c_str());
+    // Events histograms
+    TList *listSkim2023StdAssocEvSel = (TList*) fInSkim2023StdAssoc -> Get("analysis-event-selection/output");
+    TList *listSkim2023StdAssocEvBefCuts = (TList*) listSkim2023StdAssocEvSel -> FindObject("Event_BeforeCuts");
+    TList *listSkim2023StdAssocEvAftCuts = (TList*) listSkim2023StdAssocEvSel -> FindObject("Event_AfterCuts");
+    TH1D *histSkim2023StdAssocEvBefCuts = (TH1D*) listSkim2023StdAssocEvBefCuts -> FindObject("VtxZ");
+    TH1D *histSkim2023StdAssocEvAftCuts = (TH1D*) listSkim2023StdAssocEvAftCuts -> FindObject("VtxZ");
+    double evSelCorrSkim2023StdAssoc = (double) histSkim2023StdAssocEvBefCuts -> GetEntries() / (double) histSkim2023StdAssocEvAftCuts -> GetEntries();
+    // Dimuon histograms
+    TList *listSkim2023StdAssoc = (TList*) fInSkim2023StdAssoc -> Get("analysis-same-event-pairing/output");
+    TList *listSkim2023StdAssocSE = (TList*) listSkim2023StdAssoc -> FindObject("PairsMuonSEPM_muonLowPt210SigmaPDCA");
+    THnSparseD *histSparseSkim2023StdAssoc = (THnSparseD*) listSkim2023StdAssocSE -> FindObject("Mass_Pt_Rapidity");
+    histSparseSkim2023StdAssoc -> GetAxis(1) -> SetRangeUser(0., 20.);
+    histSparseSkim2023StdAssoc -> GetAxis(2) -> SetRangeUser(2.5, 4);
+    TH1D *histProjIntSkim2023StdAssoc = (TH1D*) histSparseSkim2023StdAssoc -> Projection(0, "Proj_Mass_Pt_Rapidity");
+    histProjIntSkim2023StdAssoc -> Scale((evSelCorrSkim2023StdAssoc) / (bcSelEffSkim2023StdAssoc * lumiSkim2023StdAssoc));
+    SetHist(histProjIntSkim2023StdAssoc, kGreen+4, 20, 0.8, kGreen+4);
+
+    std::cout << "---------------------------" << std::endl;
+    std::cout << "[Skimmed 2023, std. assoc.]" << std::endl;
+    std::cout << "N. evts.         = " << nEvtsSkim2023StdAssoc * bcSelEffSkim2023StdAssoc << std::endl;
+    std::cout << "Luminosity       = " << lumiSkim2023StdAssoc * bcSelEffSkim2023StdAssoc << std::endl;
+    std::cout << "N. evts. corr.   = " << nEvtsSkim2023StdAssoc * bcSelEffSkim2023StdAssoc << std::endl;
+    std::cout << "Luminosity corr. = " << lumiSkim2023StdAssoc * bcSelEffSkim2023StdAssoc << std::endl;
+    std::cout << "---------------------------" << std::endl;
+
     // Skimmed 2023, time assoc.
     // WARNING! for the time association you have to take into account the duplication using zorro
-    TFile *fInLumiSkim2023TimeAssoc = TFile::Open("data/2023/LHC23_fDiMuon_time_assoc_luminosity.root");
+    TFile *fInLumiSkim2023TimeAssoc = TFile::Open(fInLumiNameSkim2023TimeAssoc.c_str());
     TH1D *histLumiSkim2023TimeAssoc = (TH1D*) fInLumiSkim2023TimeAssoc -> Get("histLumiSummary");
     double bcSelEffSkim2023TimeAssoc = histLumiSkim2023TimeAssoc -> GetBinContent(histLumiSkim2023TimeAssoc -> GetXaxis() -> FindBin("bcCounterEfficiency"));
     double nEvtsSkim2023TimeAssoc = histLumiSkim2023TimeAssoc -> GetBinContent(histLumiSkim2023TimeAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
     double nEvtsAfterCutsSkim2023TimeAssoc = histLumiSkim2023TimeAssoc -> GetBinContent(histLumiSkim2023TimeAssoc -> GetXaxis() -> FindBin("nEvtsBcSelAfterCuts"));
     double lumiSkim2023TimeAssoc = histLumiSkim2023TimeAssoc -> GetBinContent(histLumiSkim2023TimeAssoc -> GetXaxis() -> FindBin("luminosityBcSel"));
 
-    TFile *fInSkim2023TimeAssoc = TFile::Open("data/2023/LHC23_fDiMuon_time_assoc.root");
+    TFile *fInSkim2023TimeAssoc = TFile::Open(fInNameSkim2023TimeAssoc.c_str());
     // Events histograms
     TList *listSkim2023TimeAssocEvSel = (TList*) fInSkim2023TimeAssoc -> Get("analysis-event-selection/output");
     TList *listSkim2023TimeAssocEvBefCuts = (TList*) listSkim2023TimeAssocEvSel -> FindObject("Event_BeforeCuts");
@@ -531,8 +594,8 @@ void check_normalization() {
     std::cout << "Duplication [dimu]  = " << duplCorrDimuFactorSkim2023TimeAssoc << std::endl;
     std::cout << "N. evts.            = " << bcSelEffSkim2023TimeAssoc * nEvtsSkim2023TimeAssoc<< std::endl;
     std::cout << "Luminosity          = " << bcSelEffSkim2023TimeAssoc * lumiSkim2023TimeAssoc << std::endl;
-    std::cout << "N. evts. corr.      = " << (bcSelEffSkim2023TimeAssoc * nEvtsSkim2023TimeAssoc) / (duplCorrZorroFactorSkim2023TimeAssoc) << std::endl;
-    std::cout << "Luminosity corr.    = " << (bcSelEffSkim2023TimeAssoc * lumiSkim2023TimeAssoc) / (duplCorrZorroFactorSkim2023TimeAssoc) << std::endl;
+    std::cout << "N. evts. corr.      = " << (bcSelEffSkim2023TimeAssoc * nEvtsSkim2023TimeAssoc) / (duplCorrZorroFactorSkim2023TimeAssoc * evSelCorrSkim2023TimeAssoc) << std::endl;
+    std::cout << "Luminosity corr.    = " << (bcSelEffSkim2023TimeAssoc * lumiSkim2023TimeAssoc) / (duplCorrZorroFactorSkim2023TimeAssoc * evSelCorrSkim2023TimeAssoc) << std::endl;
     std::cout << "---------------------------" << std::endl;
 
     // Min. Bias 2024, std. assoc.
@@ -606,13 +669,15 @@ void check_normalization() {
     histProjIntSkim2024StdAssoc -> GetYaxis() -> SetTitle("(1 / #it{L}) * d#it{N}/d#it{M}_{#mu#mu} (GeV/#it{c}^{2} pb^{-1})^{-1}");
     histProjIntSkim2024StdAssoc -> Draw("EP");
     histProjIntSkim2024TimeAssoc -> Draw("EP SAME");
-    histProjIntSkim2023TimeAssoc -> Draw("EP SAME");
+    //histProjIntSkim2023StdAssoc -> Draw("EP SAME");
+    //histProjIntSkim2023TimeAssoc -> Draw("EP SAME");
     histProjIntMinBias2024StdAssoc -> Draw("EP SAME");
     histProjIntMinBias2024TimeAssoc -> Draw("EP SAME");
 
     TLegend *legendCompMassSpectra = new TLegend(0.16, 0.20, 0.36, 0.45, " ", "brNDC");
     SetLegend(legendCompMassSpectra);
-    legendCompMassSpectra -> AddEntry(histProjIntSkim2023TimeAssoc, Form("LHC23 skimmed time, #it{L} = %4.3f pb^{-1}", bcSelEffSkim2023TimeAssoc * lumiSkim2023TimeAssoc), "EP");
+    //legendCompMassSpectra -> AddEntry(histProjIntSkim2023StdAssoc, Form("LHC23 skimmed std , #it{L} = %4.3f pb^{-1}", bcSelEffSkim2023StdAssoc * lumiSkim2023StdAssoc), "EP");
+    //legendCompMassSpectra -> AddEntry(histProjIntSkim2023TimeAssoc, Form("LHC23 skimmed time, #it{L} = %4.3f pb^{-1}", bcSelEffSkim2023TimeAssoc * lumiSkim2023TimeAssoc), "EP");
     legendCompMassSpectra -> AddEntry(histProjIntSkim2024StdAssoc, Form("LHC24af skimmed std , #it{L} = %4.3f pb^{-1}", bcSelEffSkim2024StdAssoc * lumiSkim2024StdAssoc), "EP");
     legendCompMassSpectra -> AddEntry(histProjIntSkim2024TimeAssoc, Form("LHC24af skimmed time, #it{L} = %4.3f pb^{-1}", bcSelEffSkim2024TimeAssoc * lumiSkim2024TimeAssoc), "EP");
     legendCompMassSpectra -> AddEntry(histProjIntMinBias2024StdAssoc, Form("LHC24 MB std , #it{L} = %4.3f pb^{-1}", lumiMinBias2024StdAssoc), "EP");
@@ -620,30 +685,43 @@ void check_normalization() {
     legendCompMassSpectra -> Draw();
 
     // Compute the ratio
-    TH1D *histRatioIntSkimStdSkim2024TimeAssoc = (TH1D*) histProjIntSkim2024StdAssoc -> Clone("histRatioIntSkimStdSkim2024TimeAssoc");
-    histRatioIntSkimStdSkim2024TimeAssoc -> Divide(histProjIntSkim2024TimeAssoc);
-    SetHist(histRatioIntSkimStdSkim2024TimeAssoc, kRed+1, 20, 0.8, kRed+1);
+    TH1D *histRatioIntSkimStdAssoc2024SkimTimeAssoc2024 = (TH1D*) histProjIntSkim2024StdAssoc -> Clone("histRatioIntSkimStdAssoc2024SkimTimeAssoc2024");
+    histRatioIntSkimStdAssoc2024SkimTimeAssoc2024 -> Divide(histProjIntSkim2024TimeAssoc);
+    SetHist(histRatioIntSkimStdAssoc2024SkimTimeAssoc2024, kRed+1, 20, 0.8, kRed+1);
 
-    TH1D *histRatioIntMinBiasStdMinBiasTimeAssoc = (TH1D*) histProjIntMinBias2024StdAssoc -> Clone("histRatioIntMinBiasStdMinBiasTimeAssoc");
-    histRatioIntMinBiasStdMinBiasTimeAssoc -> Divide(histProjIntMinBias2024TimeAssoc);
-    SetHist(histRatioIntMinBiasStdMinBiasTimeAssoc, kBlue+1, 24, 0.8, kBlue+1);
+    TH1D *histRatioIntMinBiasStdAssoc2024MinBiasTimeAssoc2024 = (TH1D*) histProjIntMinBias2024StdAssoc -> Clone("histRatioIntMinBiasStdAssoc2024MinBiasTimeAssoc2024");
+    histRatioIntMinBiasStdAssoc2024MinBiasTimeAssoc2024 -> Divide(histProjIntMinBias2024TimeAssoc);
+    SetHist(histRatioIntMinBiasStdAssoc2024MinBiasTimeAssoc2024, kBlue+1, 24, 0.8, kBlue+1);
 
-    TH1D *histRatioIntSkimStdMinBiasStdAssoc = (TH1D*) histProjIntSkim2024StdAssoc -> Clone("histRatioIntSkimStdMinBiasStdAssoc");
-    histRatioIntSkimStdMinBiasStdAssoc -> Divide(histProjIntMinBias2024StdAssoc);
-    SetHist(histRatioIntSkimStdMinBiasStdAssoc, kRed+1, 24, 0.8, kRed+1);
+    TH1D *histRatioIntSkimStdAssoc2024MinBiasStdAssoc2024 = (TH1D*) histProjIntSkim2024StdAssoc -> Clone("histRatioIntSkimStdAssoc2024MinBiasStdAssoc2024");
+    histRatioIntSkimStdAssoc2024MinBiasStdAssoc2024 -> Divide(histProjIntMinBias2024StdAssoc);
+    SetHist(histRatioIntSkimStdAssoc2024MinBiasStdAssoc2024, kRed+1, 24, 0.8, kRed+1);
 
-    TH1D *histRatioIntSkimTimeMinBiasTimeAssoc = (TH1D*) histProjIntSkim2024TimeAssoc -> Clone("histRatioIntSkimTimeMinBiasTimeAssoc");
-    histRatioIntSkimTimeMinBiasTimeAssoc -> Divide(histProjIntMinBias2024TimeAssoc);
-    SetHist(histRatioIntSkimTimeMinBiasTimeAssoc, kOrange+7, 24, 0.8, kOrange+7);
+    TH1D *histRatioIntSkimTimeAssoc2024MinBiasTimeAssoc2024 = (TH1D*) histProjIntSkim2024TimeAssoc -> Clone("histRatioIntSkimTimeAssoc2024MinBiasTimeAssoc2024");
+    histRatioIntSkimTimeAssoc2024MinBiasTimeAssoc2024 -> Divide(histProjIntMinBias2024TimeAssoc);
+    SetHist(histRatioIntSkimTimeAssoc2024MinBiasTimeAssoc2024, kOrange+7, 24, 0.8, kOrange+7);
+
+    TH1D *histRatioIntSkimStdAssoc2023SkimTimeAssoc2023 = (TH1D*) histProjIntSkim2023StdAssoc -> Clone("histRatioIntSkimStdAssoc2023SkimTimeAssoc2023");
+    histRatioIntSkimStdAssoc2023SkimTimeAssoc2023 -> Divide(histProjIntSkim2023TimeAssoc);
+    SetHist(histRatioIntSkimStdAssoc2023SkimTimeAssoc2023, kGreen+2, 20, 0.8, kGreen+2);
+
+
+    TH1D *histRatioIntSkimStdAssoc2023SkimStdAssoc2024 = (TH1D*) histProjIntSkim2023StdAssoc -> Clone("histRatioIntSkimStdAssoc2023SkimStdAssoc2024");
+    histRatioIntSkimStdAssoc2023SkimStdAssoc2024 -> Divide(histProjIntSkim2024StdAssoc);
+    SetHist(histRatioIntSkimStdAssoc2023SkimStdAssoc2024, kYellow+2, 20, 0.8, kYellow+2);
+
+    TH1D *histRatioIntSkimTimeAssoc2023SkimTimeAssoc2024 = (TH1D*) histProjIntSkim2023TimeAssoc -> Clone("histRatioIntSkimTimeAssoc2023SkimTimeAssoc2024");
+    histRatioIntSkimTimeAssoc2023SkimTimeAssoc2024 -> Divide(histProjIntSkim2024TimeAssoc);
+    SetHist(histRatioIntSkimTimeAssoc2023SkimTimeAssoc2024, kYellow+4, 20, 0.8, kYellow+4);
 
     TCanvas *canvasRatioMassSpectra = new TCanvas("canvasRatioMassSpectra", "", 800, 600);
-    histRatioIntSkimStdSkim2024TimeAssoc -> GetXaxis() -> SetRangeUser(2, 5);
-    histRatioIntSkimStdSkim2024TimeAssoc -> GetYaxis() -> SetRangeUser(0.3, 1.7);
-    histRatioIntSkimStdSkim2024TimeAssoc -> GetYaxis() -> SetTitle("Ratio");
-    histRatioIntSkimStdSkim2024TimeAssoc -> Draw("EP");
-    histRatioIntSkimStdMinBiasStdAssoc -> Draw("EP SAME");
-    histRatioIntSkimTimeMinBiasTimeAssoc -> Draw("EP SAME");
-    histRatioIntMinBiasStdMinBiasTimeAssoc -> Draw("EP SAME");
+    histRatioIntSkimStdAssoc2024SkimTimeAssoc2024 -> GetXaxis() -> SetRangeUser(2, 5);
+    histRatioIntSkimStdAssoc2024SkimTimeAssoc2024 -> GetYaxis() -> SetRangeUser(0.3, 1.7);
+    histRatioIntSkimStdAssoc2024SkimTimeAssoc2024 -> GetYaxis() -> SetTitle("Ratio");
+    histRatioIntSkimStdAssoc2024SkimTimeAssoc2024 -> Draw("EP");
+    histRatioIntSkimStdAssoc2024MinBiasStdAssoc2024 -> Draw("EP SAME");
+    histRatioIntSkimTimeAssoc2024MinBiasTimeAssoc2024 -> Draw("EP SAME");
+    histRatioIntMinBiasStdAssoc2024MinBiasTimeAssoc2024 -> Draw("EP SAME");
 
     TLine *lineUnity = new TLine(2, 1, 5, 1);
     lineUnity -> SetLineColor(kGray+2);
@@ -652,14 +730,71 @@ void check_normalization() {
 
     TLegend *legendRatioMassSpectra = new TLegend(0.20, 0.20, 0.60, 0.40, " ", "brNDC");
     SetLegend(legendRatioMassSpectra);
-    legendRatioMassSpectra -> AddEntry(histRatioIntSkimStdSkim2024TimeAssoc, "skimmed std. / skimmed time", "EP");
-    legendRatioMassSpectra -> AddEntry(histRatioIntSkimStdMinBiasStdAssoc, "skimmed std. / Min. Bias std.", "EP");
-    legendRatioMassSpectra -> AddEntry(histRatioIntSkimTimeMinBiasTimeAssoc, "skimmed time / Min. Bias time", "EP");
-    legendRatioMassSpectra -> AddEntry(histRatioIntMinBiasStdMinBiasTimeAssoc, "Min. Bias std. / Min. Bias time", "EP");
+    legendRatioMassSpectra -> AddEntry(histRatioIntSkimStdAssoc2024SkimTimeAssoc2024, "skimmed std. / skimmed time", "EP");
+    legendRatioMassSpectra -> AddEntry(histRatioIntSkimStdAssoc2024MinBiasStdAssoc2024, "skimmed std. / Min. Bias std.", "EP");
+    legendRatioMassSpectra -> AddEntry(histRatioIntSkimTimeAssoc2024MinBiasTimeAssoc2024, "skimmed time / Min. Bias time", "EP");
+    legendRatioMassSpectra -> AddEntry(histRatioIntMinBiasStdAssoc2024MinBiasTimeAssoc2024, "Min. Bias std. / Min. Bias time", "EP");
     legendRatioMassSpectra -> Draw();
+
+    TLatex latexTitle;
+    latexTitle.SetNDC();
+    latexTitle.SetTextSize(0.05);
+    latexTitle.SetTextFont(42);
+
+    TCanvas *canvasCompMassSpectraSummary = new TCanvas("canvasCompMassSpectraSummary", "", 1200, 1200);
+    canvasCompMassSpectraSummary -> Divide(2, 2);
+
+    canvasCompMassSpectraSummary -> cd(1);
+    gPad -> SetLogy(true);
+    histProjIntSkim2023StdAssoc -> SetTitle("");
+    histProjIntSkim2023StdAssoc -> GetXaxis() -> SetRangeUser(2, 5);
+    histProjIntSkim2023StdAssoc -> GetXaxis() -> SetTitle("#it{M}_{#mu#mu} (GeV/#it{c})");
+    histProjIntSkim2023StdAssoc -> GetYaxis() -> SetRangeUser(1e2, 1e5);
+    histProjIntSkim2023StdAssoc -> GetYaxis() -> SetTitle("(1 / #it{L}) * d#it{N}/d#it{M}_{#mu#mu} (GeV/#it{c}^{2} pb^{-1})^{-1}");
+    histProjIntSkim2023StdAssoc -> Draw("EP");
+    histProjIntSkim2023TimeAssoc -> Draw("EP SAME");
+    latexTitle.DrawLatex(0.70, 0.85, "pp 2023 pass4");
+
+    canvasCompMassSpectraSummary -> cd(2);
+    gPad -> SetLogy(true);
+    histProjIntSkim2024StdAssoc -> SetTitle("");
+    histProjIntSkim2024StdAssoc -> GetXaxis() -> SetRangeUser(2, 5);
+    histProjIntSkim2024StdAssoc -> GetXaxis() -> SetTitle("#it{M}_{#mu#mu} (GeV/#it{c})");
+    histProjIntSkim2024StdAssoc -> GetYaxis() -> SetRangeUser(1e2, 1e5);
+    histProjIntSkim2024StdAssoc -> GetYaxis() -> SetTitle("(1 / #it{L}) * d#it{N}/d#it{M}_{#mu#mu} (GeV/#it{c}^{2} pb^{-1})^{-1}");
+    histProjIntSkim2024StdAssoc -> Draw("EP");
+    histProjIntSkim2024TimeAssoc -> Draw("EP SAME");
+    latexTitle.DrawLatex(0.70, 0.85, "pp 2024 pass1");
+    
+    canvasCompMassSpectraSummary -> cd(3);
+    histRatioIntSkimStdAssoc2023SkimTimeAssoc2023 -> SetTitle("");
+    histRatioIntSkimStdAssoc2023SkimTimeAssoc2023 -> GetXaxis() -> SetRangeUser(2, 5);
+    histRatioIntSkimStdAssoc2023SkimTimeAssoc2023 -> GetXaxis() -> SetTitle("#it{M}_{#mu#mu} (GeV/#it{c})");
+    histRatioIntSkimStdAssoc2023SkimTimeAssoc2023 -> GetYaxis() -> SetRangeUser(0.5, 1.5);
+    histRatioIntSkimStdAssoc2023SkimTimeAssoc2023 -> GetYaxis() -> SetTitle("Ratio");
+    histRatioIntSkimStdAssoc2023SkimTimeAssoc2023 -> Draw("EP");
+    histRatioIntSkimStdAssoc2023SkimStdAssoc2024 -> Draw("EP SAME");
+    histRatioIntSkimTimeAssoc2023SkimTimeAssoc2024 -> Draw("EP SAME");
+    latexTitle.DrawLatex(0.70, 0.85, "pp 2023 pass4");
+    lineUnity -> Draw();
+
+
+    canvasCompMassSpectraSummary -> cd(4);
+    histRatioIntSkimStdAssoc2024SkimTimeAssoc2024 -> SetTitle("");
+    histRatioIntSkimStdAssoc2024SkimTimeAssoc2024 -> GetXaxis() -> SetRangeUser(2, 5);
+    histRatioIntSkimStdAssoc2024SkimTimeAssoc2024 -> GetXaxis() -> SetTitle("#it{M}_{#mu#mu} (GeV/#it{c})");
+    histRatioIntSkimStdAssoc2024SkimTimeAssoc2024 -> GetYaxis() -> SetRangeUser(0.5, 1.5);
+    histRatioIntSkimStdAssoc2024SkimTimeAssoc2024 -> GetYaxis() -> SetTitle("Ratio");
+    histRatioIntSkimStdAssoc2024SkimTimeAssoc2024 -> Draw("EP");
+    latexTitle.DrawLatex(0.70, 0.85, "pp 2024 pass1");
+    lineUnity -> Draw();
+
 
     canvasCompMassSpectra -> SaveAs("figures/CompMassSpectra.pdf");
     canvasRatioMassSpectra -> SaveAs("figures/RatioMassSpectra.pdf");
+    canvasCompMassSpectraSummary -> SaveAs("figures/CompMassSpectraSummary.pdf");
+
+
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -688,7 +823,7 @@ void RetrieveTriggerInfo(TString dirName = "path/to/file", bool fromAlien = true
     for (int iDir = 0;iDir < 1000;iDir++) {
         fInName.Clear();
         if (iDir < 10) {fInName = dirName + Form("/AOD/00%i/AnalysisResults.root", iDir+1);}
-        if (iDir >= 10 && iDir < 100) {fInName = dirName + "/AOD/0" + Form("/AOD/0%i/AnalysisResults.root", iDir+1);}
+        if (iDir >= 10 && iDir < 100) {fInName = dirName + Form("/AOD/0%i/AnalysisResults.root", iDir+1);}
 
         TFile *fIn = TFile::Open(fInName.Data());
         if (!fIn || fIn -> IsZombie()) {
