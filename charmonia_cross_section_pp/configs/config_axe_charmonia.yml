@@ -1,0 +1,24 @@
+inputs:
+  path: /Users/lucamicheletti/cernbox/JPSI/Run3/MC
+  production: LHC24e5
+  prefix: AnalysisResults_dq_efficiency
+  assocType: time_association
+  sigGen: Jpsi
+  sigRec: mumuFromJpsi
+  #cuts: [matchedMchMid]
+  cuts: [muonLowPt210SigmaPDCA]
+  hlistGen: analysis-same-event-pairing/output
+  listGen: MCTruthGen
+  histGen: Pt_Rapidity
+  hlistRec: analysis-same-event-pairing/output
+  listRec: PairsMuonSEPM
+  histRec: Mass_Pt_Rapidity
+  #ptBins: [0.0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 15, 20]
+  #rapBins: [2.50, 2.75, 3.00, 3.25, 3.50, 3.75, 4.00]
+  #ptBins: [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 20.0]
+  #rapBins: [2.50, 2.75, 3.00, 3.25, 3.50, 3.75, 4.00]
+  ptBins: [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 20.0]
+  rapBins: [2.50, 2.75, 3.00, 3.25, 3.50, 3.75, 4.00]
+
+outputs:
+  path: /Users/lucamicheletti/cernbox/JPSI/Run3/MC
