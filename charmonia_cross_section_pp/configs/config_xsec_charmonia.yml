@@ -1,0 +1,10 @@
+inputs:
+  deltaRap: 1.5
+  fInLumi: "/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_cross_section_pp/data/luminosity_jpsi_LHC24_minBias.root"
+  fInRawYieldInt: /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC24_pass1_min_bias/cross_section_std_assoc/LHC24/integrated_Rap_25_4/systematic_sig_Jpsi.txt
+  fInRawYieldVsPt: /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC24_pass1_min_bias/cross_section_std_assoc/LHC24/pt_dependence_Rap_25_4/systematic_sig_Jpsi.txt
+  fInAxeInt: /Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_cross_section_pp/data/MC/LHC25c3/axe_integrated_Rap_25_4_std_association_Jpsi.txt
+  fInAxeVsPt: /Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_cross_section_pp/data/MC/LHC25c3/axe_pt_dependence_Rap_25_4_std_association_Jpsi.txt
+
+outputs:
+  fOut: output/jpsi_xsex_deltaRap_15.root
