@@ -23,11 +23,14 @@ def axe(config):
     function to compute the axe
     """
 
-    path = config["inputs"]["path"]
+    pathIn = config["inputs"]["path"]
     production = config["inputs"]["production"]
-    prefix = config["inputs"]["prefix"]
+    prefixIn = config["inputs"]["prefix"]
     assocType = config["inputs"]["assocType"]
-    fInName = f'{path}/{production}/{prefix}_{assocType}.root'
+    fInName = f'{pathIn}/{production}/{prefixIn}_{assocType}.root'
+
+    pathOut = config["outputs"]["path"]
+    prefixOut = config["outputs"]["prefix"]
 
     print(f'Opening {fInName}...')
     fIn = ROOT.TFile(f'{fInName}', "READ")
@@ -38,10 +41,15 @@ def axe(config):
     strHistGen = config["inputs"]["histGen"]
     sigGen = config["inputs"]["sigGen"]
 
+    minPtBinInt = config["inputs"]["minPtBinInt"]
+    maxPtBinInt = config["inputs"]["maxPtBinInt"]
+    minRapBinInt = config["inputs"]["minRapBinInt"]
+    maxRapBinInt = config["inputs"]["maxRapBinInt"]
+
     histPtRapGen = (hlistGen.FindObject(f'{strListGen}_{sigGen}')).FindObject(strHistGen)
 
-    histPtRapGen.GetXaxis().SetRangeUser(0., 20.)
-    histPtRapGen.GetYaxis().SetRangeUser(2.5, 4)
+    histPtRapGen.GetXaxis().SetRangeUser(minPtBinInt, maxPtBinInt)
+    histPtRapGen.GetYaxis().SetRangeUser(minRapBinInt, maxRapBinInt)
     histPtGen = histPtRapGen.ProjectionX(f'{sigGen}_Pt')
     histRapGen = histPtRapGen.ProjectionY(f'{sigGen}_Rap')
 
@@ -77,8 +85,8 @@ def axe(config):
     histRecs = []
     for iCut, cut in enumerate(cuts):
         histRecs.append((hlistRec.FindObject(f'{listRec}_{cut}_{sigRec}')).FindObject(f'{histRec}'))
-        histRecs[iCut].GetAxis(1).SetRangeUser(0., 20.)
-        histRecs[iCut].GetAxis(2).SetRangeUser(2.5, 4)
+        histRecs[iCut].GetAxis(1).SetRangeUser(minPtBinInt, maxPtBinInt)
+        histRecs[iCut].GetAxis(2).SetRangeUser(minRapBinInt, maxRapBinInt)
 
     histPtRapRecs = []
     histPtRecs = []
@@ -86,8 +94,8 @@ def axe(config):
     for iCut, histRec in enumerate(histRecs):
         histRec.SetName(f'THnSparse_{sigRec}_{cuts[iCut]}') # Just to avoid memory leak
         histPtRapRecs.append(histRec.Projection(2, 1, f'{listRec}_{cuts[iCut]}_{sigRec}_PtRap'))
-        histPtRapRecs[iCut].GetXaxis().SetRangeUser(0., 20.)
-        histPtRapRecs[iCut].GetYaxis().SetRangeUser(2.5, 4)
+        histPtRapRecs[iCut].GetXaxis().SetRangeUser(minPtBinInt, maxPtBinInt)
+        histPtRapRecs[iCut].GetYaxis().SetRangeUser(minRapBinInt, maxRapBinInt)
 
         histPtRecs.append(histRec.Projection(1, f'{listRec}_{cuts[iCut]}_{sigRec}_Pt'))
         histRapRecs.append(histRec.Projection(2, f'{listRec}_{cuts[iCut]}_{sigRec}_Rap'))
@@ -133,8 +141,8 @@ def axe(config):
         histPtRapAxes.append(histPtRapRec.Clone(f'{histPtRapRec.GetName()}_rebin_Axe'))
         #histPtRapAxes[iCut].Divide(histPtRapGens[iCut], histPtRapRec, 1.0, 1.0, "B")
         histPtRapAxes[iCut].Divide(histPtRapGen)
-        histPtRapAxes[iCut].GetXaxis().SetRangeUser(0., 20.)
-        histPtRapAxes[iCut].GetYaxis().SetRangeUser(2.5, 4)
+        histPtRapAxes[iCut].GetXaxis().SetRangeUser(minPtBinInt, maxPtBinInt)
+        histPtRapAxes[iCut].GetYaxis().SetRangeUser(minRapBinInt, maxRapBinInt)
 
     histPtRebinAxes = []
     for iCut, histPtRebinRec in enumerate(histPtRebinRecs):
@@ -173,11 +181,11 @@ def axe(config):
         val = histPtRebinAxes[0].GetBinContent(iPt+1)
         stat = histPtRebinAxes[0].GetBinError(iPt+1)
         syst = 0.0
-        print("{:3.2f} {:3.2f} {:3.2f} {:3.2f} {:3.2f} ".format(x_min, x_max, val, stat, syst))
+        print("{:3.2f} {:3.2f} {:6.5f} {:6.5f} {:6.5f} ".format(x_min, x_max, val, stat, syst))
 
     input()
 
-    fOutName = f'{path}/{production}/Axe_{assocType}_{sigGen}.root'
+    fOutName = f'{pathOut}/{prefixOut}_{assocType}_{sigGen}.root'
 
     print(f'Saving in {fOutName}...')
     fOut = ROOT.TFile(f'{fOutName}', "RECREATE")
