@@ -174,6 +174,8 @@ def xsec(config):
     graStatXsecInt = ROOT.TGraphErrors(len(sqrtsCenters), sqrtsCenters, np.array(jpsiXsecInt), sqrtsWidths, np.array(jpsiStatXsecInt))
     graSystXsecInt = ROOT.TGraphErrors(len(sqrtsCenters), sqrtsCenters, np.array(jpsiXsecInt), sqrtsSystWidths, np.array(jpsiSystXsecInt))
 
+    print(f'[INFO] dsigma/dy (J/psi) = {jpsiXsecInt[0]:.3f} +/- {jpsiStatXsecInt[0]:.3f} +/- {jpsiSystXsecInt[0]:.3f} mub')
+
     SetGraStat(graStatXsecInt, 20, ROOT.kRed+1)
     SetGraSyst(graSystXsecInt, 20, ROOT.kRed+1)
 
