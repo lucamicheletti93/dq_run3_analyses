@@ -118,26 +118,30 @@ def tagAndProbe(config):
     histRatioDataMc.GetYaxis().SetTitle("Data / MC")
     SetHistStat(histRatioDataMc, 20, ROOT.kBlack)
 
-    funcRatioData = ROOT.TF1("funcRatioData", FuncEff, 0, 20, 2)
-    funcRatioData.SetParameters(0.638376, -1.96188)
-    histPassingAllRatioData.Fit(funcRatioData, "R0")
-    funcRatioData.SetLineColor(ROOT.kRed+1)
-    funcRatioData.SetLineStyle(ROOT.kDashed)
+    #funcRatioData = ROOT.TF1("funcRatioData", FuncEff, 0, 20, 2)
+    #funcRatioData.SetParameters(0.638376, -1.96188)
+    #histPassingAllRatioData.Fit(funcRatioData, "R0")
+    #funcRatioData.SetLineColor(ROOT.kRed+1)
+    #funcRatioData.SetLineStyle(ROOT.kDashed)
 
-    funcRatioMc = ROOT.TF1("funcRatioMc", FuncEff, 0, 20, 2)
-    funcRatioMc.SetParameters(0.638376, -1.96188)
-    histPassingAllRatioMc.Fit(funcRatioMc, "R0")
-    funcRatioMc.SetLineColor(ROOT.kAzure+4)
-    funcRatioMc.SetLineStyle(ROOT.kDashed)
+    #funcRatioMc = ROOT.TF1("funcRatioMc", FuncEff, 0, 20, 2)
+    #funcRatioMc.SetParameters(0.638376, -1.96188)
+    #histPassingAllRatioMc.Fit(funcRatioMc, "R0")
+    #funcRatioMc.SetLineColor(ROOT.kAzure+4)
+    #funcRatioMc.SetLineStyle(ROOT.kDashed)
 
+    funcPol0 = ROOT.TF1("funcPol0", "[0]", 0, 20)
+    funcPol0.SetParameter(0, 1)
+    histRatioDataMc.Fit(funcPol0, "R")
 
     padAspectRatio = 0.6
     canvasTagAndProbes = ROOT.TCanvas("canvasTagAndProbes", "", 800, 1000)
+    ROOT.gStyle.SetOptFit(True)
+    ROOT.gStyle.SetOptStat(False)
 
     pad1 = ROOT.TPad("pad1", "pad1", 0.05, 1-padAspectRatio, 0.99, 0.99)
     pad1.Draw()
     pad1.cd()
-    ROOT.gStyle.SetOptStat(False)
     histPassingAllRatioData.GetYaxis().SetRangeUser(0, 1.2)
     histPassingAllRatioData.Draw("EP")
     histPassingAllRatioMc.Draw("EP SAME")
@@ -169,10 +173,12 @@ def tagAndProbe(config):
     histRatioDataMc.GetYaxis().SetRangeUser(0.8, 1.2)
     histRatioDataMc.Draw("H")
     lineUnity.Draw()
-
+    funcPol0.Draw("SAME")
     canvasTagAndProbes.Update()
 
     input()
+
+    canvasTagAndProbes.SaveAs("figures/matching_eff/tag_and_probes.pdf")
 
 def FuncEff(x, par):
     return 1 / (1 + ROOT.TMath.Exp(-par[0]*(x[0] - par[1])))
