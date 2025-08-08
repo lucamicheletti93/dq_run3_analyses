@@ -7,4 +7,4 @@ inputs:
   fInAxeVsPt: /Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_cross_section_pp/data/MC/LHC25c3/axe_pt_dependence_Rap_25_4_std_association_Jpsi.txt
 
 outputs:
-  fOut: output/jpsi_xsex_deltaRap_15.root
+  fOut: output/jpsi_xsec_pp13dot6TeV.root

@@ -5,3 +5,4 @@ inputs:
 outputs:
   #fOut: /Users/lucamicheletti/cernbox/JPSI/Jpsi_pp_cross_section_run3/mch_trk_eff/Histograms_trk_eff_LHC24_pass1_MinBias.root
   fOut: /Users/lucamicheletti/cernbox/JPSI/Jpsi_pp_cross_section_run3/mch_trk_eff/Histograms_trk_eff_LHC25c3b.root
+  fOutCorrMap: /Users/lucamicheletti/cernbox/JPSI/Jpsi_pp_cross_section_run3/mch_trk_eff/mch_trk_eff_LHC24_pass1_minBias.root

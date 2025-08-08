@@ -14,14 +14,14 @@ from fast_analysis_utils import ExtractFromYaml
 def main():
     parser = argparse.ArgumentParser(description='Arguments to pass')
     parser.add_argument('cfgFileName', metavar='text', default='config.yml', help='config file name')
-    parser.add_argument("--do_xsec", help="Compute cross section", action="store_true")
+    parser.add_argument("--run", help="Compute cross section", action="store_true")
     args = parser.parse_args()
     
 
     with open(args.cfgFileName, 'r') as yml_cfg:
         inputCfg = yaml.load(yml_cfg, yaml.FullLoader)
 
-    if args.do_xsec:
+    if args.run:
         xsec(inputCfg)
 
 def xsec(config):
@@ -29,6 +29,7 @@ def xsec(config):
     function to compute the cross section
     """
     LoadStyle()
+    ROOT.gStyle.SetOptStat(False)
     BrJpsiToMuMu =  0.05961
     errBrJpsiToMuMu = 0.033e-2
     BrPsi2sToMuMu =  0.008
@@ -80,8 +81,8 @@ def xsec(config):
     histSystRawYieldVsPt = ROOT.TH1D("histSystRawYieldVsPt", ";#it{p}_{T} (GeV/#it{c});dN/d#it{y}", len(ptEdges)-1, ptEdges)
     histSystRelRawYieldVsPt = ROOT.TH1D("histSystRelRawYieldVsPt", ";#it{p}_{T} (GeV/#it{c});dN/d#it{y}", len(ptEdges)-1, ptEdges)
 
-    SetHistStat(histStatRawYieldVsPt, 20, ROOT.kRed+1)
-    SetHistSyst(histSystRawYieldVsPt, 20, ROOT.kRed+1)
+    SetHistStat(histStatRawYieldVsPt, 20, ROOT.kAzure+4)
+    SetHistSyst(histSystRawYieldVsPt, 20, ROOT.kAzure+4)
 
     for iBin in range(0, len(ptMin)):
         histStatRawYieldVsPt.SetBinContent(iBin+1, jpsiRawYieldVsPt[iBin])
@@ -92,16 +93,23 @@ def xsec(config):
 
     canvasRawYieldVsPt = ROOT.TCanvas("canvasRawYieldVsPt", "", 800, 600)
     ROOT.gPad.SetLogy(True)
-    histStatRawYieldVsPt.Draw("EP")
-    histSystRawYieldVsPt.Draw("E2P SAME")
+    histStatRawYieldInt.GetYaxis().SetRangeUser(1e2, 5e4)
+    histStatRawYieldInt.Draw("EP")
+    #histSystRawYieldInt.Draw("E2P SAME")
+    histStatRawYieldVsPt.Draw("EP SAME")
+    #histSystRawYieldVsPt.Draw("E2P SAME")
     canvasRawYieldVsPt.Update()
+
+    print(f'[INFO] Integrated spectrum   = {histSystRawYieldInt.Integral():.0f}')
+    print(f'[INFO] Sum pt-diff. spectrum = {histStatRawYieldVsPt.Integral():.0f}')
+
 
     print("***** Extract Axe *****")
     dfJpsiAxeInt = pd.read_csv(config["inputs"]["fInAxeInt"], sep=' ')
     jpsiAxeInt = dfJpsiAxeInt["val"]
     jpsiStatAxeInt = dfJpsiAxeInt["stat"]
 
-    histStatAxeInt = ROOT.TH1D("histStatAxeInt", ";#it{p}_{T} (GeV/#it{c});A#times#epsilon", len(ptEdgesInt)-1, ptEdgesInt)
+    histStatAxeInt = ROOT.TH1D("histStatAxeInt", ";#it{p}_{T} (GeV/#it{c});A#times#varepsilon", len(ptEdgesInt)-1, ptEdgesInt)
 
     SetHistStat(histStatAxeInt, 20, ROOT.kRed+1)
 
@@ -117,16 +125,18 @@ def xsec(config):
     jpsiAxeVsPt = dfJpsiAxeVsPt["val"]
     jpsiStatAxeVsPt = dfJpsiAxeVsPt["stat"]
 
-    histStatAxeVsPt = ROOT.TH1D("histStatAxeVsPt", ";#it{p}_{T} (GeV/#it{c});A#times#epsilon", len(ptEdges)-1, ptEdges)
+    histStatAxeVsPt = ROOT.TH1D("histStatAxeVsPt", ";#it{p}_{T} (GeV/#it{c});A#times#varepsilon", len(ptEdges)-1, ptEdges)
 
-    SetHistStat(histStatAxeVsPt, 20, ROOT.kRed+1)
+    SetHistStat(histStatAxeVsPt, 20, ROOT.kAzure+4)
 
     for iBin in range(0, len(ptMin)):
         histStatAxeVsPt.SetBinContent(iBin+1, jpsiAxeVsPt[iBin])
         histStatAxeVsPt.SetBinError(iBin+1, jpsiStatAxeVsPt[iBin])
 
     canvasAxeVsPt = ROOT.TCanvas("canvasAxeVsPt", "", 800, 600)
-    histStatAxeVsPt.Draw("EP")
+    histStatAxeInt.GetYaxis().SetRangeUser(0, 1)
+    histStatAxeInt.Draw("EP")
+    histStatAxeVsPt.Draw("EP SAME")
     canvasAxeVsPt.Update()
 
     print("***** Compute cross section *****")
@@ -158,6 +168,27 @@ def xsec(config):
             histSystRelBrJpsiToMuMuInt.SetBinContent(iBin+1, systRelBrJpsiToMuMu)
         histSystRelBrJpsiToMuMuVsPt.SetBinContent(iBin+1, systRelBrJpsiToMuMu)
     print("Syst. Rel. BR Jpsi->mumu = ", systRelBrJpsiToMuMu)
+
+
+    systRelTrackingEff = 0.01
+    histSystRelTrackingEffInt = ROOT.TH1D("histSystRelTrackingEffInt", ";#it{p}_{T} (GeV/#it{c});dN/d#it{y}", len(ptEdgesInt)-1, ptEdgesInt)
+    histSystRelTrackingEffVsPt = ROOT.TH1D("histSystRelTrackingEffVsPt", ";#it{p}_{T} (GeV/#it{c});dN/d#it{y}", len(ptEdges)-1, ptEdges)
+
+    for iBin in range(0, len(ptMin)):
+        if iBin < 1:
+            histSystRelTrackingEffInt.SetBinContent(iBin+1, systRelTrackingEff)
+        histSystRelTrackingEffVsPt.SetBinContent(iBin+1, systRelTrackingEff)
+    print("Syst. Rel. Tracking efficiency = ", systRelTrackingEff)
+
+    systRelMatchingEff = 0.03
+    histSystRelMatchingEffInt = ROOT.TH1D("histSystRelMatchingEffInt", ";#it{p}_{T} (GeV/#it{c});dN/d#it{y}", len(ptEdgesInt)-1, ptEdgesInt)
+    histSystRelMatchingEffVsPt = ROOT.TH1D("histSystRelMatchingEffVsPt", ";#it{p}_{T} (GeV/#it{c});dN/d#it{y}", len(ptEdges)-1, ptEdges)
+
+    for iBin in range(0, len(ptMin)):
+        if iBin < 1:
+            histSystRelMatchingEffInt.SetBinContent(iBin+1, systRelMatchingEff)
+        histSystRelMatchingEffVsPt.SetBinContent(iBin+1, systRelMatchingEff)
+    print("Syst. Rel. Matching efficiency = ", systRelMatchingEff)
     # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
     # > > > Pt - integrated < < < #
@@ -169,7 +200,7 @@ def xsec(config):
     jpsiStatXsecInt = (jpsiStatRawYieldInt) / (jpsiAxeInt * BrJpsiToMuMu * lumi * 1e6)
     jpsiSystXsecInt = (jpsiSystRawYieldInt) / (jpsiAxeInt * BrJpsiToMuMu * lumi * 1e6)
     # Add all systematics contributions
-    jpsiSystXsecInt = jpsiXsecInt * np.sqrt((jpsiSystXsecInt / jpsiXsecInt)**2 + systRelBrJpsiToMuMu**2 + systRelLumi**2)
+    jpsiSystXsecInt = jpsiXsecInt * np.sqrt((jpsiSystXsecInt / jpsiXsecInt)**2 + systRelBrJpsiToMuMu**2 + systRelLumi**2 + systRelTrackingEff**2 + systRelMatchingEff**2)
 
     graStatXsecInt = ROOT.TGraphErrors(len(sqrtsCenters), sqrtsCenters, np.array(jpsiXsecInt), sqrtsWidths, np.array(jpsiStatXsecInt))
     graSystXsecInt = ROOT.TGraphErrors(len(sqrtsCenters), sqrtsCenters, np.array(jpsiXsecInt), sqrtsSystWidths, np.array(jpsiSystXsecInt))
@@ -230,7 +261,7 @@ def xsec(config):
     jpsiStatXsecVsPt = (jpsiStatRawYieldVsPt) / (jpsiAxeVsPt * BrJpsiToMuMu * lumi * 1e6 * (2 * ptWidths))
     jpsiSystXsecVsPt = (jpsiSystRawYieldVsPt) / (jpsiAxeVsPt * BrJpsiToMuMu * lumi * 1e6 * (2 * ptWidths))
     # Add all systematics contributions
-    jpsiSystXsecVsPt = jpsiXsecVsPt * np.sqrt((jpsiSystXsecVsPt / jpsiXsecVsPt)**2 + systRelBrJpsiToMuMu**2 + systRelLumi**2)
+    jpsiSystXsecVsPt = jpsiXsecVsPt * np.sqrt((jpsiSystXsecVsPt / jpsiXsecVsPt)**2 + systRelBrJpsiToMuMu**2 + systRelLumi**2 + systRelTrackingEff**2 + systRelMatchingEff**2)
 
     graStatXsecVsPt = ROOT.TGraphErrors(len(ptCenters), np.array(ptCenters), np.array(jpsiXsecVsPt), np.array(ptWidths), np.array(jpsiStatXsecVsPt))
     graSystXsecVsPt = ROOT.TGraphErrors(len(ptCenters), np.array(ptCenters), np.array(jpsiXsecVsPt), np.array(ptSystWidths), np.array(jpsiSystXsecVsPt))
@@ -303,11 +334,20 @@ def xsec(config):
     fOut.cd("systematics")
     histSystRelRawYieldInt.Write("syst_raw_yield_int")
     histSystRelRawYieldVsPt.Write("syst_raw_yield_vs_pt")
-    histSystRelBrJpsiToMuMuInt.Write("syst_br_int")
-    histSystRelBrJpsiToMuMuVsPt.Write("syst_br_vs_pt")
     histSystRelLumiInt.Write("syst_lumi_int")
     histSystRelLumiVsPt.Write("syst_lumi_vs_pt")
+    histSystRelBrJpsiToMuMuInt.Write("syst_br_int")
+    histSystRelBrJpsiToMuMuVsPt.Write("syst_br_vs_pt")
+    histSystRelTrackingEffInt.Write("syst_tracking_eff_int")
+    histSystRelTrackingEffVsPt.Write("syst_tracking_eff_vs_pt")
+    histSystRelMatchingEffInt.Write("syst_matching_eff_int")
+    histSystRelMatchingEffVsPt.Write("syst_matching_eff_vs_pt")
     fOut.Close()
+
+    canvasRawYieldVsPt.SaveAs("figures/raw_yield/raw_yeild_jpsi.pdf")
+    canvasAxeVsPt.SaveAs("figures/axe/axe_jpsi.pdf")
+    canvasXsecIntVsRun2.SaveAs("figures/xsec/integrated_xsec_jpsi.pdf")
+    canvasXsecVsPtVsRun2.SaveAs("figures/xsec/pt_differential_xsec_jpsi.pdf")
 
 
 if __name__ == '__main__':

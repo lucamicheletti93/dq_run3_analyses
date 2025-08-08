@@ -83,7 +83,7 @@ def createHistograms(config):
 
     input()
 
-    print(f'[INFO] Writing results in {config["outputs"]["fOut"]}...')
+    print(f'[INFO] Writing results in {config["outputs"]["fOut"]} ...')
     fOut = ROOT.TFile(config["outputs"]["fOut"], "RECREATE")
     for iHit, hit in enumerate(hits):
         histProjEta[iHit].Write()
@@ -290,8 +290,26 @@ def trackingEfficiency(config):
     legendMchTrkEff.Draw("SAME")
     canvasPhiMchTrkEff.Update()
 
-
+    histCorrMap = []
+    for iVar, var in enumerate(vars):
+        histCorrMap.append(histDataMchTrkEff[iVar].Clone(f'histCorrMap_{var}'))
+        histCorrMap[iVar].Divide(histMcMchTrkEff[iVar])
+    
     input()
+
+    print(f'[INFO] Writing output to {config["outputs"]["fOutCorrMap"]} ...')
+    fOutCorrMap = ROOT.TFile(config["outputs"]["fOutCorrMap"], "RECREATE")
+    for iVar, var in enumerate(vars):
+        histCorrMap[iVar].Write()
+        histDataMchTrkEff[iVar].Write()
+        histMcMchTrkEff[iVar].Write()
+    fOutCorrMap.Close()
+
+    canvasEtaMchTrkEff.SaveAs("figures/mch_trk_eff/eff_eta.pdf")
+    canvasPtMchTrkEff.SaveAs("figures/mch_trk_eff/eff_pt.pdf")
+    canvasPhiMchTrkEff.SaveAs("figures/mch_trk_eff/eff_phi.pdf")
+
+    exit()
 
 def funcSt123Eff(histXY, histX0, hist0Y):
     histEffX = histXY.Clone("histEffX")
