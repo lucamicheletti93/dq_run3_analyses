@@ -1,6 +1,28 @@
-#include "Pythia8/Pythia.h"
-#include <TLorentzVector.h>
 #include <iostream>
+#include <fstream>
+#include <vector>
+#include <filesystem>
+#include <algorithm>
+#include <string>
+
+#include <TFile.h>
+#include <TDirectoryFile.h>
+#include <TTree.h>
+#include <TTreeReader.h>
+#include <TLorentzVector.h>
+#include <TLegend.h>
+#include <THnSparse.h>
+#include <TCanvas.h>
+#include <TLine.h>
+#include <TLatex.h>
+#include <TStyle.h>
+#include <TGrid.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TF1.h>
+#include <TRandom3.h>
+
+#include "Pythia8/Pythia.h"
 
 using namespace Pythia8;
 
@@ -66,17 +88,31 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
     TH2D *histPtMomPtDau = new TH2D("histPtMomPtDau", ";#it{p}^{J/#psi}_{T} (GeV/#it{c});#it{p}^{#mu}_{T} (GeV/#it{c})", 100, 0, 15, 100, 0, 15);
     TH1D *histPtMomGen = new TH1D("histPtMomGen", Form(";#it{p}^{%s}_{T} (GeV/#it{c});Gen", momName.c_str()), nPtBins, pTBinEdges);
     TH1D *histPtMomRec = new TH1D("histPtMomRec", Form(";#it{p}^{%s}_{T} (GeV/#it{c});Rec", momName.c_str()), nPtBins, pTBinEdges);
+
+    TH1D *histPtMomRecWithWeights = new TH1D("histPtMomRecWithWeights", Form(";#it{p}^{%s}_{T} (GeV/#it{c});Rec", momName.c_str()), nPtBins, pTBinEdges);
+
     TH1D *histPtMomRecMchTrkEff = new TH1D("histPtMomRecMchTrkEff", Form(";#it{p}^{%s}_{T} (GeV/#it{c});Rec", momName.c_str()), nPtBins, pTBinEdges);
+    TH1D *histPtMomRecMchTrkEffWithWeights = new TH1D("histPtMomRecMchTrkEffWithWeights", Form(";#it{p}^{%s}_{T} (GeV/#it{c});Rec", momName.c_str()), nPtBins, pTBinEdges);
     TH1D *histPtMomRecMatchEff = new TH1D("histPtMomRecMatchEff", Form(";#it{p}^{%s}_{T} (GeV/#it{c});Rec", momName.c_str()), nPtBins, pTBinEdges);
+    TH1D *histPtMomRecMatchEffWithWeights = new TH1D("histPtMomRecMatchEffWithWeights", Form(";#it{p}^{%s}_{T} (GeV/#it{c});Rec", momName.c_str()), nPtBins, pTBinEdges);
+
     TH1D *histPtMomAxe = new TH1D("histPtMomAxe", Form(";#it{p}^{%s}_{T} (GeV/#it{c});A#times#varepsilon", momName.c_str()), nPtBins, pTBinEdges);
+    TH1D *histPtMomAxeWithWeights = new TH1D("histPtMomAxeWithWeights", Form(";#it{p}^{%s}_{T} (GeV/#it{c});A#times#varepsilon", momName.c_str()), nPtBins, pTBinEdges);
+
     TH1D *histPtMomAxeMchTrkEff = new TH1D("histPtMomAxeMchTrkEff", Form(";#it{p}^{%s}_{T} (GeV/#it{c});A#times#varepsilon", momName.c_str()), nPtBins, pTBinEdges);
+    TH1D *histPtMomAxeMchTrkEffWithWeights = new TH1D("histPtMomAxeMchTrkEffWithWeights", Form(";#it{p}^{%s}_{T} (GeV/#it{c});A#times#varepsilon", momName.c_str()), nPtBins, pTBinEdges);
+
     TH1D *histPtMomAxeMatchEff = new TH1D("histPtMomAxeMatchEff", Form(";#it{p}^{%s}_{T} (GeV/#it{c});A#times#varepsilon", momName.c_str()), nPtBins, pTBinEdges);
+    TH1D *histPtMomAxeMatchEffWithWeights = new TH1D("histPtMomAxeMatchEffWithWeights", Form(";#it{p}^{%s}_{T} (GeV/#it{c});A#times#varepsilon", momName.c_str()), nPtBins, pTBinEdges);
 
     SetHist(histPtMomGen, kBlue, 20, 1, kBlue);
     SetHist(histPtMomRec, kRed, 20, 1, kRed);
     SetHist(histPtMomAxe, kBlack, 20, 1, kBlack);
+    SetHist(histPtMomAxeWithWeights, kGray+2, 20, 1, kGray+2);
     SetHist(histPtMomAxeMchTrkEff, kRed+1, 24, 1, kRed+1);
+    SetHist(histPtMomAxeMchTrkEffWithWeights, kOrange+7, 24, 1, kOrange+7);
     SetHist(histPtMomAxeMatchEff, kAzure+4, 24, 1, kAzure+4);
+    SetHist(histPtMomAxeMatchEffWithWeights, kBlue, 24, 1, kBlue);
 
     TLorentzVector *vecMom = new TLorentzVector();
     bool passInAccDaup = false;
@@ -88,6 +124,12 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
     bool passMatchEffDaup = false;
     bool passMatchEffDaum = false;
 
+    double weigthTrkEffDaup = 1.;
+    double weigthTrkEffDaum = 1.;
+
+    double weightMatchEffDaup = 1.;
+    double weightMatchEffDaum = 1.;
+
     for (int iEvt = 0;iEvt < nEvts;iEvt++) {
         std::cout << "* * * Event : " << iEvt << " * * *" << std::endl; 
         passInAccDaup = false;
@@ -98,6 +140,12 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
 
         passMatchEffDaup = false;
         passMatchEffDaum = false;
+
+        weigthTrkEffDaup = 1.;
+        weigthTrkEffDaum = 1.;
+
+        weightMatchEffDaup = 1.;
+        weightMatchEffDaum = 1.;
 
         double ptMom = funcPt -> GetRandom();
         double etaMom = funcEta -> GetRandom();
@@ -132,6 +180,7 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
                     double cutEta = histCorrMapMchTrkEffEta -> GetBinContent(histCorrMapMchTrkEffEta -> FindBin(etaDau));
                     double cutPt = histCorrMapMchTrkEffPt -> GetBinContent(histCorrMapMchTrkEffPt -> FindBin(ptDau));
                     double cutPhi = histCorrMapMchTrkEffPhi -> GetBinContent(histCorrMapMchTrkEffPhi -> FindBin(phiDau));
+                    weigthTrkEffDaup = std::min({cutEta, cutPt, cutPhi});
 
                     if (ptDau > 0.5 && etaDau > 2.5 && etaDau < 4.0) {
                         passInAccDaup = true;
@@ -143,7 +192,6 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
                     }
 
                     if (rndmDaup < matchEff) {
-                        std::cout << "PASS SELECTION" << std::endl;
                         passMatchEffDaup = true;
                     }
                 }
@@ -154,6 +202,7 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
                     double cutEta = histCorrMapMchTrkEffEta -> GetBinContent(histCorrMapMchTrkEffEta -> FindBin(etaDau));
                     double cutPt = histCorrMapMchTrkEffPt -> GetBinContent(histCorrMapMchTrkEffPt -> FindBin(ptDau));
                     double cutPhi = histCorrMapMchTrkEffPhi -> GetBinContent(histCorrMapMchTrkEffPhi -> FindBin(phiDau));
+                    weigthTrkEffDaum = std::min({cutEta, cutPt, cutPhi});
 
                     if (ptDau > 0.5 && etaDau > 2.5 && etaDau < 4.0) {
                         passInAccDaum = true;
@@ -165,7 +214,6 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
                     }
 
                     if (rndmDaum < matchEff) {
-                        std::cout << "PASS SELECTION" << std::endl;
                         passMatchEffDaum = true;
                     }
                 }
@@ -174,6 +222,9 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
 
         if (passInAccDaup && passInAccDaum) {
             histPtMomGen -> Fill(ptMom);
+            histPtMomRecWithWeights -> Fill(ptMom, funcAxe -> Eval(ptMom));
+            histPtMomRecMchTrkEffWithWeights -> Fill(ptMom, weigthTrkEffDaup * weigthTrkEffDaum * funcAxe -> Eval(ptMom));
+            histPtMomRecMatchEffWithWeights -> Fill(ptMom, (1 + (1 - matchEff)) * (1 + (1 - matchEff)) * funcAxe -> Eval(ptMom));
             double axeCut = funcAxe -> Eval(ptMom);
             if (gRandom -> Rndm() < axeCut) {
                 histPtMomRec -> Fill(ptMom);
@@ -190,16 +241,27 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
     }
 
     histPtMomAxe -> Divide(histPtMomRec, histPtMomGen, 1, 1, "B");
+    histPtMomAxeWithWeights -> Divide(histPtMomRecWithWeights, histPtMomGen, 1, 1, "B");
     histPtMomAxeMchTrkEff -> Divide(histPtMomRecMchTrkEff, histPtMomGen, 1, 1, "B");
+    histPtMomAxeMchTrkEffWithWeights -> Divide(histPtMomRecMchTrkEffWithWeights, histPtMomGen, 1, 1, "B");
     histPtMomAxeMatchEff -> Divide(histPtMomRecMatchEff, histPtMomGen, 1, 1, "B");
+    histPtMomAxeMatchEffWithWeights -> Divide(histPtMomRecMatchEffWithWeights, histPtMomGen, 1, 1, "B");
 
     TH1D *histPtMomRatioAxeMchTrkEff = (TH1D*) histPtMomAxe -> Clone("histPtMomRatioAxeMchTrkEff");
     histPtMomRatioAxeMchTrkEff -> Divide(histPtMomAxeMchTrkEff);
     SetHist(histPtMomRatioAxeMchTrkEff, kRed+1, 24, 1, kRed+1);
 
+    TH1D *histPtMomRatioAxeMchTrkEffWithWeights = (TH1D*) histPtMomAxe -> Clone("histPtMomRatioAxeMchTrkEffWithWeights");
+    histPtMomRatioAxeMchTrkEffWithWeights -> Divide(histPtMomAxeMchTrkEffWithWeights);
+    SetHist(histPtMomRatioAxeMchTrkEffWithWeights, kOrange+7, 24, 1, kOrange+7);
+
     TH1D *histPtMomRatioAxeMatchEff = (TH1D*) histPtMomAxe -> Clone("histPtMomRatioAxeMatchEff");
     histPtMomRatioAxeMatchEff -> Divide(histPtMomAxeMatchEff);
     SetHist(histPtMomRatioAxeMatchEff, kAzure+4, 24, 1, kAzure+4);
+
+    TH1D *histPtMomRatioAxeMatchEffWithWeights = (TH1D*) histPtMomAxe -> Clone("histPtMomRatioAxeMatchEffWithWeights");
+    histPtMomRatioAxeMatchEffWithWeights -> Divide(histPtMomAxeMatchEffWithWeights);
+    SetHist(histPtMomRatioAxeMatchEffWithWeights, kBlue, 24, 1, kBlue);
 
     TF1 *funcPol0MchTrkEff = new TF1("funcPol0MchTrkEff", "[0]", 0, 20);
     funcPol0MchTrkEff -> SetParameter(0, 1);
@@ -231,8 +293,11 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
     pad1 -> cd();
     histPtMomAxe -> GetYaxis() -> SetRangeUser(0, 1.2);
     histPtMomAxe -> Draw("EP");
+    histPtMomAxeWithWeights -> Draw("EP SAME");
     histPtMomAxeMchTrkEff -> Draw("EP SAME");
+    histPtMomAxeMchTrkEffWithWeights -> Draw("EP SAME");
     histPtMomAxeMatchEff -> Draw("EP SAME");
+    histPtMomAxeMatchEffWithWeights -> Draw("EP SAME");
 
     TLegend *legendAxe = new TLegend(0.16, 0.70, 0.36, 0.95, " ", "brNDC");
     SetLegend(legendAxe);
@@ -253,6 +318,8 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
     histPtMomRatioAxeMchTrkEff -> GetYaxis() -> SetRangeUser(0.8, 1.2);
     histPtMomRatioAxeMchTrkEff -> Draw("EP");
     histPtMomRatioAxeMatchEff -> Draw("EP SAME");
+    histPtMomRatioAxeMchTrkEffWithWeights -> Draw("EP SAME");
+    histPtMomRatioAxeMatchEffWithWeights -> Draw("EP SAME");
 
     TLine *lineUnity = new TLine(0., 1., 20., 1.);
     lineUnity -> SetLineStyle(kDashed);

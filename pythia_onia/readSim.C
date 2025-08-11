@@ -56,16 +56,18 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
     ntuple -> SetBranchAddress("fromB", &fromB);
     ntuple -> SetBranchAddress("absPdg", &absPdg);
 
-    //double ptBinEdges[] = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 14.0, 16.0, 20.0};
-    double ptBinEdges[] = {0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 20.0};
+    const int nPtBins = 16;
+    double ptBinEdges[] = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 14.0, 16.0, 20.0};
+    //const int nPtBins = 10;
+    //double ptBinEdges[] = {0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 20.0};
 
-    TH1D *histXsecJpsiPt = new TH1D("histXsecJpsiPt", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (GeV/c nb^{-1})^{-1}", 10, ptBinEdges);
+    TH1D *histXsecJpsiPt = new TH1D("histXsecJpsiPt", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (GeV/c nb^{-1})^{-1}", nPtBins, ptBinEdges);
     TH1D *histXsecJpsiRap = new TH1D("histXsecJpsiRap", ";y;d#sigma/dy (nb)", 20, 0, 5);
-    TH1D *histXsecJpsiPtFwdCuts = new TH1D("histXsecJpsiPtFwdCuts", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (GeV/c nb^{-1})^{-1}", 10, ptBinEdges);
+    TH1D *histXsecJpsiPtFwdCuts = new TH1D("histXsecJpsiPtFwdCuts", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (GeV/c nb^{-1})^{-1}", nPtBins, ptBinEdges);
     TH1D *histXsecJpsiRapFwdCuts = new TH1D("histXsecJpsiRapFwdCuts", ";y;d#sigma/dy (nb)", 20, 0, 5);
-    TH1D *histXsecPsi2sPt = new TH1D("histXsecPsi2sPt", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (GeV/c nb^{-1})^{-1}", 10, ptBinEdges);
+    TH1D *histXsecPsi2sPt = new TH1D("histXsecPsi2sPt", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (GeV/c nb^{-1})^{-1}", nPtBins, ptBinEdges);
     TH1D *histXsecPsi2sRap = new TH1D("histXsecPsi2sRap", ";y;d#sigma/dy (nb)", 20, 0, 5);
-    TH1D *histXsecPsi2sPtFwdCuts = new TH1D("histXsecPsi2sPtFwdCuts", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (GeV/c nb^{-1})^{-1}", 10, ptBinEdges);
+    TH1D *histXsecPsi2sPtFwdCuts = new TH1D("histXsecPsi2sPtFwdCuts", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (GeV/c nb^{-1})^{-1}", nPtBins, ptBinEdges);
     TH1D *histXsecPsi2sRapFwdCuts = new TH1D("histXsecPsi2sRapFwdCuts", ";y;d#sigma/dy (nb)", 20, 0, 5);
 
     SetHist(histXsecJpsiPt, kRed+1, 24, 1, kRed+1, 1);

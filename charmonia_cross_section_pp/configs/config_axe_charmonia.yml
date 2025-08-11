@@ -1,8 +1,8 @@
 inputs:
   path: /Users/lucamicheletti/cernbox/JPSI/Jpsi_pp_cross_section_run3/MC
-  production: LHC25g8 # [LHC25c3, LHC25c3b, LHC25g8]
-  prefixGen: AnalysisResults_dq_efficiency_gen_with_assoc # [AnalysisResults_dq_efficiency_with_assoc, AnalysisResults_dq_efficiency_gen_with_assoc, AnalysisResults_dq_efficiency_gen_with_assoc]
-  prefixRec: AnalysisResults_dq_efficiency_rec_with_assoc # [AnalysisResults_dq_efficiency_with_assoc, AnalysisResults_dq_efficiency_rec_with_assoc, AnalysisResults_dq_efficiency_rec_with_assoc]
+  production: LHC25c3 # [LHC25c3, LHC25c3, LHC25c3b, LHC25g8] the second LHC25c3 is obtained with 2 AnalysisResults.root
+  prefixGen: AnalysisResults_dq_efficiency_gen_with_assoc # [AnalysisResults_dq_efficiency_with_assoc, AnalysisResults_dq_efficiency_gen_with_assoc, AnalysisResults_dq_efficiency_gen_with_assoc, AnalysisResults_dq_efficiency_gen_with_assoc]
+  prefixRec: AnalysisResults_dq_efficiency_rec_with_assoc # [AnalysisResults_dq_efficiency_with_assoc, AnalysisResults_dq_efficiency_rec_with_assoc, AnalysisResults_dq_efficiency_rec_with_assoc, AnalysisResults_dq_efficiency_rec_with_assoc]
   assocType: std_association
   sigGen: Jpsi
   sigRec: mumuFromJpsi

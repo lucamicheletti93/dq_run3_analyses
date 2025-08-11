@@ -293,6 +293,37 @@ void get_normalization_from_single_file(string year = "2024", string period = "L
                 histEvSelColCounterTVX -> GetXaxis() -> SetBinLabel(iRun+1, runNumber.c_str());
             }
         }
+
+        if (TString(dirKey -> GetName()).Contains("eventselection-run3")) {
+            TH1D *histCounterTVX = (TH1D*) fIn -> Get("eventselection-run3/luminosity/hCounterTVX");
+            TH1D *histCounterTVXafterBCcuts = (TH1D*) fIn -> Get("eventselection-run3/luminosity/hCounterTVXafterBCcuts");
+            TH1D *histColCounterTVX = (TH1D*) fIn -> Get("eventselection-run3/eventselection/hColCounterTVX");
+
+            int nRuns = histCounterTVX -> GetXaxis() -> GetNbins();
+            vector <string> vecRunList;
+            for (int iRun = 0;iRun < nRuns;iRun++) {
+                string tmpRunNumber = histCounterTVX -> GetXaxis() -> GetBinLabel(iRun+1);
+                if (!(tmpRunNumber.empty())) {
+                    vecRunList.push_back(histCounterTVX -> GetXaxis() -> GetBinLabel(iRun+1));
+                }
+            }
+
+            histBcSelCounterTVX = new TH1D("histBcSelCounterTVX", "", vecRunList.size(), 0, vecRunList.size());
+            histBcSelCounterTVXafterBCcuts = new TH1D("histBcSelCounterTVXafterBCcuts", "", vecRunList.size(), 0, vecRunList.size());
+            histEvSelColCounterTVX = new TH1D("histEvSelColCounterTVX", "", vecRunList.size(), 0, vecRunList.size());
+
+            for (int iRun = 0;iRun < int (vecRunList.size());iRun++) {
+                string runNumber = vecRunList.at(iRun).c_str();
+                histBcSelCounterTVX -> SetBinContent(iRun+1, histCounterTVX -> GetBinContent(iRun+1));
+                histBcSelCounterTVX -> GetXaxis() -> SetBinLabel(iRun+1, runNumber.c_str());
+
+                histBcSelCounterTVXafterBCcuts -> SetBinContent(iRun+1, histCounterTVXafterBCcuts -> GetBinContent(iRun+1));
+                histBcSelCounterTVXafterBCcuts -> GetXaxis() -> SetBinLabel(iRun+1, runNumber.c_str());
+
+                histEvSelColCounterTVX -> SetBinContent(iRun+1, histColCounterTVX -> GetBinContent(iRun+1));
+                histEvSelColCounterTVX -> GetXaxis() -> SetBinLabel(iRun+1, runNumber.c_str());
+            }
+        }
     }
 
     TFile *fOut = new TFile(fOutName.c_str(), "RECREATE");

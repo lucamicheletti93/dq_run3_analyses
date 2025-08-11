@@ -191,6 +191,11 @@ def xsec(config):
     print("Syst. Rel. Matching efficiency = ", systRelMatchingEff)
     # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
+    latexTitle = ROOT.TLatex()
+    latexTitle.SetNDC()
+    latexTitle.SetTextSize(0.05)
+    latexTitle.SetTextFont(42)
+
     # > > > Pt - integrated < < < #
     sqrtsCenters = np.array([13.600])
     sqrtsWidths = np.array([0.])
@@ -200,7 +205,8 @@ def xsec(config):
     jpsiStatXsecInt = (jpsiStatRawYieldInt) / (jpsiAxeInt * BrJpsiToMuMu * lumi * 1e6)
     jpsiSystXsecInt = (jpsiSystRawYieldInt) / (jpsiAxeInt * BrJpsiToMuMu * lumi * 1e6)
     # Add all systematics contributions
-    jpsiSystXsecInt = jpsiXsecInt * np.sqrt((jpsiSystXsecInt / jpsiXsecInt)**2 + systRelBrJpsiToMuMu**2 + systRelLumi**2 + systRelTrackingEff**2 + systRelMatchingEff**2)
+    #jpsiSystXsecInt = jpsiXsecInt * np.sqrt((jpsiSystXsecInt / jpsiXsecInt)**2 + systRelBrJpsiToMuMu**2 + systRelLumi**2 + systRelTrackingEff**2 + systRelMatchingEff**2)
+    jpsiSystXsecInt = jpsiXsecInt * np.sqrt((jpsiSystXsecInt / jpsiXsecInt)**2 + systRelBrJpsiToMuMu**2 + systRelTrackingEff**2 + systRelMatchingEff**2)
 
     graStatXsecInt = ROOT.TGraphErrors(len(sqrtsCenters), sqrtsCenters, np.array(jpsiXsecInt), sqrtsWidths, np.array(jpsiStatXsecInt))
     graSystXsecInt = ROOT.TGraphErrors(len(sqrtsCenters), sqrtsCenters, np.array(jpsiXsecInt), sqrtsSystWidths, np.array(jpsiSystXsecInt))
@@ -236,22 +242,26 @@ def xsec(config):
     graStatXsecIntRun2 = ROOT.TGraphErrors(len(sqrtsCentersRun2), np.array(sqrtsCentersRun2)/1e3, np.array(jpsiXsecVsSqrtsRun2)/1e3, np.array(sqrtsWidthsRun2)/1e3, np.array(jpsiStatXsecVsSqrtsRun2)/1e3)
     graSystXsecIntRun2 = ROOT.TGraphErrors(len(sqrtsCentersRun2), np.array(sqrtsCentersRun2)/1e3, np.array(jpsiXsecVsSqrtsRun2)/1e3, np.array(sqrtsSystWidthsRun2)/1e3, np.array(jpsiSystXsecVsSqrtsRun2)/1e3)
 
-    SetGraStat(graStatXsecIntRun2, 20, ROOT.kBlack)
-    SetGraSyst(graSystXsecIntRun2, 20, ROOT.kBlack)
+    SetGraStat(graStatXsecIntRun2, 20, ROOT.kGray+2)
+    SetGraSyst(graSystXsecIntRun2, 20, ROOT.kGray+2)
 
     canvasXsecIntVsRun2 = ROOT.TCanvas("canvasXsecIntVsRun2", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
-    histGridXsecIntVsSqrt = ROOT.TH2D("histGridXsecIntVsSqrt", ";#sqrt{#it{s}} (TeV);d#sigma/d#it{y} (#mub)", 100, 0, 15, 100, 0, 10)
+    histGridXsecIntVsSqrt = ROOT.TH2D("histGridXsecIntVsSqrt", ";#sqrt{#it{s}} (TeV);d#sigma/d#it{y} (#mub)", 100, 0, 15, 100, 0, 12)
     histGridXsecIntVsSqrt.Draw()
     graStatXsecIntRun2.Draw("EP SAME")
     graSystXsecIntRun2.Draw("E2P SAME")
     graStatXsecInt.Draw("EP SAME")
-    graSystXsecInt.Draw("E2P SAME")  
+    graSystXsecInt.Draw("E2P SAME")
+    latexTitle.DrawLatex(0.2, 0.87, "ALICE Preliminary")
+    latexTitle.DrawLatex(0.2, 0.80, "J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4, #it{p}_{T} < 20 GeV/#it{c}")
+    latexTitle.DrawLatex(0.2, 0.73, f'#it{{L_{{int}}}} = {lumi:4.3f} pb^{{-1}}')
     canvasXsecIntVsRun2.Update()
 
-    legendXsecIntVsRun2 = ROOT.TLegend(0.20, 0.70, 0.40, 0.90, " ", "brNDC")
+    legendXsecIntVsRun2 = ROOT.TLegend(0.60, 0.20, 0.80, 0.40, " ", "brNDC")
     SetLegend(legendXsecIntVsRun2)
-    legendXsecIntVsRun2.AddEntry(graSystXsecIntRun2, "EPJC 77 (2017) 392 ", "FP")
+    legendXsecIntVsRun2.SetTextSize(0.045)
+    legendXsecIntVsRun2.AddEntry(graSystXsecIntRun2, "EPJC 77 (2017) 392", "FP")
     legendXsecIntVsRun2.AddEntry(graStatXsecInt, "#sqrt{#it{s}} = 13.6 TeV", "FP")
     legendXsecIntVsRun2.Draw("SAME")
     canvasXsecIntVsRun2.Update()
@@ -261,7 +271,8 @@ def xsec(config):
     jpsiStatXsecVsPt = (jpsiStatRawYieldVsPt) / (jpsiAxeVsPt * BrJpsiToMuMu * lumi * 1e6 * (2 * ptWidths))
     jpsiSystXsecVsPt = (jpsiSystRawYieldVsPt) / (jpsiAxeVsPt * BrJpsiToMuMu * lumi * 1e6 * (2 * ptWidths))
     # Add all systematics contributions
-    jpsiSystXsecVsPt = jpsiXsecVsPt * np.sqrt((jpsiSystXsecVsPt / jpsiXsecVsPt)**2 + systRelBrJpsiToMuMu**2 + systRelLumi**2 + systRelTrackingEff**2 + systRelMatchingEff**2)
+    #jpsiSystXsecVsPt = jpsiXsecVsPt * np.sqrt((jpsiSystXsecVsPt / jpsiXsecVsPt)**2 + systRelBrJpsiToMuMu**2 + systRelLumi**2 + systRelTrackingEff**2 + systRelMatchingEff**2)
+    jpsiSystXsecVsPt = jpsiXsecVsPt * np.sqrt((jpsiSystXsecVsPt / jpsiXsecVsPt)**2 + systRelBrJpsiToMuMu**2 + systRelTrackingEff**2 + systRelMatchingEff**2)
 
     graStatXsecVsPt = ROOT.TGraphErrors(len(ptCenters), np.array(ptCenters), np.array(jpsiXsecVsPt), np.array(ptWidths), np.array(jpsiStatXsecVsPt))
     graSystXsecVsPt = ROOT.TGraphErrors(len(ptCenters), np.array(ptCenters), np.array(jpsiXsecVsPt), np.array(ptSystWidths), np.array(jpsiSystXsecVsPt))
@@ -295,22 +306,26 @@ def xsec(config):
     graStatXsecVsPtRun2 = ROOT.TGraphErrors(len(ptCentersRun2), np.array(ptCentersRun2), np.array(jpsiXsecVsPtRun2)/1e3, np.array(ptWidthsRun2), np.array(jpsiStatXsecVsPtRun2)/1e3)
     graSystXsecVsPtRun2 = ROOT.TGraphErrors(len(ptCentersRun2), np.array(ptCentersRun2), np.array(jpsiXsecVsPtRun2)/1e3, jpsiPtSystWidthsRun2, np.array(jpsiSystXsecVsPtRun2)/1e3)
 
-    SetGraStat(graStatXsecVsPtRun2, 20, ROOT.kBlack)
-    SetGraSyst(graSystXsecVsPtRun2, 20, ROOT.kBlack)
+    SetGraStat(graStatXsecVsPtRun2, 20, ROOT.kGray+2)
+    SetGraSyst(graSystXsecVsPtRun2, 20, ROOT.kGray+2)
 
     canvasXsecVsPtVsRun2 = ROOT.TCanvas("canvasXsecVsPtVsRun2", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
     ROOT.gPad.SetLogy(True)
-    histGridXsecVsPt = ROOT.TH2D("histGridXsecVsPt", ";#it{p}_{T} (GeV/#it{c});d^{2}#sigma/d#it{y} d#it{p}_{T} (#mub / GeV/#it{c})", 100, 0, 20, 100, 1e-4, 5)
+    histGridXsecVsPt = ROOT.TH2D("histGridXsecVsPt", ";#it{p}_{T} (GeV/#it{c});d^{2}#sigma/d#it{y} d#it{p}_{T} (#mub / GeV/#it{c})", 100, 0, 20, 100, 2e-4, 5)
     histGridXsecVsPt.Draw()
     graStatXsecVsPtRun2.Draw("EP SAME")
     graSystXsecVsPtRun2.Draw("E2P SAME")
     graStatXsecVsPt.Draw("EP SAME")
-    graSystXsecVsPt.Draw("E2P SAME")  
+    graSystXsecVsPt.Draw("E2P SAME")
+    latexTitle.DrawLatex(0.52, 0.87, "ALICE Preliminary")
+    latexTitle.DrawLatex(0.52, 0.80, "J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
+    latexTitle.DrawLatex(0.52, 0.73, f'#it{{L_{{int}}}} = {lumi:4.3f} pb^{{-1}}')
 
-    legendXsecVsPtVsRun2 = ROOT.TLegend(0.20, 0.20, 0.40, 0.45, " ", "brNDC")
+    legendXsecVsPtVsRun2 = ROOT.TLegend(0.20, 0.20, 0.40, 0.40, " ", "brNDC")
     SetLegend(legendXsecVsPtVsRun2)
-    legendXsecVsPtVsRun2.AddEntry(graSystXsecVsPtRun2, "#sqrt{#it{s}} = 13 TeV", "FP")
+    legendXsecVsPtVsRun2.SetTextSize(0.045)
+    legendXsecVsPtVsRun2.AddEntry(graSystXsecVsPtRun2, "#sqrt{#it{s}} = 13 TeV, EPJC 77 (2017) 392", "FP")
     legendXsecVsPtVsRun2.AddEntry(graStatXsecVsPt, "#sqrt{#it{s}} = 13.6 TeV", "FP")
     legendXsecVsPtVsRun2.Draw("SAME")
     canvasXsecVsPtVsRun2.Update()
