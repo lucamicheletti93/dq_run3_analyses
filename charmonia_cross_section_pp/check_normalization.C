@@ -33,8 +33,8 @@ inline void SetHist(auto *hist, Color_t mkrCol = kBlack, int mkrSty = 20, double
 void check_normalization() {
     LoadStyle();
 
-    string fInLumiNameSkim2024StdAssoc = "data/2024/LHC24_CBT_muon_fDiMuon_std_assoc_luminosity.root";
-    string fInNameSkim2024StdAssoc = "data/2024/LHC24_CBT_muon_fDiMuon_std_assoc.root";
+    string fInLumiNameSkim2024StdAssoc = "data/2024/LHC24af_fDiMuon_std_assoc_luminosity.root";
+    string fInNameSkim2024StdAssoc = "data/2024/LHC24af_fDiMuon_std_assoc.root";
 
     string fInLumiNameSkim2023StdAssoc = "data/2023/LHC23zs_fDiMuon_std_assoc_luminosity.root";
     string fInNameSkim2023StdAssoc = "data/2023/LHC23zs_fDiMuon_std_assoc.root";
@@ -207,12 +207,14 @@ void check_normalization() {
     // Min. Bias 2024, std. assoc.
     // WARNING! event selection already computed, bcSelCutEfficiecny not taken into account (already included in the event selection)
     // this correction is necessary in the trigger for inspectedTVX, for minBias it should not be necessary
-    TFile *fInLumiMinBias2024StdAssoc = TFile::Open("data/2024/LHC24_minBias_std_assoc_luminosity.root");
+    //TFile *fInLumiMinBias2024StdAssoc = TFile::Open("data/2024/LHC24_minBias_std_assoc_luminosity.root");
+    TFile *fInLumiMinBias2024StdAssoc = TFile::Open("data/2024/LHC24_minBiasEventStandardSel8_std_assoc_luminosity.root");
     TH1D *histLumiMinBias2024StdAssoc = (TH1D*) fInLumiMinBias2024StdAssoc -> Get("histLumiSummary");
     double nEvtsMinBias2024StdAssoc = histLumiMinBias2024StdAssoc -> GetBinContent(histLumiMinBias2024StdAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
     double lumiMinBias2024StdAssoc = histLumiMinBias2024StdAssoc -> GetBinContent(histLumiMinBias2024StdAssoc -> GetXaxis() -> FindBin("luminosityBcSel"));
 
-    TFile *fInMinBias2024StdAssoc = TFile::Open("data/2024/LHC24_minBias_std_assoc.root");
+    //TFile *fInMinBias2024StdAssoc = TFile::Open("data/2024/LHC24_minBias_std_assoc.root");
+    TFile *fInMinBias2024StdAssoc = TFile::Open("data/2024/LHC24_minBiasEventStandardSel8_std_assoc.root");
     TList *listMinBias2024StdAssoc = (TList*) fInMinBias2024StdAssoc -> Get("analysis-same-event-pairing/output");
     TList *listMinBias2024StdAssocSE = (TList*) listMinBias2024StdAssoc -> FindObject("PairsMuonSEPM_muonLowPt210SigmaPDCA");
     THnSparseD *histSparseMinBias2024StdAssoc = (THnSparseD*) listMinBias2024StdAssocSE -> FindObject("Mass_Pt_Rapidity");
@@ -222,6 +224,14 @@ void check_normalization() {
     double countsMinBias2024StdAssoc = histProjIntMinBias2024StdAssoc -> Integral();
     histProjIntMinBias2024StdAssoc -> Scale(1. / (lumiMinBias2024StdAssoc));
     SetHist(histProjIntMinBias2024StdAssoc, kBlue+1, 24, 0.8, kBlue+1);
+
+    // Added for J/psi - D0 associated production
+    TH1D *histLuminosityMinBias2024StdAssoc = new TH1D("histLumi", "; ; Luminosity (pb-1)", 1, 0, 1);
+    histLuminosityMinBias2024StdAssoc -> SetBinContent(1, lumiMinBias2024StdAssoc);
+
+    TFile *fOutLumiMinBias2024StdAssoc = new TFile("data/luminosity_jpsi_LHC24_minBias.root", "RECREATE");
+    histLuminosityMinBias2024StdAssoc -> Write();
+    fOutLumiMinBias2024StdAssoc -> Close();
 
     std::cout << "---------------------------" << std::endl;
     std::cout << "[Min. Bias, std. assoc.]" << std::endl;
@@ -252,7 +262,7 @@ void check_normalization() {
     SetHist(histProjIntMinBias2024TimeAssoc, kAzure+2, 24, 0.8, kAzure+2);
 
     std::cout << "---------------------------" << std::endl;
-    std::cout << "[Min. Bias, std. assoc.]" << std::endl;
+    std::cout << "[Min. Bias, time assoc.]" << std::endl;
     std::cout << "Duplication      = " << duplCorrFactorMinBias2024TimeAssoc << std::endl;
     std::cout << "N. evts.         = " << nEvtsMinBias2024TimeAssoc << std::endl;
     std::cout << "Luminosity       = " << lumiMinBias2024TimeAssoc << std::endl;
