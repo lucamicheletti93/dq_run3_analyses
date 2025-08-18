@@ -3,9 +3,11 @@
 Run the simulation locally:
 
 - Load O2Sim
--  ```ruby
+- Run the code:
+  ```ruby
   ./runOniaSim.sh
   ```
+
 WARNING: check always the number of events you want to produce before running
 WARNING: do not push the produced file, it will overwrite the existing one!!!
 
