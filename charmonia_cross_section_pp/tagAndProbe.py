@@ -13,18 +13,13 @@ from fast_analysis_utils import ExtractFromYaml
 
 def main():
     parser = argparse.ArgumentParser(description='Arguments to pass')
-    parser.add_argument('cfgFileName', metavar='text', default='config.yml', help='config file name')
     parser.add_argument("--run", help="Compute cross section", action="store_true")
     args = parser.parse_args()
-    
-
-    with open(args.cfgFileName, 'r') as yml_cfg:
-        inputCfg = yaml.load(yml_cfg, yaml.FullLoader)
 
     if args.run:
-        tagAndProbe(inputCfg)
+        tagAndProbe()
 
-def tagAndProbe(config):
+def tagAndProbe():
     """
     function to compute tag and probe
     """
@@ -153,10 +148,11 @@ def tagAndProbe(config):
     lineUnity.SetLineWidth(2)
     lineUnity.Draw()
 
-    legendTagAndProbes = ROOT.TLegend(0.50, 0.40, 0.80, 0.60, " ", "brNDC")
+    legendTagAndProbes = ROOT.TLegend(0.70, 0.50, 0.80, 0.70, " ", "brNDC")
     SetLegend(legendTagAndProbes)
-    legendTagAndProbes.AddEntry(histPassingAllRatioData, "LHC24 pass1 minBias", "EP")
-    legendTagAndProbes.AddEntry(histPassingAllRatioMc, "LHC25g8", "EP")
+    legendTagAndProbes.SetTextSize(0.045)
+    legendTagAndProbes.AddEntry(histPassingAllRatioData, "Data", "EP")
+    legendTagAndProbes.AddEntry(histPassingAllRatioMc, "MC", "EP")
     legendTagAndProbes.Draw("SAME")
     canvasTagAndProbes.Update()
 

@@ -109,6 +109,8 @@ def xsec(config):
     jpsiAxeInt = dfJpsiAxeInt["val"]
     jpsiStatAxeInt = dfJpsiAxeInt["stat"]
 
+    print(f'Axe = {jpsiAxeInt[0]} +/- {jpsiStatAxeInt[0]}')
+
     histStatAxeInt = ROOT.TH1D("histStatAxeInt", ";#it{p}_{T} (GeV/#it{c});A#times#varepsilon", len(ptEdgesInt)-1, ptEdgesInt)
 
     SetHistStat(histStatAxeInt, 20, ROOT.kRed+1)
@@ -189,6 +191,17 @@ def xsec(config):
             histSystRelMatchingEffInt.SetBinContent(iBin+1, systRelMatchingEff)
         histSystRelMatchingEffVsPt.SetBinContent(iBin+1, systRelMatchingEff)
     print("Syst. Rel. Matching efficiency = ", systRelMatchingEff)
+
+
+    systRelMcRealistic = 0.02
+    histSystRelMcRealisticInt = ROOT.TH1D("histSystRelMcRealisticInt", ";#it{p}_{T} (GeV/#it{c});dN/d#it{y}", len(ptEdgesInt)-1, ptEdgesInt)
+    histSystRelMcRealisticVsPt = ROOT.TH1D("histSystRelMcRealisticVsPt", ";#it{p}_{T} (GeV/#it{c});dN/d#it{y}", len(ptEdges)-1, ptEdges)
+
+    for iBin in range(0, len(ptMin)):
+        if iBin < 1:
+            histSystRelMcRealisticInt.SetBinContent(iBin+1, systRelMcRealistic)
+        histSystRelMcRealisticVsPt.SetBinContent(iBin+1, systRelMcRealistic)
+    print("Syst. Rel. MC realisticness = ", systRelMcRealistic)
     # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
 
     latexTitle = ROOT.TLatex()
@@ -206,7 +219,7 @@ def xsec(config):
     jpsiSystXsecInt = (jpsiSystRawYieldInt) / (jpsiAxeInt * BrJpsiToMuMu * lumi * 1e6)
     # Add all systematics contributions
     #jpsiSystXsecInt = jpsiXsecInt * np.sqrt((jpsiSystXsecInt / jpsiXsecInt)**2 + systRelBrJpsiToMuMu**2 + systRelLumi**2 + systRelTrackingEff**2 + systRelMatchingEff**2)
-    jpsiSystXsecInt = jpsiXsecInt * np.sqrt((jpsiSystXsecInt / jpsiXsecInt)**2 + systRelBrJpsiToMuMu**2 + systRelTrackingEff**2 + systRelMatchingEff**2)
+    jpsiSystXsecInt = jpsiXsecInt * np.sqrt((jpsiSystXsecInt / jpsiXsecInt)**2 + systRelBrJpsiToMuMu**2 + systRelTrackingEff**2 + systRelMatchingEff**2 + systRelMcRealistic**2)
 
     graStatXsecInt = ROOT.TGraphErrors(len(sqrtsCenters), sqrtsCenters, np.array(jpsiXsecInt), sqrtsWidths, np.array(jpsiStatXsecInt))
     graSystXsecInt = ROOT.TGraphErrors(len(sqrtsCenters), sqrtsCenters, np.array(jpsiXsecInt), sqrtsSystWidths, np.array(jpsiSystXsecInt))

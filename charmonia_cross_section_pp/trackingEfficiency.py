@@ -221,8 +221,8 @@ def trackingEfficiency(config):
     # Plot results
     legendMchTrkEff = ROOT.TLegend(0.20, 0.78, 0.40, 0.93, " ", "brNDC")
     SetLegend(legendMchTrkEff)
-    legendMchTrkEff.AddEntry(histMcMchTrkEff[0], "LHC25c3b", "L")
-    legendMchTrkEff.AddEntry(histDataMchTrkEff[0], "LHC24 pass1 minBias", "L")
+    legendMchTrkEff.AddEntry(histDataMchTrkEff[0], "Data", "L")
+    legendMchTrkEff.AddEntry(histMcMchTrkEff[0], "MC", "L")
 
     # Eta dependence
     canvasEtaStEff = ROOT.TCanvas("canvasEtaStEff", "", 1200, 1200)
