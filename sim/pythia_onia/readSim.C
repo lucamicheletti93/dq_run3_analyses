@@ -25,6 +25,12 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
     double jpsiStatXsecPtRap254[] = {28.877,47.418,44.155,39.866,34.850,17.654,12.878,6.588,2.783,0.438};
     double jpsiSystXsecPtRap254[] = {12.444,19.252,6.688,9.108,6.792,8.046,2.923,4.711,0.071,0.090};
 
+    double ptCentersRatio[] = {0.25, 0.75, 1.25, 1.75, 2.25, 2.75, 3.5, 4.5, 5.5, 6.5, 7.5, 9, 11, 13, 15, 18};
+    double ptWidthsRatio[] = {0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1, 1, 1, 2};
+    double psi2sToJpsiRatioPtRap254[] = {0.08556, 0.09124, 0.1068, 0.1225, 0.1182, 0.1228, 0.1409, 0.1638, 0.2059, 0.2084, 0.2121, 0.2517, 0.2966, 0.291, 0.3141, 0.3771};
+    double psi2sToJpsiRatioStatPtRap254[] = {0.007, 0.0042, 0.0035, 0.0042, 0.0041, 0.0046, 0.0039, 0.0052, 0.0064, 0.0073, 0.0096, 0.01, 0.019, 0.03, 0.05, 0.056};
+    double psi2sToJpsiRatioSystPtRap254[] = {0.0028, 0.0098, 0.0049, 0.001, 0.0014, 0.0053, 0.0026, 0.0015, 0.0024, 0.0073, 0.0016, 0.0016, 0.0016, 0.0024, 0.0056, 0.0039};
+
     // Include 10% Lumi + 0.5% BR
     for (int iPt = 0;iPt < 10;iPt++) {
         double relSystSigExtr = jpsiSystXsecPtRap254[iPt] / jpsiXsecPtRap254[iPt];
@@ -37,6 +43,11 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
     SetHist(graStatJpsiXsecPtRap254, kBlack, 20, 1, kBlack);
     TGraphErrors *graSystJpsiXsecPtRap254 = new TGraphErrors(10, ptCenters, jpsiXsecPtRap254, ptWidths, jpsiSystXsecPtRap254);
     SetHist(graSystJpsiXsecPtRap254, kBlack, 20, 1, kBlack);
+
+    TGraphErrors *graStatPsi2sOverJpsiPtRap254 = new TGraphErrors(16, ptCentersRatio, psi2sToJpsiRatioPtRap254, ptWidthsRatio, psi2sToJpsiRatioStatPtRap254);
+    SetHist(graStatPsi2sOverJpsiPtRap254, kRed+1, 20, 1, kRed+1);
+    TGraphErrors *graSystPsi2sOverJpsiPtRap254 = new TGraphErrors(16, ptCentersRatio, psi2sToJpsiRatioPtRap254, ptWidthsRatio, psi2sToJpsiRatioSystPtRap254);
+    SetHist(graSystPsi2sOverJpsiPtRap254, kRed+1, 20, 1, kRed+1);
     ///////////////////////////////////////////////
 
     TFile *fIn = new TFile(Form("%s/%s.root", simPath.c_str(), simName.c_str()), "READ");
@@ -183,15 +194,18 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
     histRatioFuncPt -> SetLineStyle(kDashed);
 
     TCanvas *canvasOniaRatioPt = new TCanvas("canvasOniaRatioPt", "", 800, 600);
-    histPsi2sOverJpsiPt -> GetYaxis() -> SetRangeUser(0, 0.4);
+    histPsi2sOverJpsiPt -> GetYaxis() -> SetRangeUser(0, 0.7);
     histPsi2sOverJpsiPt -> Draw("EP");
     histPsi2sOverJpsiPtFwdCuts -> Draw("EP SAME");
+    graStatPsi2sOverJpsiPtRap254 -> Draw("EP SAME");
+    graSystPsi2sOverJpsiPtRap254 -> Draw("E2P SAME");
     histRatioFuncPt -> Draw("L SAME");
 
-    TLegend *legendOniaRatioPt = new TLegend(0.20, 0.70, 0.40, 0.85, " ", "brNDC");
+    TLegend *legendOniaRatioPt = new TLegend(0.20, 0.65, 0.40, 0.85, " ", "brNDC");
     SetLegend(legendOniaRatioPt);
     legendOniaRatioPt -> AddEntry(histPsi2sOverJpsiPt, "all", "EP");
     legendOniaRatioPt -> AddEntry(histPsi2sOverJpsiPtFwdCuts, "2.5 < y < 4", "EP");
+    legendOniaRatioPt -> AddEntry(graStatPsi2sOverJpsiPtRap254, "Data", "FP");
     legendOniaRatioPt -> Draw();
 
     TCanvas *canvasOniaRap = new TCanvas("canvasOniaRap", "", 800, 600);
