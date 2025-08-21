@@ -8,14 +8,14 @@ import array
 def main():
     parser = argparse.ArgumentParser(description='Arguments to pass')
     parser.add_argument('cfgFileName', metavar='text', default='config.yml', help='config file name')
-    parser.add_argument("--do_axe", help="Compute Axe", action="store_true")
+    parser.add_argument("--run", help="Compute Axe", action="store_true")
     args = parser.parse_args()
     
 
     with open(args.cfgFileName, 'r') as yml_cfg:
         inputCfg = yaml.load(yml_cfg, yaml.FullLoader)
 
-    if args.do_axe:
+    if args.run:
         axe(inputCfg)
 
 def axe(config):
