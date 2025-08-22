@@ -1,0 +1,26 @@
+inputs:
+  recoTags: [cpass0, pass1]
+  fInpO: [
+    /Users/lucamicheletti/cernbox/JPSI/Jpsi_pO_OO_NeNe_run3/data/2025/cpass0/LHC25ad/AnalysisResults_time_assoc.root,
+    /Users/lucamicheletti/cernbox/JPSI/Jpsi_pO_OO_NeNe_run3/data/2025/pass1/LHC25ad/AnalysisResults_time_assoc.root
+  ]
+  pathFitResultspO: [
+    /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC25ad_cpass0/pt_dependence,
+    /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC25ad_pass1/pt_dependence,
+  ]
+  fInOO: [
+    /Users/lucamicheletti/cernbox/JPSI/Jpsi_pO_OO_NeNe_run3/data/2025/cpass0/LHC25ae/AnalysisResults_time_assoc.root,
+    /Users/lucamicheletti/cernbox/JPSI/Jpsi_pO_OO_NeNe_run3/data/2025/pass1/LHC25ae/AnalysisResults_time_assoc.root
+  ]
+  pathFitResultsOO: [
+    /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC25ae_cpass0/pt_dependence,
+    /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC25ae_pass1/pt_dependence,
+  ]
+  fInNeNe: [
+    /Users/lucamicheletti/cernbox/JPSI/Jpsi_pO_OO_NeNe_run3/data/2025/cpass0/LHC25af/AnalysisResults_time_assoc.root,
+    /Users/lucamicheletti/cernbox/JPSI/Jpsi_pO_OO_NeNe_run3/data/2025/pass1/LHC25af/AnalysisResults_time_assoc.root
+  ]
+  pathFitResultsNeNe: [
+    /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC25af_cpass0/pt_dependence,
+    /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC25af_pass1/pt_dependence,
+  ]
