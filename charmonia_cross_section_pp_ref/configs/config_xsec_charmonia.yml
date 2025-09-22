@@ -1,0 +1,17 @@
+inputs:
+  deltaRap: 1.5
+  # LHC24_ppref_pass1
+  #fInLumi: "/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_cross_section_pp_ref/data/luminosity_jpsi_LHC24_ppref_pass1.root"
+  #fInRawYieldInt: /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC24_ppref_pass1/cross_section_std_assoc/LHC24/integrated/systematic_sig_Jpsi.txt
+  # LHC24aq_pass1_medium
+  #fInLumi: "/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_cross_section_pp_ref/data/luminosity_jpsi_LHC24aq_pass1_small.root"
+  #fInRawYieldInt: /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC24aq_pass1_small/cross_section_std_assoc/LHC24/integrated/systematic_sig_Jpsi.txt
+  # LHC24aq_pass1_small
+  fInLumi: "/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_cross_section_pp_ref/data/luminosity_jpsi_LHC24aq_pass1_medium.root"
+  fInRawYieldInt: /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC24aq_pass1_medium/cross_section_std_assoc/LHC24/integrated/systematic_sig_Jpsi.txt
+  fInRawYieldVsPt: /Users/lucamicheletti/GITHUB/dq_fitter/analysis/LHC24_ppref_pass1/cross_section_std_assoc/LHC24/pt_dependence/systematic_sig_Jpsi.txt
+  fInAxeInt: /Users/lucamicheletti/cernbox/JPSI/Jpsi_pp_ref_cross_section_run3/MC/LHC25g9/axe_integrated_std_association_Jpsi.txt
+  fInAxeVsPt: /Users/lucamicheletti/cernbox/JPSI/Jpsi_pp_ref_cross_section_run3/MC/LHC25g9/axe_pt_dependence_std_association_Jpsi.txt
+
+outputs:
+  fOut: output/jpsi_xsec_pp5dot36TeV.root
