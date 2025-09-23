@@ -1,0 +1,52 @@
+dependent_variables:
+- header: {name: D2(SIG)/DPT/DYRAP, units: MUB/GEV}
+  qualifiers:
+  - {name: RE, value: P P --> JPSI < MU+ MU- > X}
+  - {name: SQRT(S), units: GeV, value: '2760.0'}
+  - {name: YRAP, value: 2.5-4.0}
+  values:
+  - errors:
+    - {label: stat, symerror: 0.033}
+    - {label: sys, symerror: 0.022}
+    - {label: sys, symerror: 0.021}
+    value: 0.38
+  - errors:
+    - {label: stat, symerror: 0.042}
+    - {label: sys, symerror: 0.041}
+    - {label: sys, symerror: 0.04}
+    value: 0.705
+  - errors:
+    - {label: stat, symerror: 0.038}
+    - {label: sys, symerror: 0.034}
+    - {label: sys, symerror: 0.033}
+    value: 0.583
+  - errors:
+    - {label: stat, symerror: 0.027}
+    - {label: sys, symerror: 0.019}
+    - {label: sys, symerror: 0.018}
+    value: 0.321
+  - errors:
+    - {label: stat, symerror: 0.017}
+    - {label: sys, symerror: 0.008}
+    - {label: sys, symerror: 0.008}
+    value: 0.135
+  - errors:
+    - {label: stat, symerror: 0.011}
+    - {label: sys, symerror: 0.004}
+    - {label: sys, symerror: 0.004}
+    value: 0.073
+  - errors:
+    - {label: stat, symerror: 0.004}
+    - {label: sys, symerror: 0.001}
+    - {label: sys, symerror: 0.001}
+    value: 0.019
+independent_variables:
+- header: {name: PT, units: GEV}
+  values:
+  - {high: 1.0, low: 0.0}
+  - {high: 2.0, low: 1.0}
+  - {high: 3.0, low: 2.0}
+  - {high: 4.0, low: 3.0}
+  - {high: 5.0, low: 4.0}
+  - {high: 6.0, low: 5.0}
+  - {high: 8.0, low: 6.0}

@@ -1,0 +1,137 @@
+dependent_variables:
+- header: {name: DSIG/DPT/DYRAP, units: NB}
+  qualifiers:
+  - {name: '$p_{\rm T}$', units: GeV/c, value: '0 < $p_{\rm T}$ < 30'}
+  - {name: YRAP, value: '$2.5 < y < 4$' }
+  - {name: RE, value: P P --> J/PSI < MU+ MU- >}
+  - {name: SQRT(S), units: GeV, value: '13000.0'}
+  values:
+  - errors:
+    - {label: stat, symerror: 10.93}
+    - {label: sys, symerror: 37.71}
+    - {label: 'sys,lumi', symerror: 20.1472}
+    - {label: 'sys,BR', symerror: 3.31949}
+    value: 599.62
+  - errors:
+    - {label: stat, symerror: 19.46}
+    - {label: sys, symerror: 92.91}
+    - {label: 'sys,lumi', symerror: 53.4901}
+    - {label: 'sys,BR', symerror: 8.81312}
+    value: 1591.97
+  - errors:
+    - {label: stat, symerror: 16.22}
+    - {label: sys, symerror: 117.99}
+    - {label: 'sys,lumi', symerror: 70.5085}
+    - {label: 'sys,BR', symerror: 11.6171}
+    value: 2098.47
+  - errors:
+    - {label: stat, symerror: 13.83}
+    - {label: sys, symerror: 101.0}
+    - {label: 'sys,lumi', symerror: 59.5123}
+    - {label: 'sys,BR', symerror: 9.80533}
+    value: 1771.2
+  - errors:
+    - {label: stat, symerror: 9.19}
+    - {label: sys, symerror: 62.04}
+    - {label: 'sys,lumi', symerror: 37.4068}
+    - {label: 'sys,BR', symerror: 6.16321}
+    value: 1113.3
+  - errors:
+    - {label: stat, symerror: 5.84}
+    - {label: sys, symerror: 34.47}
+    - {label: 'sys,lumi', symerror: 21.6592}
+    - {label: 'sys,BR', symerror: 3.56861}
+    value: 644.62
+  - errors:
+    - {label: stat, symerror: 3.81}
+    - {label: sys, symerror: 18.97}
+    - {label: 'sys,lumi', symerror: 11.7892}
+    - {label: 'sys,BR', symerror: 1.94241}
+    value: 350.87
+  - errors:
+    - {label: stat, symerror: 2.61}
+    - {label: sys, symerror: 10.44}
+    - {label: 'sys,lumi', symerror: 6.56309}
+    - {label: 'sys,BR', symerror: 1.08134}
+    value: 195.33
+  - errors:
+    - {label: stat, symerror: 1.81}
+    - {label: sys, symerror: 5.88}
+    - {label: 'sys,lumi', symerror: 3.77664}
+    - {label: 'sys,BR', symerror: 0.62224}
+    value: 112.4
+  - errors:
+    - {label: stat, symerror: 0.78}
+    - {label: sys, symerror: 2.54}
+    - {label: 'sys,lumi', symerror: 1.67731}
+    - {label: 'sys,BR', symerror: 0.27636}
+    value: 49.92
+  - errors:
+    - {label: stat, symerror: 0.43}
+    - {label: sys, symerror: 0.96}
+    - {label: 'sys,lumi', symerror: 0.64142}
+    - {label: 'sys,BR', symerror: 0.10568}
+    value: 19.09
+  - errors:
+    - {label: stat, symerror: 0.27}
+    - {label: sys, symerror: 0.43}
+    - {label: 'sys,lumi', symerror: 0.26174}
+    - {label: 'sys,BR', symerror: 0.04313}
+    value: 7.79
+  - errors:
+    - {label: stat, symerror: 0.18}
+    - {label: sys, symerror: 0.18}
+    - {label: 'sys,lumi', symerror: 0.11558}
+    - {label: 'sys,BR', symerror: 0.01904}
+    value: 3.44
+  - errors:
+    - {label: stat, symerror: 0.13}
+    - {label: sys, symerror: 0.09}
+    - {label: 'sys,lumi', symerror: 0.05678}
+    - {label: 'sys,BR', symerror: 0.00936}
+    value: 1.69
+  - errors:
+    - {label: stat, symerror: 0.11}
+    - {label: sys, symerror: 0.06}
+    - {label: 'sys,lumi', symerror: 0.03158}
+    - {label: 'sys,BR', symerror: 0.0052}
+    value: 0.94
+  - errors:
+    - {label: stat, symerror: 0.07}
+    - {label: sys, symerror: 0.04}
+    - {label: 'sys,lumi', symerror: 0.01781}
+    - {label: 'sys,BR', symerror: 0.00293}
+    value: 0.53
+  - errors:
+    - {label: stat, symerror: 0.05}
+    - {label: sys, symerror: 0.03}
+    - {label: 'sys,lumi', symerror: 0.01042}
+    - {label: 'sys,BR', symerror: 0.00172}
+    value: 0.31
+  - errors:
+    - {label: stat, symerror: 0.03}
+    - {label: sys, symerror: 0.01}
+    - {label: 'sys,lumi', symerror: 0.0037}
+    - {label: 'sys,BR', symerror: 0.00061}
+    value: 0.11
+independent_variables:
+- header: {name: '$p_{\rm T}$', units: GEV}
+  values:
+  - {high: 0.5, low: 0.0}
+  - {high: 1.0, low: 0.5}
+  - {high: 2.0, low: 1.0}
+  - {high: 3.0, low: 2.0}
+  - {high: 4.0, low: 3.0}
+  - {high: 5.0, low: 4.0}
+  - {high: 6.0, low: 5.0}
+  - {high: 7.0, low: 6.0}
+  - {high: 8.0, low: 7.0}
+  - {high: 10.0, low: 8.0}
+  - {high: 12.0, low: 10.0}
+  - {high: 14.0, low: 12.0}
+  - {high: 16.0, low: 14.0}
+  - {high: 18.0, low: 16.0}
+  - {high: 20.0, low: 18.0}
+  - {high: 22.0, low: 20.0}
+  - {high: 26.0, low: 22.0}
+  - {high: 30.0, low: 26.0}

@@ -1,0 +1,88 @@
+dependent_variables:
+- header: {name: DSIG/DPT/DYRAP, units: NB}
+  qualifiers:
+  - {name: '$p_{\rm T}$', units: GeV/c, value: '0 < $p_{\rm T}$ < 12'}
+  - {name: YRAP, value: '$2.5 < y < 4$' }
+  - {name: RE, value: P P --> J/PSI < MU+ MU- >}
+  - {name: SQRT(S), units: GeV, value: '5020.0'}
+  values:
+  - errors:
+    - {label: stat, symerror: 23.8}
+    - {label: sys, symerror: 33.0}
+    - {label: 'sys,lumi', symerror: 13.6689}
+    - {label: 'sys,BR', symerror: 3.27634}
+    value: 650.9
+  - errors:
+    - {label: stat, symerror: 31.1}
+    - {label: sys, symerror: 52.0}
+    - {label: 'sys,lumi', symerror: 24.6351}
+    - {label: 'sys,BR', symerror: 5.90487}
+    value: 1173.1
+  - errors:
+    - {label: stat, symerror: 27.3}
+    - {label: sys, symerror: 36.0}
+    - {label: 'sys,lumi', symerror: 18.9693}
+    - {label: 'sys,BR', symerror: 4.54681}
+    value: 903.3
+  - errors:
+    - {label: stat, symerror: 19.3}
+    - {label: sys, symerror: 21.0}
+    - {label: 'sys,lumi', symerror: 10.9032}
+    - {label: 'sys,BR', symerror: 2.61342}
+    value: 519.2
+  - errors:
+    - {label: stat, symerror: 12.6}
+    - {label: sys, symerror: 14.0}
+    - {label: 'sys,lumi', symerror: 4.8384}
+    - {label: 'sys,BR', symerror: 1.15973}
+    value: 230.4
+  - errors:
+    - {label: stat, symerror: 7.6}
+    - {label: sys, symerror: 0.0}
+    - {label: 'sys,lumi', symerror: 2.6628}
+    - {label: 'sys,BR', symerror: 0.63826}
+    value: 126.8
+  - errors:
+    - {label: stat, symerror: 5.1}
+    - {label: sys, symerror: 2.2}
+    - {label: 'sys,lumi', symerror: 1.3041}
+    - {label: 'sys,BR', symerror: 0.31258}
+    value: 62.1
+  - errors:
+    - {label: stat, symerror: 3.3}
+    - {label: sys, symerror: 0.9}
+    - {label: 'sys,lumi', symerror: 0.6111}
+    - {label: 'sys,BR', symerror: 0.14648}
+    value: 29.1
+  - errors:
+    - {label: stat, symerror: 2.4}
+    - {label: sys, symerror: 0.7}
+    - {label: 'sys,lumi', symerror: 0.3024}
+    - {label: 'sys,BR', symerror: 0.07248}
+    value: 14.4
+  - errors:
+    - {label: stat, symerror: 2.1}
+    - {label: sys, symerror: 1.1}
+    - {label: 'sys,lumi', symerror: 0.2331}
+    - {label: 'sys,BR', symerror: 0.05587}
+    value: 11.1
+  - errors:
+    - {label: stat, symerror: 0.7}
+    - {label: sys, symerror: 0.09}
+    - {label: 'sys,lumi', symerror: 0.0714}
+    - {label: 'sys,BR', symerror: 0.01711}
+    value: 3.4
+independent_variables:
+- header: {name: '$p_{\rm T}$', units: GEV}
+  values:
+  - {high: 1.0, low: 0.0}
+  - {high: 2.0, low: 1.0}
+  - {high: 3.0, low: 2.0}
+  - {high: 4.0, low: 3.0}
+  - {high: 5.0, low: 4.0}
+  - {high: 6.0, low: 5.0}
+  - {high: 7.0, low: 6.0}
+  - {high: 8.0, low: 7.0}
+  - {high: 9.0, low: 8.0}
+  - {high: 10.0, low: 9.0}
+  - {high: 12.0, low: 10.0}
