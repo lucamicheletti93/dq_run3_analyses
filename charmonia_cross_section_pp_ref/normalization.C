@@ -18,6 +18,10 @@
 #include <algorithm>
 #include <string>
 
+// xSecTVX cross section
+const double xSecTVX = 50.3e9; // pb-1, pp@5.36TeV, taken from https://alice-notes.web.cern.ch/system/files/notes/analysis/1671/2025-09-04-Analysis_Note_Pi0_OO.pdf, page 14
+//const double xSecTVX = 1.13e12; // pb-1, OO@5.36TeV, taken from https://alice-notes.web.cern.ch/system/files/notes/analysis/1671/2025-09-04-Analysis_Note_Pi0_OO.pdf, page 14
+
 void RetrieveTriggerInfo(TString , bool , string, double [11]);
 
 void get_normalization_from_multiple_files(string year = "2024", string period = "LHC24_ppref_pass1", string subPeriod = "None", string triggerMask = "minBias", string assocType = "std_assoc", string location = "alien") {
@@ -426,19 +430,18 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
     std::cout << "evColCounterTVX = " << evColCounterTVX << std::endl;
     std::cout << "****************************************************" << std::endl;
 
-    const double ppCrossSection = 50.3e9; // pb-1
     double bcCounterEfficiency = bcCounterTVXafterBCcuts / bcCounterTVX;
     double nEvtsBcSel, nEvtsBcSelAfterCuts = -999;
     double luminosityBcSel, luminosityBcSelAfterCuts = -999;
     if (triggerMask.find("minBias") != std::string::npos) {
         nEvtsBcSel = (bcCounterTVX * (collsAfterCuts / collsBeforeCuts));
         nEvtsBcSelAfterCuts = (bcCounterTVXafterBCcuts * (collsAfterCuts / collsBeforeCuts));
-        luminosityBcSel = nEvtsBcSel / ppCrossSection;
-        luminosityBcSelAfterCuts = nEvtsBcSelAfterCuts / ppCrossSection;
+        luminosityBcSel = nEvtsBcSel / xSecTVX;
+        luminosityBcSelAfterCuts = nEvtsBcSelAfterCuts / xSecTVX;
 
-        double luminosityBcSelMinBias = (bcCounterTVX * (collsAfterCuts / collsBeforeCuts)) / ppCrossSection;
-        double luminosityBcSelAfterCutsMinBias = (bcCounterTVXafterBCcuts * (collsAfterCuts / collsBeforeCuts)) / ppCrossSection;
-        double luminosityEvSelMinBias = (evColCounterTVX * (collsAfterCuts / collsBeforeCuts)) / ppCrossSection;
+        double luminosityBcSelMinBias = (bcCounterTVX * (collsAfterCuts / collsBeforeCuts)) / xSecTVX;
+        double luminosityBcSelAfterCutsMinBias = (bcCounterTVXafterBCcuts * (collsAfterCuts / collsBeforeCuts)) / xSecTVX;
+        double luminosityEvSelMinBias = (evColCounterTVX * (collsAfterCuts / collsBeforeCuts)) / xSecTVX;
         std::cout << "BC selection efficiency = " << bcCounterTVXafterBCcuts / bcCounterTVX << std::endl;
         std::cout << "N. events            = " << (bcCounterTVX * (collsAfterCuts / collsBeforeCuts)) << std::endl;
         std::cout << "Colls after cuts     = " << collsAfterCuts << std::endl;
@@ -446,9 +449,9 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
         std::cout << "luminosity Min. Bias after BC cuts [bc-selection-task]    = " << luminosityBcSelAfterCutsMinBias << " pb-1" << std::endl;
         std::cout << "luminosity Min. Bias [event-selection-task]               = " << luminosityEvSelMinBias << " pb-1" << std::endl;
     } else {
-        double luminosityZorroInfo = (inspectedTVX * (selectionsZorroInfo / scalers)) / ppCrossSection;
-        double luminosityZorroSel = (inspectedTVX * (selectionsZorroSel / scalers)) / ppCrossSection;
-        double luminosityAnalysedTrig = (inspectedTVX * (selectionsAnalysedTrig / scalers)) / ppCrossSection;
+        double luminosityZorroInfo = (inspectedTVX * (selectionsZorroInfo / scalers)) / xSecTVX;
+        double luminosityZorroSel = (inspectedTVX * (selectionsZorroSel / scalers)) / xSecTVX;
+        double luminosityAnalysedTrig = (inspectedTVX * (selectionsAnalysedTrig / scalers)) / xSecTVX;
         std::cout << "BC selection efficiency = " << bcCounterTVXafterBCcuts / bcCounterTVX << std::endl;
         std::cout << "N. events TOI           = " << (inspectedTVX * (selectionsZorroSel / scalers)) << std::endl;
         std::cout << "N. events AnalysedTrig  = " << (inspectedTVX * (selectionsAnalysedTrig / scalers)) << std::endl;
@@ -458,8 +461,8 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
 
         nEvtsBcSel = (inspectedTVX * (selectionsAnalysedTrig / scalers));
         nEvtsBcSelAfterCuts = (inspectedTVX * (selectionsZorroSel / scalers));
-        luminosityBcSel = nEvtsBcSel / ppCrossSection;
-        luminosityBcSelAfterCuts = nEvtsBcSelAfterCuts / ppCrossSection;
+        luminosityBcSel = nEvtsBcSel / xSecTVX;
+        luminosityBcSelAfterCuts = nEvtsBcSelAfterCuts / xSecTVX;
     }
     histLumiSummary -> SetBinContent(1, bcCounterTVX);
     histLumiSummary -> SetBinContent(2, bcCounterTVXafterBCcuts);
