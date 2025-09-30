@@ -1,0 +1,17 @@
+inputs:
+  sqrtsInterp: 5.36
+  rangeSqrtsInterp: 0.5
+  ptEdgesInterp: [0., 1., 2., 3., 4., 5., 6., 8.]
+  ptCentersInterp: [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 7.]
+  ptWidthsInterp: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1.]
+  ptSystWidthsInterp: [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]
+
+  HepDataList: 
+    2.76: "HEP_Data/jpsi_xsec_pp_2TeV.yaml"
+    5.02: "HEP_Data/jpsi_xsec_pp_5TeV.yaml"
+    7.00: "HEP_Data/jpsi_xsec_pp_7TeV.yaml"
+    8.00: "HEP_Data/jpsi_xsec_pp_8TeV.yaml"
+    13.00: "HEP_Data/jpsi_xsec_pp_13TeV.yaml"
+
+outputs:
+  fOut: output/interp_jpsi_xsec_pp5dot36TeV.root
