@@ -13,15 +13,7 @@
   python interpolation.py configs/config_interpolation.yml --run
   ```
 - Script to extract the normalization:
-  ```ruby
-    .L normalization.C
-    ```
-  ```ruby
-    get_normalization_from_single_file()
-    ```
-  ```ruby
-    luminosity()
-    ```
-  ```ruby
-    check_normalization()
-    ```
+    1) .L normalization.C
+    2) get_normalization_from_single_file()
+    3) luminosity()
+    4) check_normalization()
