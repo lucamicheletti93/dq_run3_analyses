@@ -167,9 +167,9 @@ def load_hist_from_txt(filename, hist_name, hist_title, color=ROOT.kBlack):
 
     # Normalised at 1/area
     #area = hist.Integral()
-    area = hist.Integral("width")
+    """ area = hist.Integral("width")
     if area > 0:
-        hist.Scale(1.0 / area, "width")
+        hist.Scale(1.0 / area, "width") """
 
     return hist
 
@@ -177,6 +177,11 @@ def load_hist_from_txt(filename, hist_name, hist_title, color=ROOT.kBlack):
 
 def do_inputShapes(inputCfg):
     print("Start do_inputShapes")
+
+    # Load and compile C++ functions
+    print("Loading C++ functions...")
+    ROOT.gROOT.ProcessLine(".L treeLoop.C+")
+    print("C++ functions compiled successfully!")
 
     pathFileDataPt = inputCfg["inputs"]["pathFileDataPt"]
     fileNameDataPt = inputCfg["inputs"]["fileNameDataPt"]
@@ -378,141 +383,77 @@ def do_inputShapes(inputCfg):
             treeGen.SetBranchAddress("fPtMC2", fPtMC2)
             treeGen.SetBranchAddress("fEtaMC2", fEtaMC2)
             treeGen.SetBranchAddress("fPhiMC2", fPhiMC2)
-            print("dove mi blocco 1")
             treeGen.GetEntry(0)
-            print("DEBUG treeGen first entry:")
-            #print(f"fMcDecision={fMcDecision[0]}, fPtMC1={fPtMC1[0]}, fPtMC2={fPtMC2[0]}, fEtaMC1={fEtaMC1[0]}, fPhiMC1={fPhiMC1[0]}")
 
-            """ massJpsi = 3.0969  # GeV/c^2
-            pt = 2.0
-            eta = 1.2
-            phi = 0.5
-
-            vec = ROOT.Math.PtEtaPhiMVector(pt, eta, phi, massJpsi)
-            print(f"Rapidity: {vec.Rapidity()}, Pt: {vec.Pt()}, Eta: {vec.Eta()}") """
-
-            for iEntry in range(treeGen.GetEntries()):
-             #for iEntry in range(5000):
-                treeGen.GetEntry(iEntry)
-                if fMcDecision[0] < 1:
-                    print(f"fMcDecision[0]: {fMcDecision[0]}")
+            for key in fIn.GetListOfKeys():
+                dirName = key.GetName()
+                if "DF_" not in dirName:
                     continue
-                vecJpsiGentest = ROOT.Math.PtEtaPhiMVector(fPtMC1[0], fEtaMC1[0], fPhiMC1[0], massJpsi)
-                #print(f"vecJpsiGentest.Rapidity(): {vecJpsiGentest.Rapidity()}")
-                    
-                if fPtMC2[0] == -999.0 and fPhiMC2[0] == -999.0:
-                    vecJpsiGen = ROOT.Math.PtEtaPhiMVector(fPtMC1[0], fEtaMC1[0], fPhiMC1[0], massJpsi)
-                    #print(f"fPtMC1[0]={fPtMC1[0]}, fEtaMC1={fEtaMC1[0]}, fPhiMC1={fPhiMC1[0]}, massJpsi={massJpsi}")
-                    #print(f"vecJpsiGen.Rapidity(): {vecJpsiGen.Rapidity()}")
-                    if abs(vecJpsiGen.Rapidity()) > 4 or abs(vecJpsiGen.Rapidity()) < 2.5:
-                        continue
-                    if vecJpsiGen.Pt() > 20:
-                        continue
 
-                    if iter == 0:
-                        histPtJpsiGen[iter].Fill(vecJpsiGen.Pt())
-                        histRapJpsiGen[iter].Fill(-vecJpsiGen.Rapidity())
-                        #print(f"vecJpsiGen.Pt()={vecJpsiGen.Pt()}, -vecJpsiGen.Rapidity()={-vecJpsiGen.Rapidity()}")
-                    else:
-                        binPt = histFromFuncPtRatio[iter-1].FindBin(vecJpsiGen.Pt())
-                        binRap = histFromFuncRapRatio[iter-1].FindBin(-vecJpsiGen.Rapidity())
-                        weightPt = histFromFuncPtRatio[iter-1].GetBinContent(binPt)
-                        weightRap = histFromFuncRapRatio[iter-1].GetBinContent(binRap)
-                        weightTot = weightPt * weightRap
-                        histPtJpsiGen[iter].Fill(vecJpsiGen.Pt(), weightTot)
-                        histRapJpsiGen[iter].Fill(-vecJpsiGen.Rapidity(), weightTot)
+                print(f"Processing directory: {dirName}")
 
-                    if beamType == "PbPb":
-                        if fImpactParameter[0] < 5.625:
-                            histCentrJpsiGen[iter].AddBinContent(1)
-                        if 5.625 <= fImpactParameter[0] < 8.375:
-                            histCentrJpsiGen[iter].AddBinContent(2)
-                        if 8.375 <= fImpactParameter[0] < 10.625:
-                            histCentrJpsiGen[iter].AddBinContent(3)
-                        if 10.625 <= fImpactParameter[0] <= 13.875:
-                            histCentrJpsiGen[iter].AddBinContent(4)
-
-            """ for iEntry in range(min(20, treeGen.GetEntries())):
-                treeGen.GetEntry(iEntry)
-                print(f"Entry {iEntry}: fPtMC1={fPtMC1[0]}, fPtMC2={fPtMC2[0]}, Rapidity1={ROOT.Math.PtEtaPhiMVector(fPtMC1[0], fEtaMC1[0], fPhiMC1[0], massJpsi).Rapidity()}, Rapidity2={ROOT.Math.PtEtaPhiMVector(fPtMC2[0], fEtaMC2[0], fPhiMC2[0], massJpsi).Rapidity()}") """
-
-            print("dove mi blocco 2")
-            # ==================== #
-            #  Reconstructed Tree  #
-            # ==================== #
-            treeRec = fIn.Get(f"{dirName}/O2rtdilmtreerec")
-
-            treeRec.SetBranchAddress("fMcDecision", fMcDecision)
-            treeRec.SetBranchAddress("fMass", fMass)
-            treeRec.SetBranchAddress("fPt", fPt)
-            treeRec.SetBranchAddress("fEta", fEta)
-            treeRec.SetBranchAddress("fPhi", fPhi)
-            treeRec.SetBranchAddress("fCentFT0C", fCentFT0C)
-            treeRec.SetBranchAddress("fPtMC1", fPtMC1)
-            treeRec.SetBranchAddress("fEtaMC1", fEtaMC1)
-            treeRec.SetBranchAddress("fPhiMC1", fPhiMC1)
-            treeRec.SetBranchAddress("fPtMC2", fPtMC2)
-            treeRec.SetBranchAddress("fEtaMC2", fEtaMC2)
-            treeRec.SetBranchAddress("fPhiMC2", fPhiMC2)
-            treeRec.SetBranchAddress("fPt1", fPt1)
-            treeRec.SetBranchAddress("fEta1", fEta1)
-            treeRec.SetBranchAddress("fPhi1", fPhi1)
-            treeRec.SetBranchAddress("fPt2", fPt2)
-            treeRec.SetBranchAddress("fEta2", fEta2)
-            treeRec.SetBranchAddress("fPhi2", fPhi2)
-
-            
-            treeRec.GetEntry(0)
-            print("DEBUG treeRec first entry:")
-            #print(f"fMcDecision={fMcDecision[0]}, fPtMC1={fPtMC1[0]}, fPtMC2={fPtMC2[0]}, fEtaMC1={fEtaMC1[0]}, fPhiMC1={fPhiMC1[0]}")
-
-            print("dove mi blocco 3")
-            for iEntry in range(treeRec.GetEntries()):
-             #for iEntry in range(5000):
-                treeRec.GetEntry(iEntry)
-
-                if (fMcDecision[0] < 1):
-                    print("continuo x fMCdec")
-                    continue
-                vecMuGen1 = ROOT.Math.PtEtaPhiMVector(fPtMC1[0], fEtaMC1[0], fPhiMC1[0], massMu)
-                vecMuGen2 = ROOT.Math.PtEtaPhiMVector(fPtMC2[0], fEtaMC2[0], fPhiMC2[0], massMu)
-                vecMuRec1 = ROOT.Math.PtEtaPhiMVector(fPt1[0], fEta1[0], fPhi1[0], massMu)
-                vecMuRec2 = ROOT.Math.PtEtaPhiMVector(fPt2[0], fEta2[0], fPhi2[0], massMu)
-
-                vecJpsiGen = vecMuGen1 + vecMuGen2
-                vecJpsiRec = ROOT.Math.PtEtaPhiMVector(fPt[0], fEta[0], fPhi[0], fMass[0])
-
-                if abs(vecJpsiRec.Rapidity()) > 4 or abs(vecJpsiRec.Rapidity()) < 2.5: 
-                    print(f"continuo rec x rap: {vecJpsiRec.Rapidity()}")
-                    continue
-                if fPt1[0] < ptCut or fPt2[0] < ptCut: 
-                    #print(f"continuo rec x ptCut, fPt1: {fPt1}  and fPt2: {fPt2}")
-                    continue
-                #if fPt[0] > 20 or fMass[0] > 3.4: 
-                if fPt[0] > 20: 
-                    #print(f"continuo rec x pt dimuon, fPt[0]: {fPt[0]}")
-                    continue
-                if(iter == 0):
-                    histPtJpsiRec[iter].Fill(vecJpsiRec.Pt())
-                    histRapJpsiRec[iter].Fill(-vecJpsiRec.Rapidity())
-                    #print(f"vecJpsiRec.Pt()={vecJpsiRec.Pt()}, -vecJpsiRec.Rapidity()={-vecJpsiRec.Rapidity()}")
+                # ================ #
+                #  Generated Tree  #
+                # ================ #
+                treeGen = fIn.Get(f"{dirName}/O2rtdilmtreegen")
+                
+                if iter == 0:
+                    ROOT.ProcessGeneratedTree(
+                        treeGen,
+                        histPtJpsiGen[iter],
+                        histRapJpsiGen[iter],
+                        histCentrJpsiGen[iter],
+                        ROOT.nullptr,
+                        ROOT.nullptr,
+                        iter,
+                        isPbPb,
+                        massJpsi
+                    )
                 else:
-                    binPt = histFromFuncPtRatio[iter-1].FindBin(vecJpsiGen.Pt())
-                    binRap = histFromFuncRapRatio[iter-1].FindBin(-vecJpsiGen.Rapidity())
-                    weightPt = histFromFuncPtRatio[iter-1].GetBinContent(binPt)
-                    weightRap = histFromFuncRapRatio[iter-1].GetBinContent(binRap)
-                    weightTot = weightPt*weightRap
-                    histPtJpsiRec[iter].Fill(vecJpsiRec.Pt(), weightTot)
-                    #print(f"vecJpsiRec.Pt()={vecJpsiRec.Pt()}, weightTot={weightTot}")
-                    histRapJpsiRec[iter].Fill(-vecJpsiRec.Rapidity(), weightTot)
-                
-                if beamType == "PbPb":
-                    histCentrJpsiRec[iter].Fill(fCentFT0C[0])
-                
-                #print("all check rec ok")
+                    ROOT.ProcessGeneratedTree(
+                        treeGen,
+                        histPtJpsiGen[iter],
+                        histRapJpsiGen[iter],
+                        histCentrJpsiGen[iter],
+                        histFromFuncPtRatio[iter-1],
+                        histFromFuncRapRatio[iter-1],
+                        iter,
+                        isPbPb,
+                        massJpsi
+                    )
 
-            print("dove mi blocco 4")
-            index += 1
+                # ==================== #
+                #  Reconstructed Tree  #
+                # ==================== #
+                treeRec = fIn.Get(f"{dirName}/O2rtdilmtreerec")
+
+                if iter == 0:
+                    ROOT.ProcessReconstructedTree(
+                        treeRec,
+                        histPtJpsiRec[iter],
+                        histRapJpsiRec[iter],
+                        histCentrJpsiRec[iter],
+                        ROOT.nullptr, 
+                        ROOT.nullptr,
+                        iter,
+                        isPbPb,
+                        massMu,
+                        ptCut
+                    )
+                else:
+                    ROOT.ProcessReconstructedTree(
+                        treeRec,
+                        histPtJpsiRec[iter],
+                        histRapJpsiRec[iter],
+                        histCentrJpsiRec[iter],
+                        histFromFuncPtRatio[iter-1],
+                        histFromFuncRapRatio[iter-1],
+                        iter,
+                        isPbPb,
+                        massMu,
+                        ptCut
+                    )
+                index += 1
 
         #-----------------------JPsi Axe histograms------------------------#
 
@@ -549,6 +490,9 @@ def do_inputShapes(inputCfg):
         #-------------------------JPsi Axe ratio---------------------------#
 
         histPtJpsiDataCorr[iter].Divide(histPtJpsiAxe[iter])
+        area_pt = histPtJpsiDataCorr[iter].Integral("width")
+        if area_pt > 0:
+            histPtJpsiDataCorr[iter].Scale(1.0 / area_pt, "width")
 
         fitFunctionPt[iter] = PtJPsiPbPb5TeV_Func()
         fitFunctionPt[iter].SetParameters(1, 2.83941, 2.6687, 2.37032)
@@ -567,6 +511,9 @@ def do_inputShapes(inputCfg):
         histFromFuncPtRatio[iter].SetLineColor(iterColors[iter])
 
         histRapJpsiDataCorr[iter].Divide(histRapJpsiAxe[iter])
+        area_rap = histRapJpsiDataCorr[iter].Integral("width")
+        if area_rap > 0:
+            histRapJpsiDataCorr[iter].Scale(1.0 / area_rap, "width")
 
         fitFunctionRap[iter] = RapJPsiPbPb5TeV_Func()
         fitFunctionRap[iter].SetParameter(0, 8)       
