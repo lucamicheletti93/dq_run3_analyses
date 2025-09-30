@@ -4,38 +4,124 @@ import argparse
 import yaml
 from pathlib import Path
 import math
+import statistics
+import itertools
+import functools
+import operator
+import shutil
+import logging
+from collections import defaultdict, deque, namedtuple, OrderedDict
+from typing import List, Tuple, Dict, Any, Optional
+import glob
+import json
+import csv
 import numpy as np
+from array import array
+import matplotlib.pyplot as plt
 import ROOT
 
 def load_config(cfgFileName):
     with open(cfgFileName, 'r') as yml_cfg:
         return yaml.load(yml_cfg, yaml.FullLoader)
+    
+kNsel: int = 51
+
+selectionLabels = [
+    "kIsBBV0A", "kIsBBV0C", "kIsBBFDA", "kIsBBFDC", "kIsBBT0A", "kIsBBT0C",
+    "kNoBGV0A", "kNoBGV0C", "kNoBGFDA", "kNoBGFDC", "kNoBGT0A", "kNoBGT0C",
+    "kIsBBZNA", "kIsBBZNC", "kIsBBZAC", "kNoBGZNA", "kNoBGZNC", "kNoV0MOnVsOfPileup",
+    "kNoSPDOnVsOfPileup", "kNoV0Casymmetry", "kIsGoodTimeRange", "kNoIncompleteDAQ",
+    "kNoTPCLaserWarmUp", "kNoTPCHVdip", "kNoPileupFromSPD", "kNoV0PFPileup", "kNoSPDClsVsTklBG",
+    "kNoV0C012vsTklBG", "kNoInconsistentVtx", "kNoPileupInMultBins", "kNoPileupMV",
+    "kNoPileupTPC", "kIsTriggerTVX", "kIsINT1", "kNoITSROFrameBorder", "kNoTimeFrameBorder",
+    "kNoSameBunchPileup", "kIsGoodZvtxFT0vsPV", "kIsVertexITSTPC", "kIsVertexTOFmatched",
+    "kIsVertexTRDmatched", "kNoCollInTimeRangeNarrow", "kNoCollInTimeRangeStrict",
+    "kNoCollInTimeRangeStandard", "kNoCollInTimeRangeVzDependent", "kNoCollInRofStrict",
+    "kNoCollInRofStandard", "kNoHighMultCollInPrevRof", "kIsGoodITSLayer3",
+    "kIsGoodITSLayer0123", "kIsGoodITSLayersAll"
+]
+
+kTriggerMask = (
+    (1 << 37) |  # kIsGoodZvtxFT0vsPV
+    (1 << 32) |  # kIsTriggerTVX
+    (1 << 36) |  # kNoSameBunchPileup
+    (1 << 34) |  # kNoITSROFrameBorder
+    (1 << 35)    # kNoTimeFrameBorder
+)
+
+def eventSelection(selection: int) -> bool:
+    return (selection & kTriggerMask) == kTriggerMask
 
 # ===================== #
 #    Pt distribution    #
 # ===================== #
 
 def PtJPsiPbPb5TeV_Func():
-    """J/psi pT in Pb-Pb"""
-    def func_formula(x, p):
-        return p[0] * x[0] / (1. + (x[0] / p[1])**p[2])**p[3]
-    return ROOT.TF1("PtPsiPbPb5TeV", func_formula, 0, 20, 4)
+    """
+    J/psi pT in Pb—Pb
+    """
+    return ROOT.TF1(
+        "PtPsiPbPb5TeV",
+        lambda x, p: p[0] * x[0] / (1. + (x[0] / p[1])**p[2])**p[3],
+        0, 20,
+        4
+    )
+
+def PtJPsiPbPb5TeV_tuned(px):
+    """
+    J/psi pT in Pb—Pb, tuned on 2015 data -> Castillo embedding https://alice.its.cern.ch/jira/browse/ALIROOT-8174?jql=text%20~%20%22LHC19a2%22
+    """
+    x = px[0]
+    p0 = 1.00715e6
+    p1 = 3.50274
+    p2 = 1.93403
+    p3 = 3.96363
+    return p0 * x / (1. + (x / p1)**p2)**p3
+
 
 # ===================== #
 # Rapidity distribution #
 # ===================== #
 
 def RapJPsiPbPb5TeV_Func():
-    """TF1 for rapidity"""
-    def func_formula(x, p):
-        return p[0] * math.exp(-0.5 * ((x[0] - p[1]) / p[2])**2)
-    return ROOT.TF1("RapPsiPbPb5TeV", func_formula, 2.5, 4, 3)
+    """
+    TF1 for rap
+    """
+    return ROOT.TF1(
+        "RapPsiPbPb5TeV",
+        #lambda x, p: p[0] * x[0] / (1. + (x[0] / p[1])**p[2])**p[3], 2.5, 4, 4
+        lambda x, p: p[0] * math.exp(-0.5 * ((x[0] - p[1]) / p[2])**2), 2.5, 4, 3
+    )
 
 def RapPsiPbPb5TeV_Original():
-    """TF1 for J/psi rapidity in Pb-Pb (original)"""
-    def func_formula(x, p):
-        return p[0] * math.exp(-0.5 * ((x[0] - p[1]) / p[2])**2)
-    return ROOT.TF1("RapPsiPbPb5TeV", func_formula, 2.5, 4, 3)
+    """
+    TF1 for J/psi rapidity in Pb—Pb (original)
+    """
+    return ROOT.TF1(
+        "RapPsiPbPb5TeV",
+        lambda x, p: p[0] * math.exp(-0.5 * ((x[0] - p[1]) / p[2])**2), 2.5, 4, 3
+    )
+
+def YPsiPbPb5TeV(py):
+    """
+    J/psi rapidity in Pb—Pb, tuned on 2015 data -> Castillo embedding https://alice.its.cern.ch/jira/browse/ALIROOT-8174?jql=text%20~%20%22LHC19a2%22
+    Found at the link  https://github.com/AliceO2Group/O2DPG/blob/master/MC/config/PWGDQ/external/generator/GeneratorCocktailPromptCharmoniaToMuonEvtGen_PbPb5TeV.C#L164
+    """
+    y = py[0]
+    p0 = 1.09886e6
+    p1 = 0
+    p2 = 2.12568
+    return p0 * math.exp(-0.5 * ((y - p1) / p2)**2)
+
+def YJPsipp5TeV_pp(py):
+    """
+    J/psi rapidity in pp at 5.02 TeV, tuned on HEPData INS1935680
+    """
+    y = py[0]
+    p0 = 1
+    p1 = 0.0338222
+    p2 = 2.96748
+    return p0 * math.exp(-0.5 * ((y - p1) / p2)**2)
 
 # ========= #
 #   Style   #
@@ -56,8 +142,10 @@ def SetLegend(legend):
     legend.SetTextSize(0.045)
 
 def load_hist_from_txt(filename, hist_name, hist_title, color=ROOT.kBlack):
-    """creating an histo from systematic txt file"""
-    data = np.loadtxt(filename, skiprows=1)
+    """
+    creating an histo from systematic txt file
+    """
+    data = np.loadtxt(filename, skiprows=1) #skip first row
     xmins, xmaxs, vals, stat, syst = data.T
 
     bin_edges = np.concatenate((xmins, [xmaxs[-1]]))
@@ -78,19 +166,21 @@ def load_hist_from_txt(filename, hist_name, hist_title, color=ROOT.kBlack):
     SetHistogram(hist, color)
 
     # Normalised at 1/area
-    area = hist.Integral("width")
+    #area = hist.Integral()
+    """ area = hist.Integral("width")
     if area > 0:
-        hist.Scale(1.0 / area, "width")
+        hist.Scale(1.0 / area, "width") """
 
     return hist
 
+
+
 def do_inputShapes(inputCfg):
     print("Start do_inputShapes")
-    
+
     # Load and compile C++ functions
     print("Loading C++ functions...")
     ROOT.gROOT.ProcessLine(".L treeLoop.C+")
-
     print("C++ functions compiled successfully!")
 
     pathFileDataPt = inputCfg["inputs"]["pathFileDataPt"]
@@ -117,12 +207,50 @@ def do_inputShapes(inputCfg):
     print(f"rapMin: {rapMin}")
     print(f"rapMax: {rapMax}")
 
-    isPbPb = (beamType == "PbPb")
+    isPbPb = bool("false")
     database = ROOT.TDatabasePDG.Instance()
     muPdgCode = 13
     jpsiPdgCode = 443
     massMu = database.GetParticle(muPdgCode).Mass()
     massJpsi = database.GetParticle(jpsiPdgCode).Mass()
+
+    """ fMass = fPt = fEta = fTauz = fTauxy = fU2Q2 = fCos2DeltaPhi = fR2EP = fR2SP = fCentFT0C = fImpactParameter = fMcDecision = -99999
+    fChi2pca = fSVertex = fEMC1 = fEMC2 = fPt1 = fPt2 = fPhi1 = fPhi2 = fEta1 = fEta2 = fPtMC1 = fPtMC2 = fPhiMC1 = fPhiMC2 = fPhi = fEtaMC1 = fEtaMC2 = -99999
+    fSign = fSign1 = fSign2 = -99999 """
+
+    """ fMass = fPt = fEta = fTauz = fTauxy = fU2Q2 = fCos2DeltaPhi = fR2EP = fR2SP = fCentFT0C = fImpactParameter = fMcDecision = np.array([-99999], dtype=np.int32)
+    fChi2pca = fSVertex = fEMC1 = fEMC2 = fPt1 = fPt2 = fPhi1 = fPhi2 = fEta1 = fEta2 = fPtMC1 = fPtMC2 = fPhiMC1 = fPhiMC2 = fPhi = fEtaMC1 = fEtaMC2 = np.array([-99999], dtype=np.int32)
+    fSign = fSign1 = fSign2 = np.array([-99999], dtype=np.int32) """
+
+    """ fMass = fPt = fEta = fTauz = fTauxy = fU2Q2 = fCos2DeltaPhi = fR2EP = fR2SP = fCentFT0C = fImpactParameter = np.array([-99999.0], dtype=np.float32)
+    fChi2pca = fSVertex = fEMC1 = fEMC2 = fPt1 = fPt2 = fPhi1 = fPhi2 = fEta1 = fEta2 = fPtMC1 = fPtMC2 = fPhiMC1 = fPhiMC2 = fPhi = fEtaMC1 = fEtaMC2 = np.array([-99999.0], dtype=np.float32)
+    fMcDecision = fSign = fSign1 = fSign2 = np.array([-99999.0], dtype=np.float32) """
+
+    fChi2pca   = array('f', [-99999.])
+    fSVertex   = array('f', [-99999.])
+    fEMC1      = array('f', [-99999.])
+    fEMC2      = array('f', [-99999.])
+    fPt1       = array('f', [-99999.])
+    fPt2       = array('f', [-99999.])
+    fPhi1      = array('f', [-99999.])
+    fPhi2      = array('f', [-99999.])
+    fEta1      = array('f', [-99999.])
+    fEta2      = array('f', [-99999.])
+    fPtMC1     = array('f', [-99999.])
+    fPtMC2     = array('f', [-99999.])
+    fPhiMC1    = array('f', [-99999.])
+    fPhiMC2    = array('f', [-99999.])
+    fEtaMC1    = array('f', [-99999.])
+    fEtaMC2    = array('f', [-99999.])
+    fPt        = array('f', [-99999.])
+    fEta       = array('f', [-99999.])
+    fPhi       = array('f', [-99999.])
+    fMass      = array('f', [-99999.])
+    fSelection = array('i', [-99999])
+    fSign      = array('i', [-99999])
+    fImpactParameter = array('f', [-99999.])
+    fCentFT0C  = array('f', [-99999.])
+    fMcDecision= array('I', [0]) 
 
     ptBins = np.array(ptMin + [ptMax[-1]], dtype='float64')
     rapBins = np.array(rapMin + [rapMax[-1]], dtype='float64')
@@ -133,9 +261,18 @@ def do_inputShapes(inputCfg):
 
     iterColors = [ROOT.kRed+1, ROOT.kBlue+1, ROOT.kGreen+2]
 
+    """ filein = ROOT.TFile(f"{pathName}/{fileName}", "READ")
+    histPtJpsiData = filein.Get("histJpsiPt")
+    SetHistogram(histPtJpsiData, ROOT.kBlack)
+    histRapJpsiData = filein.Get("histJpsiRap")
+    SetHistogram(histRapJpsiData, ROOT.kBlack)
+
+    histPtJpsiData.Scale(1.0 / histPtJpsiData.Integral(), "WIDTH")
+    histRapJpsiData.Scale(1.0 / histRapJpsiData.Integral(), "WIDTH") """
+
     histPtJpsiData = load_hist_from_txt(f"{pathFileDataPt}/{fileNameDataPt}", "histPtJpsiData", ";p_{T} (GeV/c);Normalized yield", ROOT.kBlack)
     histRapJpsiData = load_hist_from_txt(f"{pathFileDataRap}/{fileNameDataRap}", "histRapJpsiData", ";y;Normalized yield", ROOT.kBlack)
-    if isPbPb:
+    if beamType == "PbPb":
         histCentrJpsiData = load_hist_from_txt(f"{pathFileDataCentr}/{fileNameDataCentr}", "histCentrJpsiData", ";Centrality (%);Normalized yield", ROOT.kBlack)    
     
     nIterations = 2
@@ -170,6 +307,7 @@ def do_inputShapes(inputCfg):
     histFromFuncPtRatio = [None] * (nIterations + 1)
 
     fitFunctionRapOriginal = RapPsiPbPb5TeV_Original()
+
     fitFunctionRapOriginal.SetParameter(0, 8)
     fitFunctionRapOriginal.SetParameter(1, 0)
     fitFunctionRapOriginal.SetParameter(2, 2.12568)
@@ -186,127 +324,172 @@ def do_inputShapes(inputCfg):
     histFromFuncRapRatio = [None] * (nIterations + 1)
 
     fIn = ROOT.TFile(f"{pathToFileAO2D}", "READ")
+    #fIn = ROOT.TFile(pathToFileAO2D/"AO2D-3.root", "READ")
 
     for iter in range(nIterations):
         print(f"************* Iteration {iter} *************")
 
-        # Initialize the corrected data distribution to be fitted
+        # ----------- Initialize the corrected data distribution to be fitted ---------- #
         histPtJpsiDataCorr[iter] = histPtJpsiData.Clone(f"histPtJpsiDataCorr_iter_{iter}")
         SetHistogram(histPtJpsiDataCorr[iter], iterColors[iter])
         histRapJpsiDataCorr[iter] = histRapJpsiData.Clone(f"histRapJpsiDataCorr_iter_{iter}")
         SetHistogram(histRapJpsiDataCorr[iter], iterColors[iter])
 
-        # Generated histograms
-        histPtJpsiGen[iter] = ROOT.TH1D(f"histPtJpsiGen_iter_{iter}", " ; #it{{p}}_{{T}} (GeV/c)", nBinsPt, ptBins)
-        histRapJpsiGen[iter] = ROOT.TH1D(f"histRapJpsiGen_iter_{iter}", " ; #it{{y}}", nBinsRap, rapBins)
-        histCentrJpsiGen[iter] = ROOT.TH1D(f"histCentrJpsiGen_iter_{iter}", " ; Centr (%)", nBinsCentr, centrBins)
+        # ---------------------------- Generated histograms ---------------------------- #
+        histPtJpsiGen[iter] = ROOT.TH1D(f"histPtJpsiGen_iter_{iter}", " ; #it{p}_{T} GeV/c", nBinsPt, ptBins)
+        histRapJpsiGen[iter] = ROOT.TH1D(f"histRapJpsiGen_iter_{iter}", " ; #it{y}", nBinsRap, rapBins)
+        histCentrJpsiGen[iter] = ROOT.TH1D(f"histCentrJpsiGen_iter_{iter}", " ; Centr %", nBinsCentr, centrBins)
         SetHistogram(histPtJpsiGen[iter], ROOT.kRed + 1)
         SetHistogram(histRapJpsiGen[iter], ROOT.kRed + 1)
         SetHistogram(histCentrJpsiGen[iter], ROOT.kRed + 1)
 
-        # Reconstructed histograms
-        histPtJpsiRec[iter] = ROOT.TH1D(f"histPtJpsiRec_iter_{iter}", " ; #it{{p}}_{{T}} (GeV/c)", nBinsPt, ptBins)
-        histRapJpsiRec[iter] = ROOT.TH1D(f"histRapJpsiRec_iter_{iter}", " ; #it{{y}}", nBinsRap, rapBins)
-        histCentrJpsiRec[iter] = ROOT.TH1D(f"histCentrJpsiRec_iter_{iter}", " ; Centr (%)", nBinsCentr, centrBins)
+        # -------------------------- Reconstructed histograms -------------------------- #
+        histPtJpsiRec[iter] = ROOT.TH1D(f"histPtJpsiRec_iter_{iter}", " ; #it{p}_{T} GeV/c", nBinsPt, ptBins)
+        histRapJpsiRec[iter] = ROOT.TH1D(f"histRapJpsiRec_iter_{iter}", " ; #it{y}", nBinsRap, rapBins)
+        histCentrJpsiRec[iter] = ROOT.TH1D(f"histCentrJpsiRec_iter_{iter}", " ; Centr %", nBinsCentr, centrBins)
         SetHistogram(histPtJpsiRec[iter], ROOT.kBlue)
         SetHistogram(histRapJpsiRec[iter], ROOT.kBlue)
         SetHistogram(histCentrJpsiRec[iter], ROOT.kBlue)
 
-        # Axe histograms
-        histPtJpsiAxe[iter] = ROOT.TH1D(f"histPtJpsiAxe_iter_{iter}", " ; #it{{p}}_{{T}} (GeV/c)", nBinsPt, ptBins)
-        histRapJpsiAxe[iter] = ROOT.TH1D(f"histRapJpsiAxe_iter_{iter}", " ; #it{{y}}", nBinsRap, rapBins)
-        histCentrJpsiAxe[iter] = ROOT.TH1D(f"histCentrJpsiAxe_iter_{iter}", " ; Centr (%)", nBinsCentr, centrBins)
+        # ------------------------------- Axe histograms ------------------------------- #
+        histPtJpsiAxe[iter] = ROOT.TH1D(f"histPtJpsiAxe_iter_{iter}", " ; #it{p}_{T} GeV/c", nBinsPt, ptBins)
+        histRapJpsiAxe[iter] = ROOT.TH1D(f"histRapJpsiAxe_iter_{iter}", " ; #it{y}", nBinsRap, rapBins)
+        histCentrJpsiAxe[iter] = ROOT.TH1D(f"histCentrJpsiAxe_iter_{iter}", " ; Centr %", nBinsCentr, centrBins)
         SetHistogram(histPtJpsiAxe[iter], iterColors[iter])
         SetHistogram(histRapJpsiAxe[iter], iterColors[iter])
         SetHistogram(histCentrJpsiAxe[iter], iterColors[iter])
 
-        # Loop over file trees
+
+        #----------------------------Loop over file trees---------------------------#
+        index = 0
         for key in fIn.GetListOfKeys():
+            """ if index >= 2:
+                break """
             dirName = key.GetName()
             if "DF_" not in dirName:
                 continue
-
-            print(f"Processing directory: {dirName}")
 
             # ================ #
             #  Generated Tree  #
             # ================ #
             treeGen = fIn.Get(f"{dirName}/O2rtdilmtreegen")
-            
-            if iter == 0:
-                ROOT.ProcessGeneratedTree(
-                    treeGen,
-                    histPtJpsiGen[iter],
-                    histRapJpsiGen[iter],
-                    histCentrJpsiGen[iter],
-                    ROOT.nullptr,
-                    ROOT.nullptr,
-                    iter,
-                    isPbPb,
-                    massJpsi
-                )
-            else:
-                ROOT.ProcessGeneratedTree(
-                    treeGen,
-                    histPtJpsiGen[iter],
-                    histRapJpsiGen[iter],
-                    histCentrJpsiGen[iter],
-                    histFromFuncPtRatio[iter-1],
-                    histFromFuncRapRatio[iter-1],
-                    iter,
-                    isPbPb,
-                    massJpsi
-                )
 
-            # ==================== #
-            #  Reconstructed Tree  #
-            # ==================== #
-            treeRec = fIn.Get(f"{dirName}/O2rtdilmtreerec")
+            treeGen.SetBranchAddress("fMcDecision", fMcDecision)
+            if beamType == "PbPb":
+                treeGen.SetBranchAddress("fImpactParameter", fImpactParameter)
+            treeGen.SetBranchAddress("fPtMC1", fPtMC1)
+            treeGen.SetBranchAddress("fEtaMC1", fEtaMC1)
+            treeGen.SetBranchAddress("fPhiMC1", fPhiMC1)
+            treeGen.SetBranchAddress("fPtMC2", fPtMC2)
+            treeGen.SetBranchAddress("fEtaMC2", fEtaMC2)
+            treeGen.SetBranchAddress("fPhiMC2", fPhiMC2)
+            treeGen.GetEntry(0)
 
-            if iter == 0:
-                ROOT.ProcessReconstructedTree(
-                    treeRec,
-                    histPtJpsiRec[iter],
-                    histRapJpsiRec[iter],
-                    histCentrJpsiRec[iter],
-                    ROOT.nullptr, 
-                    ROOT.nullptr,
-                    iter,
-                    isPbPb,
-                    massMu,
-                    ptCut
-                )
-            else:
-                ROOT.ProcessReconstructedTree(
-                    treeRec,
-                    histPtJpsiRec[iter],
-                    histRapJpsiRec[iter],
-                    histCentrJpsiRec[iter],
-                    histFromFuncPtRatio[iter-1],
-                    histFromFuncRapRatio[iter-1],
-                    iter,
-                    isPbPb,
-                    massMu,
-                    ptCut
-                )
+            for key in fIn.GetListOfKeys():
+                dirName = key.GetName()
+                if "DF_" not in dirName:
+                    continue
 
-        # JPsi Axe histograms
-        print(f"Filling histograms - Iteration {iter}")
-        print(f"Gen pT entries: {histPtJpsiGen[iter].GetEntries()}")
-        print(f"Rec pT entries: {histPtJpsiRec[iter].GetEntries()}")
-        print(f"Gen rap entries: {histRapJpsiGen[iter].GetEntries()}")
-        print(f"Rec rap entries: {histRapJpsiRec[iter].GetEntries()}")
+                print(f"Processing directory: {dirName}")
+
+                # ================ #
+                #  Generated Tree  #
+                # ================ #
+                treeGen = fIn.Get(f"{dirName}/O2rtdilmtreegen")
+                
+                if iter == 0:
+                    ROOT.ProcessGeneratedTree(
+                        treeGen,
+                        histPtJpsiGen[iter],
+                        histRapJpsiGen[iter],
+                        histCentrJpsiGen[iter],
+                        ROOT.nullptr,
+                        ROOT.nullptr,
+                        iter,
+                        isPbPb,
+                        massJpsi
+                    )
+                else:
+                    ROOT.ProcessGeneratedTree(
+                        treeGen,
+                        histPtJpsiGen[iter],
+                        histRapJpsiGen[iter],
+                        histCentrJpsiGen[iter],
+                        histFromFuncPtRatio[iter-1],
+                        histFromFuncRapRatio[iter-1],
+                        iter,
+                        isPbPb,
+                        massJpsi
+                    )
+
+                # ==================== #
+                #  Reconstructed Tree  #
+                # ==================== #
+                treeRec = fIn.Get(f"{dirName}/O2rtdilmtreerec")
+
+                if iter == 0:
+                    ROOT.ProcessReconstructedTree(
+                        treeRec,
+                        histPtJpsiRec[iter],
+                        histRapJpsiRec[iter],
+                        histCentrJpsiRec[iter],
+                        ROOT.nullptr, 
+                        ROOT.nullptr,
+                        iter,
+                        isPbPb,
+                        massMu,
+                        ptCut
+                    )
+                else:
+                    ROOT.ProcessReconstructedTree(
+                        treeRec,
+                        histPtJpsiRec[iter],
+                        histRapJpsiRec[iter],
+                        histCentrJpsiRec[iter],
+                        histFromFuncPtRatio[iter-1],
+                        histFromFuncRapRatio[iter-1],
+                        iter,
+                        isPbPb,
+                        massMu,
+                        ptCut
+                    )
+                index += 1
+
+        #-----------------------JPsi Axe histograms------------------------#
 
         histPtJpsiAxe[iter].Divide(histPtJpsiRec[iter], histPtJpsiGen[iter], 1, 1, "B")
         histRapJpsiAxe[iter].Divide(histRapJpsiRec[iter], histRapJpsiGen[iter], 1, 1, "B")
-        
-        if isPbPb:
-            histCentrJpsiAxe[iter].Divide(histCentrJpsiRec[iter], histCentrJpsiGen[iter], 1, 1, "B")
+        print(f"Integral Gen Pt: {histPtJpsiGen[iter].Integral()}")
+        print(f"Integral Rec Pt: {histPtJpsiRec[iter].Integral()}")
 
-        # JPsi Axe ratio and normalization
+        print("Pt bin edges:")
+        for ibin in range(nBinsPt+1):
+            print(f"edge {ibin}: {ptBins[ibin]}")
+
+        print("Rapidity bin edges:")
+        for ibin in range(nBinsRap+1):
+            print(f"edge {ibin}: {rapBins[ibin]}")
+
+        print(f"Bins rec pT: {histPtJpsiRec[iter].GetNbinsX()} \n")
+        print(f"Bins gen pT: {histPtJpsiGen[iter].GetNbinsX()} \n")
+        print(f"Bins rec rap: {histRapJpsiRec[iter].GetNbinsX()} \n")
+        print(f"Bins gen rap: {histRapJpsiGen[iter].GetNbinsX()}")
+        for binAxe in range(histPtJpsiAxe[iter].GetNbinsX()):
+            print(f"rec pT: {histPtJpsiRec[iter].GetBinContent(binAxe)}")
+            print(f"gen pT: {histPtJpsiGen[iter].GetBinContent(binAxe)}")
+            print(f"Axe pT: {histPtJpsiAxe[iter].GetBinContent(binAxe)}")
+        for binAxe in range(histRapJpsiAxe[iter].GetNbinsX()):
+            print(f"rec rap: {histRapJpsiRec[iter].GetBinContent(binAxe)}")
+            print(f"gen rap: {histRapJpsiGen[iter].GetBinContent(binAxe)}")
+            print(f"Axe rap: {histRapJpsiAxe[iter].GetBinContent(binAxe)}")
+        if beamType == "PbPb":
+            histCentrJpsiAxe[iter].Divide(histCentrJpsiRec[iter], histCentrJpsiGen[iter], 1, 1, "B")
+            print(f"Bins rec centr: {histCentrJpsiRec[iter].GetNbinsX()} \n")
+            print(f"Bins gen centr: {histCentrJpsiGen[iter].GetNbinsX()}")
+
+        #-------------------------JPsi Axe ratio---------------------------#
+
         histPtJpsiDataCorr[iter].Divide(histPtJpsiAxe[iter])
-        
-        # CORREZIONE: Normalizza dopo la divisione
         area_pt = histPtJpsiDataCorr[iter].Integral("width")
         if area_pt > 0:
             histPtJpsiDataCorr[iter].Scale(1.0 / area_pt, "width")
@@ -320,7 +503,7 @@ def do_inputShapes(inputCfg):
         histFromFuncPt[iter].SetName(f"histFromFuncPt_iter_{iter}")
 
         histFromFuncPtRatio[iter] = histFromFuncPt[iter].Clone(f"histFromFuncPtRatio_iter_{iter}")
-        if iter == 0:
+        if (iter == 0):
             histFromFuncPtRatio[iter].Divide(histFromFuncPtOriginal)
         else:
             histFromFuncPtRatio[iter].Divide(histFromFuncPt[iter-1])
@@ -328,8 +511,6 @@ def do_inputShapes(inputCfg):
         histFromFuncPtRatio[iter].SetLineColor(iterColors[iter])
 
         histRapJpsiDataCorr[iter].Divide(histRapJpsiAxe[iter])
-        
-        # CORREZIONE: Normalizza dopo la divisione
         area_rap = histRapJpsiDataCorr[iter].Integral("width")
         if area_rap > 0:
             histRapJpsiDataCorr[iter].Scale(1.0 / area_rap, "width")
@@ -337,7 +518,9 @@ def do_inputShapes(inputCfg):
         fitFunctionRap[iter] = RapJPsiPbPb5TeV_Func()
         fitFunctionRap[iter].SetParameter(0, 8)       
         fitFunctionRap[iter].SetParameter(1, 0)       
-        fitFunctionRap[iter].SetParameter(2, 2.12568)
+        fitFunctionRap[iter].SetParameter(2, 2.12568) #now 3 parameters
+        #fitFunctionRap[iter].SetParameters(1, 2.83941, 2.6687, 2.37032) #modified
+        #fitFunctionRap[iter].SetParameters(1, 2.83941, 2.6687, 2.37032)
         fitFunctionRap[iter].SetLineColor(iterColors[iter])
         histRapJpsiDataCorr[iter].Fit(fitFunctionRap[iter], "R0") 
 
@@ -460,6 +643,14 @@ def do_inputShapes(inputCfg):
 
     canvasSummaryIterativeTuning.SaveAs("SummaryIterativeTuning.pdf")
     canvasSummaryAxe.SaveAs("SummaryAxe.pdf")
+
+
+    c = ROOT.TCanvas("c","",800,600)
+    histPtJpsiRec[0].SetLineColor(ROOT.kBlue)
+    histPtJpsiGen[0].SetLineColor(ROOT.kRed)
+    histPtJpsiRec[0].Draw("HIST")
+    histPtJpsiGen[0].Draw("HIST SAME")
+    c.SaveAs("debug_pt.pdf")
 
     rootFile = ROOT.TFile("all_canvases.root", "RECREATE")
     canvasSummaryIterativeTuning.Write()
