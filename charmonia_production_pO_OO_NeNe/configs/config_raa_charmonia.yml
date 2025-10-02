@@ -1,0 +1,11 @@
+inputs:
+  deltaRap: 1.5
+  #Taa: 0.00017838235 # <Ncoll> / sigma_NN = 12.13 / 68000.0 mub-1 (68 mb)
+  Taa: 0.00018800000 # measured by https://arxiv.org/pdf/2507.05853
+  fInLumi: "data/luminosity_jpsi_LHC25ae_pass2_minBias.root"
+  fInRawYieldVsPt: data/2025/pass2/systematic_sig_Jpsi_vs_pt.txt
+  fInAxeVsPt: data/MC/LHC25i4/axe_pt_dependence_std_association_Jpsi.txt
+  fInPPredVsPt: data/ppRef/interp_jpsi_xsec_pp5dot36TeV.root
+
+outputs:
+  fOut: output/jpsi_raa_oo5dot36TeV.root
