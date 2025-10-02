@@ -480,7 +480,7 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
     fOut -> Close();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void check_normalization(string fInName = "LHC24_ppref_pass1_minBias_std_assoc_luminosity.root", string fOutName = "luminosity_jpsi_LHC24_ppref_pass1_minBias.root") {
+void check_normalization(string fInName = "LHC25ae_minBias_std_assoc_luminosity.root", string fOutName = "luminosity_jpsi_LHC25ae_pass2_minBias.root") {
     TFile *fInLumiMinBias2024StdAssoc = TFile::Open(Form("data/2025/pass2/%s", fInName.c_str()));
     TH1D *histLumiMinBias2024StdAssoc = (TH1D*) fInLumiMinBias2024StdAssoc -> Get("histLumiSummary");
     double nEvtsMinBias2024StdAssoc = histLumiMinBias2024StdAssoc -> GetBinContent(histLumiMinBias2024StdAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
@@ -500,8 +500,12 @@ void check_normalization(string fInName = "LHC24_ppref_pass1_minBias_std_assoc_l
     TH1D *histLuminosityMinBias2024StdAssoc = new TH1D("histLumi", "; ; Luminosity (pb-1)", 1, 0, 1);
     histLuminosityMinBias2024StdAssoc -> SetBinContent(1, lumiMinBias2024StdAssoc);
 
+    TH1D *histNeventMinBias2024StdAssoc = new TH1D("histNevMinBias", "; ; N. Events min bias", 1, 0, 1);
+    histNeventMinBias2024StdAssoc -> SetBinContent(1, nEvtsMinBias2024StdAssoc);
+
     TFile *fOutLumiMinBias2024StdAssoc = new TFile(Form("data/%s", fOutName.c_str()), "RECREATE");
     histLuminosityMinBias2024StdAssoc -> Write();
+    histNeventMinBias2024StdAssoc -> Write();
     fOutLumiMinBias2024StdAssoc -> Close();
 
     std::cout << "---------------------------" << std::endl;
