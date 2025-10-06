@@ -42,15 +42,42 @@ def raa(config):
 
     deltaRap = config["inputs"]["deltaRap"]
     Taa = config["inputs"]["Taa"]
+    TaaVsCentr = config["inputs"]["TaaVsCentr"]
+
+    print("***** Compute corrected yield *****")
+    # Lumi computed with normalization.C  + check_normalization
+    #lumi = 0.170285 # pb-1
+    fInLumi = ROOT.TFile(config["inputs"]["fInLumi"], "READ")
+    histLumi = fInLumi.Get("histLumi")
+    lumi = histLumi.GetBinContent(1)
+    histNevMinBias = fInLumi.Get("histNevMinBias")
+    nevMinBias = histNevMinBias.GetBinContent(1)
+    print("N. min bias events = ", nevMinBias)
 
     print("***** Extract pp reference [mub] *****")
 
     fInPPrefVsPt = ROOT.TFile(config["inputs"]["fInPPredVsPt"], "READ")
+    fInPPrefVsPt.ls()
     histStatPPrefXsec = fInPPrefVsPt.Get("histStatJpsiXsecInterp")
     histSystPPrefXsec = fInPPrefVsPt.Get("histSystJpsiXsecInterp")
+    histStatPPrefXsecVsSqrts = fInPPrefVsPt.Get("histStatJpsiXsecInterpVsSqrts")
+    histSystPPrefXsecVsSqrts = fInPPrefVsPt.Get("histSystJpsiXsecInterpVsSqrts")
     
     SetHistStat(histStatPPrefXsec, 20, ROOT.kAzure+4)
     SetHistSyst(histSystPPrefXsec, 20, ROOT.kAzure+4)
+
+    SetHistStat(histStatPPrefXsecVsSqrts, 20, ROOT.kAzure+4)
+    SetHistSyst(histSystPPrefXsecVsSqrts, 20, ROOT.kAzure+4)
+
+    canvasPPrefXsecVsSqrts = ROOT.TCanvas("canvasPPrefXsecVsSqrts", "", 800, 600)
+    ROOT.gPad.SetLogy(True)
+    histStatPPrefXsecVsSqrts.Draw("EP")
+    histSystPPrefXsecVsSqrts.Draw("E2P SAME")
+    canvasPPrefXsecVsSqrts.Update()
+
+    jpsiPPrefXsecVsCentr = histStatPPrefXsecVsSqrts.GetBinContent(1)
+    jpsiStatPPrefXsecVsCentr = histStatPPrefXsecVsSqrts.GetBinError(1)
+    jpsiSystPPrefXsecVsCentr = histSystPPrefXsecVsSqrts.GetBinError(1)
 
     canvasPPrefXsec = ROOT.TCanvas("canvasPPrefXsec", "", 800, 600)
     ROOT.gPad.SetLogy(True)
@@ -65,6 +92,103 @@ def raa(config):
         jpsiPPrefXsecVsPt.append(histStatPPrefXsec.GetBinContent(iPt+1))
         jpsiStatPPrefXsecVsPt.append(histStatPPrefXsec.GetBinError(iPt+1))
         jpsiSystPPrefXsecVsPt.append(histSystPPrefXsec.GetBinError(iPt+1))
+
+    print("-------- Centrality dependence --------")
+    dfJpsiRawYieldVsCentr = pd.read_csv(config["inputs"]["fInRawYieldVsCentr"], sep=' ')
+    centrMin = dfJpsiRawYieldVsCentr["x_min"]
+    centrMax = dfJpsiRawYieldVsCentr["x_max"]
+    centrCenters = (centrMax + centrMin) / 2.
+    centrWidths = (centrMax - centrMin) / 2.
+    centrSystWidths = np.repeat(0.2, len(centrWidths))
+    centrEdges = np.append(centrMin.to_numpy(), centrMax.to_numpy()[len(centrMax)-1])
+    jpsiRawYieldVsCentr = dfJpsiRawYieldVsCentr["val"] / deltaRap
+    jpsiStatRawYieldVsCentr = dfJpsiRawYieldVsCentr["stat"] / deltaRap
+    jpsiSystRawYieldVsCentr = dfJpsiRawYieldVsCentr["syst"] / deltaRap
+
+    histStatRawYieldVsCentr = ROOT.TH1D("histStatRawYieldVsCentr", ";Centrality (%);dN/d#it{y}", len(centrEdges)-1, centrEdges)
+    histSystRawYieldVsCentr = ROOT.TH1D("histSystRawYieldVsCentr", ";Centrality (%);dN/d#it{y}", len(centrEdges)-1, centrEdges)
+    histSystRelRawYieldVsCentr = ROOT.TH1D("histSystRelRawYieldVsCentr", ";Centrality (%);dN/d#it{y}", len(centrEdges)-1, centrEdges)
+
+    SetHistStat(histStatRawYieldVsCentr, 20, ROOT.kAzure+4)
+    SetHistSyst(histSystRawYieldVsCentr, 20, ROOT.kAzure+4)
+
+    for iBin in range(0, len(centrMin)):
+        histStatRawYieldVsCentr.SetBinContent(iBin+1, jpsiRawYieldVsCentr[iBin])
+        histStatRawYieldVsCentr.SetBinError(iBin+1, jpsiStatRawYieldVsCentr[iBin])
+        histSystRawYieldVsCentr.SetBinContent(iBin+1, jpsiRawYieldVsCentr[iBin])
+        histSystRawYieldVsCentr.SetBinError(iBin+1, jpsiSystRawYieldVsCentr[iBin])
+        histSystRelRawYieldVsCentr.SetBinContent(iBin+1, jpsiSystRawYieldVsCentr[iBin] / jpsiRawYieldVsCentr[iBin])
+
+    canvasRawYieldVsCentr = ROOT.TCanvas("canvasRawYieldVsCentr", "", 800, 600)
+    ROOT.gPad.SetLogy(True)
+    histStatRawYieldVsCentr.Draw("EP SAME")
+    canvasRawYieldVsCentr.Update()
+
+    print(f'[INFO] Sum centr-diff. spectrum = {histStatRawYieldVsCentr.Integral():.0f}')
+
+    print("***** Extract Axe *****")
+
+    dfJpsiAxeVsCentr = pd.read_csv(config["inputs"]["fInAxeVsCentr"], sep=' ')
+    jpsiAxeVsCentr = dfJpsiAxeVsCentr["val"]
+    jpsiStatAxeVsCentr = dfJpsiAxeVsCentr["stat"]
+
+    histStatAxeVsCentr = ROOT.TH1D("histStatAxeVsCentr", ";#it{p}_{T} (GeV/#it{c});A#times#varepsilon", len(centrEdges)-1, centrEdges)
+
+    SetHistStat(histStatAxeVsCentr, 20, ROOT.kAzure+4)
+
+    for iBin in range(0, len(centrMin)):
+        histStatAxeVsCentr.SetBinContent(iBin+1, jpsiAxeVsCentr[iBin])
+        histStatAxeVsCentr.SetBinError(iBin+1, jpsiStatAxeVsCentr[iBin])
+
+    canvasAxeVsCentr = ROOT.TCanvas("canvasAxeVsCentr", "", 800, 600)
+    histStatAxeVsCentr.Draw("EP SAME")
+    canvasAxeVsCentr.Update()
+
+    print(jpsiRawYieldVsCentr)
+    print(jpsiAxeVsCentr)
+    print(nevMinBias)
+    print(TaaVsCentr)
+    print(jpsiPPrefXsecVsCentr)
+
+    jpsiRaaVsCentr = (jpsiRawYieldVsCentr) / (jpsiAxeVsCentr * BrJpsiToMuMu * (nevMinBias/10) * np.array(TaaVsCentr) * jpsiPPrefXsecVsCentr)
+    jpsiStatRaaVsCentr = jpsiRaaVsCentr * (np.array(jpsiStatRawYieldVsCentr) / np.array(jpsiRawYieldVsCentr))
+    jpsiSystRaaVsCentr = jpsiRaaVsCentr * (np.array(jpsiSystRawYieldVsCentr) / np.array(jpsiRawYieldVsCentr))
+
+    graStatRaaVsCentr = ROOT.TGraphErrors(len(centrCenters), np.array(centrCenters), np.array(jpsiRaaVsCentr), np.array(centrWidths), np.array(jpsiStatRaaVsCentr))
+    graSystRaaVsCentr = ROOT.TGraphErrors(len(centrCenters), np.array(centrCenters), np.array(jpsiRaaVsCentr), np.array(centrSystWidths), np.array(jpsiSystRaaVsCentr))
+
+    SetGraStat(graStatRaaVsCentr, 20, ROOT.kRed+1)
+    SetGraSyst(graSystRaaVsCentr, 20, ROOT.kRed+1)
+
+    lineUnityVsCentr = ROOT.TLine(0., 1., 90., 1.)
+    lineUnityVsCentr.SetLineColor(ROOT.kGray+1)
+    lineUnityVsCentr.SetLineWidth(2)
+    lineUnityVsCentr.SetLineStyle(ROOT.kDashed)
+
+    canvasRaaVsCentrVsRun2 = ROOT.TCanvas("canvasRaaVsCentrVsRun2", "", 800, 600)
+    ROOT.gStyle.SetOptStat(False)
+    histGridRaaVsCentr = ROOT.TH2D("histGridRaaVsCentr", ";Centrality (%);#it{R}_{AA}", 100, 0, 90, 100, 0, 1.7)
+    histGridRaaVsCentr.Draw()
+    lineUnityVsCentr.Draw("SAME")
+    #graStatRaaVsCentrRun2.Draw("EP SAME")
+    #graSystRaaVsCentrRun2.Draw("E2P SAME")
+    graStatRaaVsCentr.Draw("EP SAME")
+    graSystRaaVsCentr.Draw("E2P SAME")
+
+    legendRaaVsCentrVsRun2 = ROOT.TLegend(0.20, 0.70, 0.40, 0.90, " ", "brNDC")
+    SetLegend(legendRaaVsCentrVsRun2)
+    legendRaaVsCentrVsRun2.SetTextSize(0.045)
+    legendRaaVsCentrVsRun2.AddEntry(graStatRaaVsCentr, "#sqrt{#it{s}} = 5.36 TeV, OO, 0#minus100%", "FP")
+    #legendRaaVsCentrVsRun2.AddEntry(graStatRaaVsCentrRun2, "#sqrt{#it{s}} = 5.02 TeV, Pb-Pb, 0#minus90%", "FP")
+    legendRaaVsCentrVsRun2.Draw("SAME")
+
+    latexTitle.DrawLatex(0.22, 0.87, "ALICE Preliminary, J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
+    canvasRaaVsCentrVsRun2.Update()
+
+
+
+
+    print("-------- Pt dependence --------")
 
     print("***** Extract raw yield *****")
     dfJpsiRawYieldVsPt = pd.read_csv(config["inputs"]["fInRawYieldVsPt"], sep=' ')
@@ -96,7 +220,7 @@ def raa(config):
     ROOT.gPad.SetLogy(True)
     #histSystRawYieldInt.Draw("E2P SAME")
     histStatRawYieldVsPt.Draw("EP SAME")
-    #histSystRawYieldVsPt.Draw("E2P SAME")
+    histSystRawYieldVsPt.Draw("E2P SAME")
     canvasRawYieldVsPt.Update()
 
     print(f'[INFO] Sum pt-diff. spectrum = {histStatRawYieldVsPt.Integral():.0f}')
@@ -118,18 +242,9 @@ def raa(config):
     histStatAxeVsPt.Draw("EP SAME")
     canvasAxeVsPt.Update()
 
-    print("***** Compute corrected yield *****")
-    # Lumi computed with normalization.C  + check_normalization
-    #lumi = 0.170285 # pb-1
-    fInLumi = ROOT.TFile(config["inputs"]["fInLumi"], "READ")
-    histLumi = fInLumi.Get("histLumi")
-    lumi = histLumi.GetBinContent(1)
-    histNevMinBias = fInLumi.Get("histNevMinBias")
-    nevMinBias = histNevMinBias.GetBinContent(1)
-    print("N. min bias events = ", nevMinBias)
-
     # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
     # List of systematics computed externally
+    """
     systRelLumi = 0.1
     histSystRelLumiVsPt = ROOT.TH1D("histSystRelLumiVsPt", ";#it{p}_{T} (GeV/#it{c});dN/d#it{y}", len(ptEdges)-1, ptEdges)
 
@@ -166,6 +281,18 @@ def raa(config):
     for iBin in range(0, len(ptMin)):
         histSystRelMcRealisticVsPt.SetBinContent(iBin+1, systRelMcRealistic)
     print("Syst. Rel. MC realisticness = ", systRelMcRealistic)
+    """
+
+    print("Relative systematic on raw yield extraction")
+    jpsiSystRelRawYieldVsPt = (np.array(jpsiStatRawYieldVsPt) / np.array(jpsiRawYieldVsPt))
+    print(jpsiSystRelRawYieldVsPt)
+
+    print("Relative systematic on pp reference")
+    jpsi1SystRelPPrefXsecVsPt = (np.array(jpsiStatPPrefXsecVsPt) / np.array(jpsiPPrefXsecVsPt))
+    jpsi2SystRelPPrefXsecVsPt = (np.array(jpsiSystPPrefXsecVsPt) / np.array(jpsiPPrefXsecVsPt))
+    jpsiSystRelPPrefXsecVsPt = np.sqrt(jpsi1SystRelPPrefXsecVsPt**2 + jpsi2SystRelPPrefXsecVsPt**2)
+    print(jpsiSystRelPPrefXsecVsPt)
+
     # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * #
     # > > > Pt dependence < < < #
     jpsiXsecVsPt = (jpsiRawYieldVsPt) / (jpsiAxeVsPt * BrJpsiToMuMu * lumi * 1e6 * (2 * ptWidths))
@@ -173,11 +300,11 @@ def raa(config):
     jpsiSystXsecVsPt = (jpsiSystRawYieldVsPt) / (jpsiAxeVsPt * BrJpsiToMuMu * lumi * 1e6 * (2 * ptWidths))
 
     jpsiRaaVsPt = (jpsiRawYieldVsPt) / (jpsiAxeVsPt * BrJpsiToMuMu * nevMinBias * (2 * ptWidths) * Taa * np.array(jpsiPPrefXsecVsPt))
-    jpsiStatRaaVsPt = jpsiRaaVsPt * (np.array(jpsiStatXsecVsPt) / np.array(jpsiXsecVsPt))
-    jpsiSystRaaVsPt = jpsiRaaVsPt * (np.array(jpsiSystXsecVsPt) / np.array(jpsiXsecVsPt))
+    jpsiStatRaaVsPt = jpsiRaaVsPt * (np.array(jpsiStatRawYieldVsPt) / np.array(jpsiRawYieldVsPt))
+    jpsiSystRaaVsPt = jpsiRaaVsPt * np.sqrt(jpsiSystRelRawYieldVsPt**2 + jpsiSystRelPPrefXsecVsPt**2)
 
     # Add all systematics contributions
-    jpsiSystXsecVsPt = jpsiXsecVsPt * np.sqrt((jpsiSystXsecVsPt / jpsiXsecVsPt)**2 + systRelBrJpsiToMuMu**2 + systRelTrackingEff**2 + systRelMatchingEff**2)
+    #jpsiSystXsecVsPt = jpsiXsecVsPt * np.sqrt((jpsiSystXsecVsPt / jpsiXsecVsPt)**2 + systRelBrJpsiToMuMu**2 + systRelTrackingEff**2 + systRelMatchingEff**2)
 
     graStatXsecVsPt = ROOT.TGraphErrors(len(ptCenters), np.array(ptCenters), np.array(jpsiXsecVsPt), np.array(ptWidths), np.array(jpsiStatXsecVsPt))
     graSystXsecVsPt = ROOT.TGraphErrors(len(ptCenters), np.array(ptCenters), np.array(jpsiXsecVsPt), np.array(ptSystWidths), np.array(jpsiSystXsecVsPt))
@@ -200,9 +327,6 @@ def raa(config):
     graStatXsecVsPt.Draw("EP SAME")
     graSystXsecVsPt.Draw("EP SAME")
     canvasXsecVsPt.Update()
-
-
-
 
     histStatXsecVsPt = ROOT.TH1D("histStatXsecVsPt", ";#it{p}_{T} (GeV/#it{c});d^{2}#sigma/d#it{y} d#it{p}_{T} (#mub / GeV/#it{c})", len(ptEdges)-1, ptEdges)
     histSystXsecVsPt = ROOT.TH1D("histSystXsecVsPt", ";#it{p}_{T} (GeV/#it{c});d^{2}#sigma/d#it{y} d#it{p}_{T} (#mub / GeV/#it{c})", len(ptEdges)-1, ptEdges)
@@ -234,16 +358,16 @@ def raa(config):
     SetGraStat(graStatRaaVsPtRun2, 20, ROOT.kGray+2)
     SetGraSyst(graSystRaaVsPtRun2, 20, ROOT.kGray+2)
 
-    lineUnity = ROOT.TLine(0., 1., 12., 1.)
-    lineUnity.SetLineColor(ROOT.kGray+1)
-    lineUnity.SetLineWidth(2)
-    lineUnity.SetLineStyle(ROOT.kDashed)
+    lineUnityVsPt = ROOT.TLine(0., 1., 12., 1.)
+    lineUnityVsPt.SetLineColor(ROOT.kGray+1)
+    lineUnityVsPt.SetLineWidth(2)
+    lineUnityVsPt.SetLineStyle(ROOT.kDashed)
 
     canvasRaaVsPtVsRun2 = ROOT.TCanvas("canvasRaaVsPtVsRun2", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
     histGridRaaVsPt = ROOT.TH2D("histGridRaaVsPt", ";#it{p}_{T} (GeV/#it{c});#it{R}_{AA}", 100, 0, 12, 100, 0, 1.7)
     histGridRaaVsPt.Draw()
-    lineUnity.Draw("SAME")
+    lineUnityVsPt.Draw("SAME")
     graStatRaaVsPtRun2.Draw("EP SAME")
     graSystRaaVsPtRun2.Draw("E2P SAME")
     graStatRaaVsPt.Draw("EP SAME")
@@ -273,11 +397,11 @@ def raa(config):
     fOut.mkdir("systematics")
     fOut.cd("systematics")
     histSystRelRawYieldVsPt.Write("syst_raw_yield_vs_pt")
-    histSystRelLumiVsPt.Write("syst_lumi_vs_pt")
-    histSystRelBrJpsiToMuMuVsPt.Write("syst_br_vs_pt")
-    histSystRelTrackingEffVsPt.Write("syst_tracking_eff_vs_pt")
-    histSystRelMatchingEffVsPt.Write("syst_matching_eff_vs_pt")
-    histSystRelMcRealisticVsPt.Write("syst_mc_realisticness_vs_pt")
+    #histSystRelLumiVsPt.Write("syst_lumi_vs_pt")
+    #histSystRelBrJpsiToMuMuVsPt.Write("syst_br_vs_pt")
+    #histSystRelTrackingEffVsPt.Write("syst_tracking_eff_vs_pt")
+    #histSystRelMatchingEffVsPt.Write("syst_matching_eff_vs_pt")
+    #histSystRelMcRealisticVsPt.Write("syst_mc_realisticness_vs_pt")
     fOut.Close()
 
     canvasRawYieldVsPt.SaveAs("figures/raw_yield/raw_yeild_jpsi.pdf")

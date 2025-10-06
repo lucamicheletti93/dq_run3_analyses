@@ -2,7 +2,14 @@ inputs:
   deltaRap: 1.5
   #Taa: 0.00017838235 # <Ncoll> / sigma_NN = 12.13 / 68000.0 mub-1 (68 mb)
   Taa: 0.00018800000 # measured by https://arxiv.org/pdf/2507.05853
+  # https://docs.google.com/spreadsheets/d/1gAreJgqwISFQFN9UIId2pyIyjU0x0j01Qezb6A_xVog/edit?gid=0#gid=0
+  TaaVsCentr: [0.00063, 0.00037, 0.00028, 0.00019, 0.00012, 0.00008, 0.00004]
   fInLumi: "data/luminosity_jpsi_LHC25ae_pass2_minBias.root"
+  # centrality dependence
+  fInRawYieldVsCentr: data/2025/pass2/systematic_sig_Jpsi_vs_centr.txt
+  fInAxeVsCentr: data/MC/LHC25i4/axe_centr_dependence_std_association_Jpsi.txt
+  fInPPredVsCentr: data/ppRef/interp_jpsi_xsec_pp5dot36TeV.root
+  # pt dependence
   fInRawYieldVsPt: data/2025/pass2/systematic_sig_Jpsi_vs_pt.txt
   fInAxeVsPt: data/MC/LHC25i4/axe_pt_dependence_std_association_Jpsi.txt
   fInPPredVsPt: data/ppRef/interp_jpsi_xsec_pp5dot36TeV.root
