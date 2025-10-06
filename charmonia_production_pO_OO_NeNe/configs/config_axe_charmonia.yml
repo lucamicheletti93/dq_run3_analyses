@@ -21,18 +21,10 @@ inputs:
   maxPtBinInt: 20.0
   minRapBinInt: 2.50
   maxRapBinInt: 4.00
-  #ptBins: [0.0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 15, 20]
-  #rapBins: [2.50, 2.75, 3.00, 3.25, 3.50, 3.75, 4.00]
-  #ptBins: [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 20.0]
-  #rapBins: [2.50, 2.75, 3.00, 3.25, 3.50, 3.75, 4.00]
-  #ptBins: [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 20.0]
-  #rapBins: [2.50, 2.75, 3.00, 3.25, 3.50, 3.75, 4.00]
-  ptBins: [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0]
-  rapBins: [2.50, 4.00]
-  #ptBins: [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 10.0, 20.0]
+  #ptBins: [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0]
   #rapBins: [2.50, 4.00]
-  #ptBins: [0.0, 20.0]
-  #rapBins: [2.50, 2.75, 3.00, 3.25, 3.50, 3.75, 4.00]
+  ptBins: [0.0, 20.0]
+  rapBins: [2.50, 4.00]
 
 scan:
   path: /Users/lucamicheletti/cernbox/JPSI/Jpsi_pp_ref_cross_section_run3/MC/LHC25g9/Runs
@@ -40,5 +32,5 @@ scan:
   fileName: axe_pt_dependence_std_association_Jpsi
 
 outputs:
-  path: /Users/lucamicheletti/cernbox/JPSI/Jpsi_pO_OO_NeNe_run3/MC
-  prefix: axe_pt_dependence # [integrated, pt_dependence, rap_dependence]
+  path: data/MC
+  prefix: axe_integrated # [integrated, pt_dependence, rap_dependence]
