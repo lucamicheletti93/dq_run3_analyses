@@ -31,6 +31,16 @@ def interpolation(config):
     LoadStyle()
     ROOT.gStyle.SetOptStat(False)
 
+    latexTitle = ROOT.TLatex()
+    latexTitle.SetNDC()
+    latexTitle.SetTextSize(0.05)
+    latexTitle.SetTextFont(42)
+
+    latexText = ROOT.TLatex()
+    latexText.SetNDC()
+    latexText.SetTextSize(0.035)
+    latexText.SetTextFont(42)
+
     sqrtsInterp = config["inputs"]["sqrtsInterp"]
     rangeSqrtsInterp = config["inputs"]["rangeSqrtsInterp"]
 
@@ -41,6 +51,79 @@ def interpolation(config):
 
     sqrts = np.array(list(config["inputs"]["HepDataList"].keys()))
     HepDataList = config["inputs"]["HepDataList"]
+
+    fInPathJpsiXsecVsSqrts = "HEP_Data/jpsi_xsec_pp_vs_sqrt.yaml"
+    sqrtsCenters, sqrtsWidths, jpsiXsecVsSqrts, jpsiStatXsecVsSqrts, jpsiSystXsecVsSqrts = ExtractFromYaml(fInPathJpsiXsecVsSqrts)
+
+    sqrtsCenters = np.array(sqrtsCenters)/1e3
+    jpsiXsecVsSqrts = np.array(jpsiXsecVsSqrts)/1e3
+    jpsiStatXsecVsSqrts = np.array(jpsiStatXsecVsSqrts)/1e3
+    jpsiSystXsecVsSqrts = np.array(jpsiSystXsecVsSqrts)/1e3
+    jpsiErrXsecVsSqrts = np.sqrt(np.array(jpsiStatXsecVsSqrts)**2 + np.array(jpsiSystXsecVsSqrts)**2)
+
+    sqrtsSystWidths = np.repeat(0.25, len(sqrtsCenters))
+
+    graStatJpsiXsec = ROOT.TGraphErrors(len(sqrtsCenters), np.array(sqrtsCenters), np.array(jpsiXsecVsSqrts), np.array(sqrtsWidths), np.array(jpsiStatXsecVsSqrts))
+    graSystJpsiXsec = ROOT.TGraphErrors(len(sqrtsCenters), np.array(sqrtsCenters), np.array(jpsiXsecVsSqrts), np.array(sqrtsSystWidths), np.array(jpsiSystXsecVsSqrts))
+    graErrJpsiXsec = ROOT.TGraphErrors(len(sqrtsCenters), np.array(sqrtsCenters), np.array(jpsiXsecVsSqrts), np.array(sqrtsSystWidths), np.array(jpsiErrXsecVsSqrts))
+
+    funcPol1 = ROOT.TF1("funcPol1", "pol1", 2, 15, 2)
+    funcPol1.SetLineColor(ROOT.kRed+1)
+    fitResPol1 = graErrJpsiXsec.Fit(funcPol1, "RS")
+    covMatrixPol1 = fitResPol1.GetCovarianceMatrix()
+    valInterpPol1 = funcPol1.Eval(sqrtsInterp)
+    errInterpPol1 = funcPol1.IntegralError(sqrtsInterp-rangeSqrtsInterp,sqrtsInterp+rangeSqrtsInterp, fitResPol1.GetParams() , covMatrixPol1.GetMatrixArray())
+
+    funcPowerLow = ROOT.TF1("funcPowerLow", "[0]* x**([1])", 2, 15)
+    funcPowerLow.SetLineColor(ROOT.kBlue+1)
+    fitResPowerLow = graErrJpsiXsec.Fit(funcPowerLow, "RS")
+    covMatrixPowerLow = fitResPowerLow.GetCovarianceMatrix()
+    valInterpPowerLow = funcPowerLow.Eval(sqrtsInterp)
+    errInterpPowerLow = funcPowerLow.IntegralError(sqrtsInterp-rangeSqrtsInterp,sqrtsInterp+rangeSqrtsInterp, fitResPowerLow.GetParams() , covMatrixPowerLow.GetMatrixArray())
+
+    funcExpo = ROOT.TF1("funcExpo", "expo", 2, 15, 2)
+    funcExpo.SetLineColor(ROOT.kGreen+1)
+    fitResExpo = graErrJpsiXsec.Fit(funcExpo, "RS")
+    covMatrixExpo = fitResExpo.GetCovarianceMatrix()
+    valInterpExpo = funcExpo.Eval(sqrtsInterp)
+    errInterpExpo = funcExpo.IntegralError(sqrtsInterp-rangeSqrtsInterp,sqrtsInterp+rangeSqrtsInterp, fitResExpo.GetParams() , covMatrixExpo.GetMatrixArray()) / (2 * rangeSqrtsInterp)
+
+    SetGraStat(graStatJpsiXsec, 20, ROOT.kBlack)
+    SetGraSyst(graSystJpsiXsec, 20, ROOT.kBlack)
+
+    canvasJpsiXsecVsSqrts = ROOT.TCanvas("canvasJpsiXsecVsSqrts", "", 800, 600)
+    ROOT.gStyle.SetOptStat(False)
+    ROOT.gPad.SetLogx(True)
+    ROOT.gPad.SetLogy(True)
+    histGridJpsiXsecVsSqrts = ROOT.TH2D("histGridJpsiXsecVsSqrts", ";#sqrt{#it{s}} (TeV);d#sigma/d#it{y} (#mub)", 100, 1.5, 20, 100, 1.5, 20)
+    histGridJpsiXsecVsSqrts.Draw()
+    graStatJpsiXsec.Draw("EP SAME")
+    graSystJpsiXsec.Draw("E2P SAME")
+    funcPol1.Draw("SAME")
+    funcPowerLow.Draw("SAME")
+    funcExpo.Draw("SAME")
+
+    latexText.DrawLatex(0.50, 0.25, f'Pol1    = {valInterpPol1:0.3f} #pm {errInterpPol1:0.3f}')
+    latexText.DrawLatex(0.50, 0.30, f'Pow.Low = {valInterpPowerLow:0.3f} #pm {errInterpPowerLow:0.3f}')
+    latexText.DrawLatex(0.50, 0.35, f'Expo    = {valInterpExpo:0.3f} #pm {errInterpExpo:0.3f}')
+
+    vecInterpValsVsSqrts = [valInterpPol1, valInterpPowerLow, valInterpExpo]
+    meanValInterpVsSqrts = (valInterpPol1 + valInterpPowerLow + valInterpExpo) / 3.
+    meanErrInterpVsSqrts = (errInterpPol1 + errInterpPowerLow + errInterpExpo) / 3.
+    meanSystInterpVsSqrts = ComputeStdDev(vecInterpValsVsSqrts)
+
+    latexText.DrawLatex(0.45, 0.40, f'#color[2]]{{Mean    = {meanValInterpVsSqrts:0.3f} #pm {meanErrInterpVsSqrts:0.3f} #pm {meanSystInterpVsSqrts:0.3f}}}')
+
+    canvasJpsiXsecVsSqrts.Update()
+
+    histStatJpsiXsecInterpVsSqrts = ROOT.TH1D("histStatJpsiXsecInterpVsSqrts", ";#it{p}_{T} (GeV/#it{c});d#sigma/d#it{y} (#mub)", 1, 0, 20)
+    histSystJpsiXsecInterpVsSqrts = ROOT.TH1D("histSystJpsiXsecInterpVsSqrts", ";#it{p}_{T} (GeV/#it{c});d#sigma/d#it{y} (#mub)", 1, 0, 20)
+
+    histStatJpsiXsecInterpVsSqrts.SetBinContent(1, meanValInterpVsSqrts)
+    histStatJpsiXsecInterpVsSqrts.SetBinError(1, meanErrInterpVsSqrts)
+
+    histSystJpsiXsecInterpVsSqrts.SetBinContent(1, meanValInterpVsSqrts)
+    histSystJpsiXsecInterpVsSqrts.SetBinError(1, meanSystInterpVsSqrts)
 
     # pp@2.76TeV
     fInPathJpsiXsec2TeV = HepDataList[2.76]
@@ -223,16 +306,6 @@ def interpolation(config):
     canvasInterpolation.Divide(4, 2)
 
     histGridInterp = ROOT.TH2D("histGridInterp", ";#sqrt{#it{s}} (TeV);d^{2}#sigma/d#it{p}_{T} d#it{y} (#mub/GeV/#it{c})", 100, 0, 15, 100, 0.01, 3)
-    
-    latexTitle = ROOT.TLatex()
-    latexTitle.SetNDC()
-    latexTitle.SetTextSize(0.05)
-    latexTitle.SetTextFont(42)
-
-    latexText = ROOT.TLatex()
-    latexText.SetNDC()
-    latexText.SetTextSize(0.035)
-    latexText.SetTextFont(42)
 
     meanValInterp, meanErrInterp, meanSystInterp  = [], [], []
 
@@ -325,6 +398,8 @@ def interpolation(config):
     fOut = ROOT.TFile(config["outputs"]["fOut"], "RECREATE")
     histStatJpsiXsecInterp.Write()
     histSystJpsiXsecInterp.Write()
+    histStatJpsiXsecInterpVsSqrts.Write()
+    histSystJpsiXsecInterpVsSqrts.Write()
     fOut.Close()
 
 

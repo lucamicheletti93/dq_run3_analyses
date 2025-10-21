@@ -1,5 +1,5 @@
 void LoadStyle();
-void SetLegend(TLegend *);
+void SetLegend(TLegend *, double);
 inline void SetHist(auto *hist, Color_t mkrCol = kBlack, int mkrSty = 20, double mkrSize = 1, Color_t lnCol = kBlack, int lnWidth = 1, Color_t fillCol = kBlack, int fillSty = 0, double alpha = 1.) {
     hist -> SetMarkerColorAlpha(mkrCol, 1);
     hist -> SetMarkerStyle(mkrSty);
@@ -19,6 +19,16 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
     LoadStyle();
 
     ///////////////////////////////////////////////
+    TFile *fInFonllXsecNonPromptJpsi = new TFile("FONLL_Jpsi.root", "READ");
+    TH1D *histFonllXsecNonPromptJpsi = (TH1D*) fInFonllXsecNonPromptJpsi -> Get("histXsec");
+    SetHist(histFonllXsecNonPromptJpsi, kGreen+1, 20, 0, kGreen+1, 1, kGreen+1, 3352, 0.7);
+    histFonllXsecNonPromptJpsi -> Scale(1 / 1e6, "WIDTH");
+
+    TFile *fInFonllXsecNonPromptPsi2s = new TFile("FONLL_Psi2s.root", "READ");
+    TH1D *histFonllXsecNonPromptPsi2s = (TH1D*) fInFonllXsecNonPromptPsi2s -> Get("histXsec");
+    SetHist(histFonllXsecNonPromptPsi2s, kGreen+1, 20, 0, kGreen+1, 1, kGreen+1, 3352, 0.7);
+    histFonllXsecNonPromptPsi2s -> Scale(1 / 1e6, "WIDTH");
+
     double ptCenters[] = {0.250,0.750,1.500,2.500,3.500,4.500,5.500,6.500,8.500,15.000};
     double ptWidths[] = {0.250,0.250,0.500,0.500,0.500,0.500,0.500,0.500,1.500,5.000};
     double jpsiXsecPtRap254[] = {562.776,1577.271,2273.604,2030.779,1263.990,689.372,406.291,223.584,72.302,8.290};
@@ -27,9 +37,9 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
 
     double ptCentersRatio[] = {0.25, 0.75, 1.25, 1.75, 2.25, 2.75, 3.5, 4.5, 5.5, 6.5, 7.5, 9, 11, 13, 15, 18};
     double ptWidthsRatio[] = {0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1, 1, 1, 2};
-    double psi2sToJpsiRatioPtRap254[] = {0.08556, 0.09124, 0.1068, 0.1225, 0.1182, 0.1228, 0.1409, 0.1638, 0.2059, 0.2084, 0.2121, 0.2517, 0.2966, 0.291, 0.3141, 0.3771};
-    double psi2sToJpsiRatioStatPtRap254[] = {0.007, 0.0042, 0.0035, 0.0042, 0.0041, 0.0046, 0.0039, 0.0052, 0.0064, 0.0073, 0.0096, 0.01, 0.019, 0.03, 0.05, 0.056};
-    double psi2sToJpsiRatioSystPtRap254[] = {0.0028, 0.0098, 0.0049, 0.001, 0.0014, 0.0053, 0.0026, 0.0015, 0.0024, 0.0073, 0.0016, 0.0016, 0.0016, 0.0024, 0.0056, 0.0039};
+    double psi2sToJpsiRatioPtRap254[] = {0.09548, 0.1101, 0.1175, 0.1338, 0.1411, 0.1363, 0.1514, 0.1780, 0.2177, 0.2336, 0.2192, 0.2654, 0.2934, 0.3248, 0.3342, 0.4244};
+    double psi2sToJpsiRatioStatPtRap254[] = {0.0072, 0.0045, 0.0041, 0.0041, 0.0046, 0.0047, 0.004, 0.0049, 0.0058, 0.0076, 0.01, 0.0095, 0.015, 0.029, 0.039, 0.049};
+    double psi2sToJpsiRatioSystPtRap254[] = {0.0047, 0.0059, 0.0061, 0.0077, 0.0089, 0.01, 0.014, 0.015, 0.0091, 0.012, 0.012, 0.019, 0.031, 0.022, 0.024, 0.054};
 
     // Include 10% Lumi + 0.5% BR
     for (int iPt = 0;iPt < 10;iPt++) {
@@ -45,9 +55,9 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
     SetHist(graSystJpsiXsecPtRap254, kBlack, 20, 1, kBlack);
 
     TGraphErrors *graStatPsi2sOverJpsiPtRap254 = new TGraphErrors(16, ptCentersRatio, psi2sToJpsiRatioPtRap254, ptWidthsRatio, psi2sToJpsiRatioStatPtRap254);
-    SetHist(graStatPsi2sOverJpsiPtRap254, kRed+1, 20, 1, kRed+1);
+    SetHist(graStatPsi2sOverJpsiPtRap254, kBlack, 20, 1, kBlack);
     TGraphErrors *graSystPsi2sOverJpsiPtRap254 = new TGraphErrors(16, ptCentersRatio, psi2sToJpsiRatioPtRap254, ptWidthsRatio, psi2sToJpsiRatioSystPtRap254);
-    SetHist(graSystPsi2sOverJpsiPtRap254, kRed+1, 20, 1, kRed+1);
+    SetHist(graSystPsi2sOverJpsiPtRap254, kBlack, 20, 1, kBlack);
     ///////////////////////////////////////////////
 
     TFile *fIn = new TFile(Form("%s/%s.root", simPath.c_str(), simName.c_str()), "READ");
@@ -72,32 +82,59 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
     //const int nPtBins = 10;
     //double ptBinEdges[] = {0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 20.0};
 
-    TH1D *histXsecJpsiPt = new TH1D("histXsecJpsiPt", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (GeV/c nb^{-1})^{-1}", nPtBins, ptBinEdges);
+    TH1D *histXsecJpsiPt = new TH1D("histXsecJpsiPt", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (#mub / (GeV/c))", nPtBins, ptBinEdges);
     TH1D *histXsecJpsiRap = new TH1D("histXsecJpsiRap", ";y;d#sigma/dy (nb)", 20, 0, 5);
-    TH1D *histXsecJpsiPtFwdCuts = new TH1D("histXsecJpsiPtFwdCuts", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (GeV/c nb^{-1})^{-1}", nPtBins, ptBinEdges);
+    TH1D *histXsecJpsiPtFwdCuts = new TH1D("histXsecJpsiPtFwdCuts", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (#mub / (GeV/c))", nPtBins, ptBinEdges);
     TH1D *histXsecJpsiRapFwdCuts = new TH1D("histXsecJpsiRapFwdCuts", ";y;d#sigma/dy (nb)", 20, 0, 5);
-    TH1D *histXsecPsi2sPt = new TH1D("histXsecPsi2sPt", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (GeV/c nb^{-1})^{-1}", nPtBins, ptBinEdges);
+    TH1D *histXsecPromptJpsiPtFwdCuts = new TH1D("histXsecPromptJpsiPtFwdCuts", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (#mub / (GeV/c))", nPtBins, ptBinEdges);
+    TH1D *histXsecPromptJpsiRapFwdCuts = new TH1D("histXsecPromptJpsiRapFwdCuts", ";y;d#sigma/dy (nb)", 20, 0, 5);
+    TH1D *histXsecNonPromptJpsiPtFwdCuts = new TH1D("histXsecNonPromptJpsiPtFwdCuts", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (#mub / (GeV/c))", nPtBins, ptBinEdges);
+    TH1D *histXsecNonPromptJpsiRapFwdCuts = new TH1D("histXsecNonPromptJpsiRapFwdCuts", ";y;d#sigma/dy (nb)", 20, 0, 5);
+
+    TH1D *histXsecPsi2sPt = new TH1D("histXsecPsi2sPt", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (#mub / (GeV/c))", nPtBins, ptBinEdges);
     TH1D *histXsecPsi2sRap = new TH1D("histXsecPsi2sRap", ";y;d#sigma/dy (nb)", 20, 0, 5);
-    TH1D *histXsecPsi2sPtFwdCuts = new TH1D("histXsecPsi2sPtFwdCuts", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (GeV/c nb^{-1})^{-1}", nPtBins, ptBinEdges);
+    TH1D *histXsecPsi2sPtFwdCuts = new TH1D("histXsecPsi2sPtFwdCuts", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (#mub / (GeV/c))", nPtBins, ptBinEdges);
     TH1D *histXsecPsi2sRapFwdCuts = new TH1D("histXsecPsi2sRapFwdCuts", ";y;d#sigma/dy (nb)", 20, 0, 5);
+    TH1D *histXsecPromptPsi2sPtFwdCuts = new TH1D("histXsecPromptPsi2sPtFwdCuts", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (#mub / (GeV/c))", nPtBins, ptBinEdges);
+    TH1D *histXsecPromptPsi2sRapFwdCuts = new TH1D("histXsecPromptPsi2sRapFwdCuts", ";y;d#sigma/dy (nb)", 20, 0, 5);
+    TH1D *histXsecNonPromptPsi2sPtFwdCuts = new TH1D("histXsecNonPromptPsi2sPtFwdCuts", ";#it{p}_{T} (GeV/c);d#sigma/d#it{p}_{T} (#mub / (GeV/c))", nPtBins, ptBinEdges);
+    TH1D *histXsecNonPromptPsi2sRapFwdCuts = new TH1D("histXsecNonPromptPsi2sRapFwdCuts", ";y;d#sigma/dy (nb)", 20, 0, 5);
 
     SetHist(histXsecJpsiPt, kRed+1, 24, 1, kRed+1, 1);
     SetHist(histXsecJpsiRap, kRed+1, 24, 1, kRed+1, 1);
-    SetHist(histXsecJpsiPtFwdCuts, kRed+1, 20, 0, kRed+1, 1, kRed+1, 3352, 0.9);
-    SetHist(histXsecJpsiRapFwdCuts, kRed+1, 20, 0, kRed+1, 1, kRed+1, 3352, 0.9);
-    SetHist(histXsecPsi2sPt, kAzure+4, 24, 1, kAzure+4, 1);
-    SetHist(histXsecPsi2sRap, kAzure+4, 24, 1, kAzure+4, 1);
-    SetHist(histXsecPsi2sPtFwdCuts, kAzure+4, 20, 0, kAzure+4, 1, kAzure+4, 3352, 0.9);
-    SetHist(histXsecPsi2sRapFwdCuts, kAzure+4, 20, 0, kAzure+4, 1, kAzure+4, 3352, 0.9); 
+    SetHist(histXsecJpsiPtFwdCuts, kRed+1, 20, 0.5, kRed+1, 1, kRed+1, 1001, 0.7);
+    SetHist(histXsecJpsiRapFwdCuts, kRed+1, 20, 0.5, kRed+1, 1, kRed+1, 1001, 0.7);
+    SetHist(histXsecPromptJpsiPtFwdCuts, kOrange+7, 20, 0.5, kOrange+7, 1, kOrange+7, 1001, 0.7);
+    SetHist(histXsecPromptJpsiRapFwdCuts, kOrange+7, 20, 0.5, kOrange+7, 1, kOrange+7, 1001, 0.7);
+    SetHist(histXsecNonPromptJpsiPtFwdCuts, kGray+1, 20, 0.5, kGray+1, 1, kGray+1, 1001, 0.7);
+    SetHist(histXsecNonPromptJpsiRapFwdCuts, kGray+1, 20, 0.5, kGray+1, 1, kGray+1, 1001, 0.7);
+
+    SetHist(histXsecPsi2sPt, kRed+1, 24, 1, kRed+1, 1);
+    SetHist(histXsecPsi2sRap, kRed+1, 24, 1, kRed+1, 1);
+    SetHist(histXsecPsi2sPtFwdCuts, kRed+1, 20, 0.5, kRed+1, 1, kRed+1, 1001, 0.7);
+    SetHist(histXsecPsi2sRapFwdCuts, kRed+1, 20, 0.5, kRed+1, 1, kRed+1, 1001, 0.7);
+    SetHist(histXsecPromptPsi2sPtFwdCuts, kOrange+7, 20, 0.5, kOrange+7, 1, kOrange+7, 1001, 0.7);
+    SetHist(histXsecPromptPsi2sRapFwdCuts, kOrange+7, 20, 0.5, kOrange+7, 1, kOrange+7, 1001, 0.7);
+    SetHist(histXsecNonPromptPsi2sPtFwdCuts, kGray+1, 20, 0.5, kGray+1, 1, kGray+1, 1001, 0.7);
+    SetHist(histXsecNonPromptPsi2sRapFwdCuts, kGray+1, 20, 0.5, kGray+1, 1, kGray+1, 1001, 0.7);
 
     histXsecJpsiPt -> Sumw2(true);
     histXsecJpsiRap -> Sumw2(true);
     histXsecJpsiPtFwdCuts -> Sumw2(true);
     histXsecJpsiRapFwdCuts -> Sumw2(true);
+    histXsecPromptJpsiPtFwdCuts -> Sumw2(true);
+    histXsecPromptJpsiRapFwdCuts -> Sumw2(true);
+    histXsecNonPromptJpsiPtFwdCuts -> Sumw2(true);
+    histXsecNonPromptJpsiRapFwdCuts -> Sumw2(true);
+
     histXsecPsi2sPt -> Sumw2(true);
     histXsecPsi2sRap -> Sumw2(true);
     histXsecPsi2sPtFwdCuts -> Sumw2(true);
     histXsecPsi2sRapFwdCuts -> Sumw2(true);
+    histXsecPromptPsi2sPtFwdCuts -> Sumw2(true);
+    histXsecPromptPsi2sRapFwdCuts -> Sumw2(true);
+    histXsecNonPromptPsi2sPtFwdCuts -> Sumw2(true);
+    histXsecNonPromptPsi2sRapFwdCuts -> Sumw2(true);
 
     Long64_t nEntries = ntuple -> GetEntries();
     for (Long64_t i = 0;i < nEntries;++i) {
@@ -109,6 +146,14 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
             if (yOnia > 2.5 && yOnia < 4 && pTOnia < 20) {
                 histXsecJpsiPtFwdCuts -> Fill(pTOnia);
                 histXsecJpsiRapFwdCuts -> Fill(yOnia);
+
+                if (fromB) {
+                    histXsecNonPromptJpsiPtFwdCuts -> Fill(pTOnia);
+                    histXsecNonPromptJpsiRapFwdCuts -> Fill(yOnia);
+                } else {
+                    histXsecPromptJpsiPtFwdCuts -> Fill(pTOnia);
+                    histXsecPromptJpsiRapFwdCuts -> Fill(yOnia);
+                }
             }
         }
 
@@ -119,6 +164,14 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
             if (yOnia > 2.5 && yOnia < 4 && pTOnia < 20) {
                 histXsecPsi2sPtFwdCuts -> Fill(pTOnia);
                 histXsecPsi2sRapFwdCuts -> Fill(yOnia);
+
+                if (fromB) {
+                    histXsecNonPromptPsi2sPtFwdCuts -> Fill(pTOnia);
+                    histXsecNonPromptPsi2sRapFwdCuts -> Fill(yOnia);
+                } else {
+                    histXsecPromptPsi2sPtFwdCuts -> Fill(pTOnia);
+                    histXsecPromptPsi2sRapFwdCuts -> Fill(yOnia);
+                }
             }
         }
     }
@@ -136,22 +189,40 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
     TH1D *histPsi2sOverJpsiPtFwdCuts = (TH1D*) histXsecPsi2sPtFwdCuts -> Clone("histPsi2sOverJpsiPtFwdCuts");
     histPsi2sOverJpsiPtFwdCuts -> Divide(histXsecJpsiPtFwdCuts);
     histPsi2sOverJpsiPtFwdCuts -> GetYaxis() -> SetTitle("#psi(2S) / J/#psi");
-    SetHist(histPsi2sOverJpsiPtFwdCuts, kBlack, 24, 1, kBlack);
+    SetHist(histPsi2sOverJpsiPtFwdCuts, kRed+1, 20, 0, kRed+1, 1, kRed+1, 1001, 0.7);
+
+    TH1D *histPromptPsi2sOverPromptJpsiPtFwdCuts = (TH1D*) histXsecPromptPsi2sPtFwdCuts -> Clone("histPromptPsi2sOverPromptJpsiPtFwdCuts");
+    histPromptPsi2sOverPromptJpsiPtFwdCuts -> Divide(histXsecPromptJpsiPtFwdCuts);
+    histPromptPsi2sOverPromptJpsiPtFwdCuts -> GetYaxis() -> SetTitle("Prompt #psi(2S) / Prompt J/#psi");
+    SetHist(histPromptPsi2sOverPromptJpsiPtFwdCuts, kOrange+7, 20, 0, kOrange+7, 1, kOrange+7, 1001, 0.5);
+
+    TH1D *histNonPromptPsi2sOverNonPromptJpsiPtFwdCuts = (TH1D*) histXsecNonPromptPsi2sPtFwdCuts -> Clone("histNonPromptPsi2sOverNonPromptJpsiPtFwdCuts");
+    histNonPromptPsi2sOverNonPromptJpsiPtFwdCuts -> Divide(histXsecNonPromptJpsiPtFwdCuts);
+    histNonPromptPsi2sOverNonPromptJpsiPtFwdCuts -> GetYaxis() -> SetTitle("Non Prompt #psi(2S) / Non Prompt J/#psi");
+    SetHist(histNonPromptPsi2sOverNonPromptJpsiPtFwdCuts, kGray+1, 20, 0, kGray+1, 1, kGray+1, 1001, 0.5);
 
     TH1D *histPsi2sOverJpsiRapFwdCuts = (TH1D*) histXsecPsi2sRapFwdCuts -> Clone("histPsi2sOverJpsiRapFwdCuts");
     histPsi2sOverJpsiRapFwdCuts -> Divide(histXsecPsi2sRapFwdCuts);
     histPsi2sOverJpsiRapFwdCuts -> GetYaxis() -> SetTitle("#psi(2S) / J/#psi");
     SetHist(histPsi2sOverJpsiRapFwdCuts, kBlack, 24, 1, kBlack);
 
-    histXsecJpsiPt -> Scale(xSec / nEvents, "WIDTH");
-    histXsecPsi2sPt -> Scale(xSec / nEvents, "WIDTH");
-    histXsecJpsiPtFwdCuts -> Scale(xSec / nEvents, "WIDTH");
-    histXsecPsi2sPtFwdCuts -> Scale(xSec / nEvents, "WIDTH");
+    histXsecJpsiPt -> Scale(xSec / (nEvents * 1e3), "WIDTH");
+    histXsecPsi2sPt -> Scale(xSec / (nEvents * 1e3), "WIDTH");
+    histXsecJpsiPtFwdCuts -> Scale(xSec / (nEvents * 1e3), "WIDTH");
+    histXsecPsi2sPtFwdCuts -> Scale(xSec / (nEvents * 1e3), "WIDTH");
+    histXsecPromptJpsiPtFwdCuts -> Scale(xSec / (nEvents * 1e3), "WIDTH");
+    histXsecPromptPsi2sPtFwdCuts -> Scale(xSec / (nEvents * 1e3), "WIDTH");
+    histXsecNonPromptJpsiPtFwdCuts -> Scale(xSec / (nEvents * 1e3), "WIDTH");
+    histXsecNonPromptPsi2sPtFwdCuts -> Scale(xSec / (nEvents * 1e3), "WIDTH");
 
-    histXsecJpsiRap -> Scale(xSec / nEvents);
-    histXsecPsi2sRap -> Scale(xSec / nEvents);
-    histXsecJpsiRapFwdCuts -> Scale(xSec / nEvents);
-    histXsecPsi2sRapFwdCuts -> Scale(xSec / nEvents);
+    histXsecJpsiRap -> Scale(xSec / (nEvents * 1e3));
+    histXsecPsi2sRap -> Scale(xSec / (nEvents * 1e3));
+    histXsecJpsiRapFwdCuts -> Scale(xSec / (nEvents * 1e3));
+    histXsecPsi2sRapFwdCuts -> Scale(xSec / (nEvents * 1e3));
+    histXsecPromptJpsiRapFwdCuts -> Scale(xSec / (nEvents * 1e3));
+    histXsecPromptPsi2sRapFwdCuts -> Scale(xSec / (nEvents * 1e3));
+    histXsecNonPromptJpsiRapFwdCuts -> Scale(xSec / (nEvents * 1e3));
+    histXsecNonPromptPsi2sRapFwdCuts -> Scale(xSec / (nEvents * 1e3));
 
     TF1 *funcPtJpsi = new TF1("funcPtJpsi", PtJPsipp13TeV, 0, 20, 1);
     funcPtJpsi -> SetLineColor(kRed+1);
@@ -165,7 +236,44 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
     histXsecPsi2sPtFwdCuts -> Fit(funcPtPsi2s, "RQ0");
     TH1D *histFuncPtPsi2s = (TH1D*) funcPtPsi2s -> GetHistogram();
 
-    TCanvas *canvasOniaPt = new TCanvas("canvasOniaPt", "", 800, 600);
+
+    TCanvas *canvasJpsiOniaPt = new TCanvas("canvasJpsiOniaPt", "", 800, 600);
+    gPad -> SetLogy(true);
+    gStyle -> SetHatchesSpacing(0.2);
+    histXsecJpsiPtFwdCuts -> GetYaxis() -> SetRangeUser(1e-4, 10);
+    histXsecJpsiPtFwdCuts -> Draw("E2P");
+    histXsecPromptJpsiPtFwdCuts -> Draw("E2P SAME");
+    histXsecNonPromptJpsiPtFwdCuts -> Draw("E2P SAME");
+    histFonllXsecNonPromptJpsi -> Draw("E2P SAME");
+    
+    TLegend *legendJpsiOniaPt = new TLegend(0.55, 0.70, 0.75, 0.93, " ", "brNDC");
+    SetLegend(legendJpsiOniaPt, 0.040);
+    legendJpsiOniaPt -> AddEntry(histXsecJpsiPtFwdCuts, "Inclusive J/#psi - PYTHIA", "F");
+    legendJpsiOniaPt -> AddEntry(histXsecPromptJpsiPtFwdCuts, "Prompt J/#psi - PYTHIA", "F");
+    legendJpsiOniaPt -> AddEntry(histXsecNonPromptJpsiPtFwdCuts, "Non-Prompt J/#psi - PYTHIA", "F");
+    legendJpsiOniaPt -> AddEntry(histFonllXsecNonPromptJpsi, "Non-Prompt J/#psi - FONLL", "F");
+    legendJpsiOniaPt -> Draw();
+
+
+    TCanvas *canvasPsi2sOniaPt = new TCanvas("canvasPsi2sOniaPt", "", 800, 600);
+    gPad -> SetLogy(true);
+    gStyle -> SetHatchesSpacing(0.2);
+    histXsecPsi2sPtFwdCuts -> GetYaxis() -> SetRangeUser(1e-4, 1);
+    histXsecPsi2sPtFwdCuts -> Draw("E2P");
+    histXsecPromptPsi2sPtFwdCuts -> Draw("E2P SAME");
+    histXsecNonPromptPsi2sPtFwdCuts -> Draw("E2P SAME");
+    histFonllXsecNonPromptPsi2s -> Draw("E2P SAME");
+
+    TLegend *legendPsi2sOniaPt = new TLegend(0.55, 0.70, 0.75, 0.93, " ", "brNDC");
+    SetLegend(legendPsi2sOniaPt, 0.04);
+    legendPsi2sOniaPt -> AddEntry(histXsecPsi2sPtFwdCuts, "Inclusive #psi(2S) - PYTHIA", "F");
+    legendPsi2sOniaPt -> AddEntry(histXsecPromptPsi2sPtFwdCuts, "Prompt #psi(2S) - PYTHIA", "F");
+    legendPsi2sOniaPt -> AddEntry(histXsecNonPromptPsi2sPtFwdCuts, "Non-Prompt #psi(2S) - PYTHIA", "F");
+    legendPsi2sOniaPt -> AddEntry(histFonllXsecNonPromptPsi2s, "Non-Prompt #psi(2S) - FONLL", "F");
+    legendPsi2sOniaPt -> Draw();
+    
+
+    /*TCanvas *canvasOniaPtVsData = new TCanvas("canvasOniaPtVsData", "", 800, 600);
     gPad -> SetLogy(true);
     gStyle -> SetHatchesSpacing(0.2);
     histXsecJpsiPtFwdCuts -> GetYaxis() -> SetRangeUser(1, 2 * histXsecJpsiPtFwdCuts -> GetMaximum());
@@ -173,19 +281,26 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
     //histXsecPsi2sPt -> Draw("E2P SAME");
     histXsecJpsiPtFwdCuts -> Draw("E2P");
     histXsecPsi2sPtFwdCuts -> Draw("E2P SAME");
+
+    histXsecPromptJpsiPtFwdCuts -> Draw("E2P SAME");
+    histXsecPromptPsi2sPtFwdCuts -> Draw("E2P SAME");
+
+    histXsecNonPromptJpsiPtFwdCuts -> Draw("E2P SAME");
+    histXsecNonPromptPsi2sPtFwdCuts -> Draw("E2P SAME");
+
     graStatJpsiXsecPtRap254 -> Draw("EP SAME");
     graSystJpsiXsecPtRap254 -> Draw("E2P SAME");
     funcPtJpsi -> Draw("SAME");
     funcPtPsi2s -> Draw("SAME");
 
     TLegend *legendOniaPt = new TLegend(0.60, 0.70, 0.80, 0.93, " ", "brNDC");
-    SetLegend(legendOniaPt);
+    SetLegend(legendOniaPt, 0.045);
     //legendOniaPt -> AddEntry(histXsecJpsiPt, "J/#psi, all", "F");
     //legendOniaPt -> AddEntry(histXsecPsi2sPt, "#psi(2S), all", "F");
     legendOniaPt -> AddEntry(histXsecJpsiPtFwdCuts, "J/#psi, 2.5 < y < 4", "F");
     legendOniaPt -> AddEntry(histXsecPsi2sPtFwdCuts, "#psi(2S), 2.5 < y < 4", "F");
     legendOniaPt -> AddEntry(graStatJpsiXsecPtRap254, "Data", "FP");
-    legendOniaPt -> Draw();
+    legendOniaPt -> Draw();*/
 
 
     TH1D *histRatioFuncPt = (TH1D*) histFuncPtPsi2s -> Clone("histRatioFuncPt");
@@ -194,17 +309,19 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
     histRatioFuncPt -> SetLineStyle(kDashed);
 
     TCanvas *canvasOniaRatioPt = new TCanvas("canvasOniaRatioPt", "", 800, 600);
-    histPsi2sOverJpsiPt -> GetYaxis() -> SetRangeUser(0, 0.7);
-    histPsi2sOverJpsiPt -> Draw("EP");
-    histPsi2sOverJpsiPtFwdCuts -> Draw("EP SAME");
+    histPsi2sOverJpsiPtFwdCuts -> GetYaxis() -> SetRangeUser(0, 0.7);
+    histPsi2sOverJpsiPtFwdCuts -> Draw("E2");
+    histPromptPsi2sOverPromptJpsiPtFwdCuts -> Draw("E2 SAME");
+    histNonPromptPsi2sOverNonPromptJpsiPtFwdCuts -> Draw("E2 SAME");
     graStatPsi2sOverJpsiPtRap254 -> Draw("EP SAME");
     graSystPsi2sOverJpsiPtRap254 -> Draw("E2P SAME");
-    histRatioFuncPt -> Draw("L SAME");
+    //histRatioFuncPt -> Draw("L SAME");
 
-    TLegend *legendOniaRatioPt = new TLegend(0.20, 0.65, 0.40, 0.85, " ", "brNDC");
-    SetLegend(legendOniaRatioPt);
-    legendOniaRatioPt -> AddEntry(histPsi2sOverJpsiPt, "all", "EP");
-    legendOniaRatioPt -> AddEntry(histPsi2sOverJpsiPtFwdCuts, "2.5 < y < 4", "EP");
+    TLegend *legendOniaRatioPt = new TLegend(0.20, 0.63, 0.40, 0.93, " ", "brNDC");
+    SetLegend(legendOniaRatioPt, 0.045);
+    legendOniaRatioPt -> AddEntry(histPsi2sOverJpsiPtFwdCuts, "Inclusive", "F");
+    legendOniaRatioPt -> AddEntry(histPromptPsi2sOverPromptJpsiPtFwdCuts, "Prompt", "F");
+    legendOniaRatioPt -> AddEntry(histNonPromptPsi2sOverNonPromptJpsiPtFwdCuts, "Non Prompt", "F");
     legendOniaRatioPt -> AddEntry(graStatPsi2sOverJpsiPtRap254, "Data", "FP");
     legendOniaRatioPt -> Draw();
 
@@ -236,6 +353,9 @@ void readSim(string simPath = "sim_pythia_onia_13.6TeV", string simName = "pythi
     histPsi2sOverJpsiRapFwdCuts -> Write();
     fOut -> Close();
 
+    canvasJpsiOniaPt -> SaveAs("figures/xSecJpsiVsPt.pdf");
+    canvasPsi2sOniaPt -> SaveAs("figures/xSecPsi2sVsPt.pdf");
+    canvasOniaRatioPt -> SaveAs("figures/ratioVsDataVsPt.pdf");
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void LoadStyle(){
@@ -285,14 +405,14 @@ void LoadStyle(){
     gStyle -> SetTitleOffset(1.35,"Y");
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void SetLegend(TLegend *legend){
+void SetLegend(TLegend *legend, double textSize = 0.040){
     legend -> SetBorderSize(0);
     legend -> SetFillColor(10);
     legend -> SetFillStyle(1);
     legend -> SetLineStyle(0);
     legend -> SetLineColor(0);
     legend -> SetTextFont(42);
-    legend -> SetTextSize(0.045);
+    legend -> SetTextSize(textSize);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 double PtJPsipp13TeV(double* x, double* pars) {
