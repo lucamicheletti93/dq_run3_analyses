@@ -324,7 +324,7 @@ def xsec(config):
     canvasXsecVsPtVsRun2 = ROOT.TCanvas("canvasXsecVsPtVsRun2", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
     ROOT.gPad.SetLogy(True)
-    histGridXsecVsPt = ROOT.TH2D("histGridXsecVsPt", ";#it{p}_{T} (GeV/#it{c});d^{2}#sigma/d#it{y} d#it{p}_{T} (#mub / GeV/#it{c})", 100, 0, 20, 100, 2e-4, 5)
+    histGridXsecVsPt = ROOT.TH2D("histGridXsecVsPt", ";#it{p}_{T} (GeV/#it{c});d^{2}#sigma/d#it{y} d#it{p}_{T} (#mub / GeV/#it{c})", 100, 0, 20, 100, 2e-5, 5)
     histGridXsecVsPt.Draw()
     graStatXsecVsPtRun2.Draw("EP SAME")
     graSystXsecVsPtRun2.Draw("E2P SAME")

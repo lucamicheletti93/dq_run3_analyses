@@ -479,7 +479,7 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
     fOut -> Close();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void check_normalization(string fInName = "LHC24_ppref_pass1_minBias_std_assoc_luminosity.root", string fOutName = "luminosity_jpsi_LHC24_ppref_pass1_minBias.root") {
+void check_normalization(string fInName = "LHC25ae_minBias_std_assoc_luminosity.root", string fOutName = "luminosity_jpsi_LHC25ae_pass2_minBias.root") {
     TFile *fInLumiMinBias2024StdAssoc = TFile::Open(Form("data/2024/%s", fInName.c_str()));
     TH1D *histLumiMinBias2024StdAssoc = (TH1D*) fInLumiMinBias2024StdAssoc -> Get("histLumiSummary");
     double nEvtsMinBias2024StdAssoc = histLumiMinBias2024StdAssoc -> GetBinContent(histLumiMinBias2024StdAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));

@@ -20,6 +20,8 @@
 #include "Math/GenVector/Boost.h"
 
 #include "Pythia8/Pythia.h"
+#include "Pythia8/HeavyIons.h"
+#include "Pythia8/HIInfo.h"
 
 namespace
 {
@@ -34,7 +36,8 @@ namespace
         kMonash = 0,
         kCRMode0,
         kCRMode2,
-        kCRMode3
+        kCRMode3,
+        kHeavyIon
     };
 
     enum processes
@@ -43,6 +46,15 @@ namespace
         kHardQCD
     };
 
+    enum systems
+    {
+        kPP = 0,
+        kPbPb,
+        kOO,
+        kNeNe
+    };
+
+    std::map<int, int> arrSystems{{kPP, 2212}, {kPbPb, 1000822080}, {kOO, 1000080160}, {kNeNe, 1000100200}};
     const array<int, 4> absPdgOpenCharm = {411, 421, 431, 4122};
 }
 
@@ -64,7 +76,8 @@ bool isFromBeauty(T &mothers, PPythia& pythia)
 
 //__________________________________________________________________________________________________
 template<typename PPythia>
-void runSimulation(PPythia& pythia, TNtuple* tuplePairs, TH1D* histEvents, std::map<int, TH3F*> histPtVsY, int nEvents)
+//void runSimulation(PPythia& pythia, TNtuple* tuplePairs, TH1D* histEvents, TH2D* histImpParvsNpart, std::map<int, TH3F*> histPtVsY, int nEvents)
+void runSimulation(PPythia& pythia, int tune, TNtuple* tuplePairs, TH1D* histEvents, TH2D* histImpParvsNpart, int nEvents)
 {
     //__________________________________________________________
     // perform the simulation
@@ -75,6 +88,9 @@ void runSimulation(PPythia& pythia, TNtuple* tuplePairs, TH1D* histEvents, std::
         }
 
         histEvents->Fill(1.5f);
+        double impactParameter = pythia.info.hiInfo->b();
+        double nPart = pythia.info.hiInfo->nPartTarg() + pythia.info.hiInfo->nPartProj();
+        histImpParvsNpart -> Fill(impactParameter, nPart);
 
         std::vector<Pythia8::Particle> jPsis;
         std::vector<bool> jPsiFromB{};
@@ -103,21 +119,24 @@ void runSimulation(PPythia& pythia, TNtuple* tuplePairs, TH1D* histEvents, std::
                     }
                 }
                 bool fromB = isFromBeauty(mothers, pythia);
-                histPtVsY[absPdg]->Fill(pythia.event[iPart].pT(), pythia.event[iPart].y(), int(fromB));  
 
                 ptOnia = pythia.event[iPart].pT();
                 yOnia = pythia.event[iPart].y();
                 etaOnia = pythia.event[iPart].eta();
                 phiOnia = pythia.event[iPart].phi();
 
-                tuplePairs->Fill(ptOnia, yOnia, etaOnia, phiOnia, fromB, absPdg);
+                if (tune == kHeavyIon) {
+                    tuplePairs->Fill(ptOnia, yOnia, etaOnia, phiOnia, fromB, absPdg, nPart);
+                } else {
+                    tuplePairs->Fill(ptOnia, yOnia, etaOnia, phiOnia, fromB, absPdg, 2);
+                }
             }
         }
     }
 }
 
 //__________________________________________________________________________________________________
-void simulateOnia(int nEvents, int tune, int process, bool usePtHardBins, float energy, int seed, std::string outFileNameRoot)
+void simulateOnia(int nEvents, int tune, int process, bool usePtHardBins, float energy, int system, int seed, std::string outFileNameRoot)
 {
     //__________________________________________________________
     // create and configure pythia generator
@@ -204,6 +223,16 @@ void simulateOnia(int nEvents, int tune, int process, bool usePtHardBins, float 
         pythia.readString("BeamRemnants:remnantMode = 1");
         pythia.readString("BeamRemnants:saturation = 5");
     }
+    else if(tune == kHeavyIon) 
+    {
+        pythia.readString(Form("HeavyIon:mode = 1"));
+        pythia.readString("HeavyIon:SigFitNGen = 0");
+        pythia.readString("HeavyIon:SigFitDefAvNDb = 0.92");
+        pythia.readString("HeavyIon:SigFitDefPar = 1.34,2.61,1.18");
+    } else {
+        std::cout << "[ERROR] No tune configured" << std::endl;
+        return;
+    }
 
     if (usePtHardBins)
     {
@@ -214,24 +243,25 @@ void simulateOnia(int nEvents, int tune, int process, bool usePtHardBins, float 
     // init
     pythia.readString("Random:setSeed = on");
     pythia.readString(Form("Random:seed %d", seed));
-    pythia.settings.mode("Beams:idA", 2212);
-    pythia.settings.mode("Beams:idB", 2212);
+    pythia.settings.mode("Beams:idA", arrSystems[system]);
+    pythia.settings.mode("Beams:idB", arrSystems[system]);
     pythia.settings.parm("Beams:eCM", energy);
     pythia.init();
 
     //__________________________________________________________
     // define outputs
-    auto tuplePairs = new TNtuple("tuplePairs", "tuplePairs", "pTOnia:yOnia:etaOnia:phiOnia:fromB:absPdg");
+    auto tuplePairs = new TNtuple("tuplePairs", "tuplePairs", "pTOnia:yOnia:etaOnia:phiOnia:fromB:absPdg:nPart");
     auto histNumEvents = new TH1D("histNumEvents", "", 2, 0., 2.);
     histNumEvents->GetXaxis()->SetBinLabel(1, "num events set");
     histNumEvents->GetXaxis()->SetBinLabel(2, "num events succeded");
+    auto histImpParvsNpart = new TH2D("histImpParvsNpart", ";b (fm);<N_{Part}>", 200, 0, 20, 500, 0, 50);
     auto histXsec = new TH1D(Form("histXsec_%d", seed), ";cross section (mb)", 1, 0., 1.);
     histXsec->GetXaxis()->SetBinLabel(1, "");
     histNumEvents->SetBinContent(1, nEvents);
-    std::map<int, TH3F*> histPtVsY;
-    histPtVsY[443] = new TH3F("histPtVsY_443", ";#it{p}_{T} (GeV/#it{c}); #it{y}; fromB", 500, 0., 50., 200, -10., 10., 2, -0.5, 1.5);
-    histPtVsY[100443] = new TH3F("histPtVsY_100443", ";#it{p}_{T} (GeV/#it{c}); #it{y}; fromB", 500, 0., 50., 200, -10., 10., 2, -0.5, 1.5);
-    runSimulation(pythia, tuplePairs, histNumEvents, histPtVsY, nEvents);
+    //std::map<int, TH3F*> histPtVsY;
+    //histPtVsY[443] = new TH3F("histPtVsY_443", ";#it{p}_{T} (GeV/#it{c}); #it{y}; fromB", 500, 0., 50., 200, -10., 10., 2, -0.5, 1.5);
+    //histPtVsY[100443] = new TH3F("histPtVsY_100443", ";#it{p}_{T} (GeV/#it{c}); #it{y}; fromB", 500, 0., 50., 200, -10., 10., 2, -0.5, 1.5);
+    runSimulation(pythia, tune, tuplePairs, histNumEvents, histImpParvsNpart, nEvents);
     histXsec->SetBinContent(1, pythia.info.sigmaGen());
     histXsec->SetBinError(1, pythia.info.sigmaErr());
 
@@ -239,9 +269,10 @@ void simulateOnia(int nEvents, int tune, int process, bool usePtHardBins, float 
     TFile outFile(outFileNameRoot.data(), "recreate");
     tuplePairs->Write();
     histNumEvents->Write();
+    histImpParvsNpart->Write();
     histXsec->Write();
-    histPtVsY[443]->Write();
-    histPtVsY[100443]->Write();
+    //histPtVsY[443]->Write();
+    //histPtVsY[100443]->Write();
     outFile.Close();
 }
 
