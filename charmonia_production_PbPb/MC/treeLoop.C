@@ -6,7 +6,8 @@
 
 // Process Generated Tree
 
-void ProcessGeneratedTree(TTree* treeGen, 
+void ProcessGeneratedTree(unsigned int fMcDecision_part, //value of fMcDecision specific to the particle we want to use; 1 = Jpsi , 2 = psi2S
+                        TTree* treeGen, 
                         TH1D* histPtJpsiGen,
                         TH1D* histRapJpsiGen,
                         TH1D* histCentrJpsiGen,
@@ -34,17 +35,17 @@ void ProcessGeneratedTree(TTree* treeGen,
     treeGen->SetBranchAddress("fPhiMC2", &fPhiMC2);
     
     Long64_t nEntries = treeGen->GetEntries();
-    std::cout << "Processing " << nEntries << " generated entries" << std::endl;
+    //std::cout << "Processing " << nEntries << " generated entries" << std::endl;
     
     int filled = 0;
     for (Long64_t iEntry = 0; iEntry < nEntries; iEntry++) {
         treeGen->GetEntry(iEntry);
         
-        if (iEntry % 100000 == 0) {
+        /*if (iEntry % 100000 == 0) {
             std::cout << "Processing entry " << iEntry << "/" << nEntries << std::endl;
-        }
+        }*/
         
-        if (fMcDecision < 1) continue;
+        if (fMcDecision != fMcDecision_part) continue; //only selects particle of interest
         
         if (fPtMC2 == -999.0 && fPhiMC2 == -999.0) {
             ROOT::Math::PtEtaPhiMVector vecJpsiGen(fPtMC1, fEtaMC1, fPhiMC1, massJpsi);
@@ -83,11 +84,12 @@ void ProcessGeneratedTree(TTree* treeGen,
         }
     }
     
-    std::cout << "Filled " << filled << " entries in generated histograms" << std::endl;
+    //std::cout << "Filled " << filled << " entries in generated histograms" << std::endl;
 }
 
 // Process Reconstructed Tree
-void ProcessReconstructedTree(TTree* treeRec,
+void ProcessReconstructedTree(unsigned int fMcDecision_part, //value of fMcDecision specific to the particle we want to use; 1 = Jpsi , 2 = psi2S
+                            TTree* treeRec,
                             TH1D* histPtJpsiRec,
                             TH1D* histRapJpsiRec,
                             TH1D* histCentrJpsiRec,
@@ -128,31 +130,40 @@ void ProcessReconstructedTree(TTree* treeRec,
     treeRec->SetBranchAddress("fPhi2", &fPhi2);
     
     Long64_t nEntries = treeRec->GetEntries();
-    std::cout << "Processing " << nEntries << " reconstructed entries" << std::endl;
+    //std::cout << "Processing " << nEntries << " reconstructed entries" << std::endl;
     
     int filled = 0;
     for (Long64_t iEntry = 0; iEntry < nEntries; iEntry++) {
         treeRec->GetEntry(iEntry);
         
-        if (iEntry % 100000 == 0) {
+        /*if (iEntry % 100000 == 0) {
             std::cout << "Processing entry " << iEntry << "/" << nEntries << std::endl;
-        }
+        }*/
         
-        if (fMcDecision < 1) continue;
+        if (fMcDecision != fMcDecision_part) continue; //only selects particle of interest
         
-        ROOT::Math::PtEtaPhiMVector vecMuGen1(fPtMC1, fEtaMC1, fPhiMC1, massMu);
+        /*ROOT::Math::PtEtaPhiMVector vecMuGen1(fPtMC1, fEtaMC1, fPhiMC1, massMu);
         ROOT::Math::PtEtaPhiMVector vecMuGen2(fPtMC2, fEtaMC2, fPhiMC2, massMu);
         ROOT::Math::PtEtaPhiMVector vecJpsiGen = vecMuGen1 + vecMuGen2;
+        ROOT::Math::PtEtaPhiMVector vecJpsiRec(fPt, fEta, fPhi, fMass);*/
+
+        ROOT::Math::PtEtaPhiMVector vecMuGen1(fPtMC1, fEtaMC1, fPhiMC1, massMu);
+        ROOT::Math::PtEtaPhiMVector vecMuGen2(fPtMC2, fEtaMC2, fPhiMC2, massMu);
+        ROOT::Math::PtEtaPhiMVector vecMuRec1(fPt1, fEta1, fPhi1, massMu);
+        ROOT::Math::PtEtaPhiMVector vecMuRec2(fPt2, fEta2, fPhi2, massMu);
+
+        auto vecJpsiGen = vecMuGen1 + vecMuGen2;
         ROOT::Math::PtEtaPhiMVector vecJpsiRec(fPt, fEta, fPhi, fMass);
+
+        if (TMath::Abs(vecJpsiRec.Rapidity()) > 4 || TMath::Abs(vecJpsiRec.Rapidity()) < 2.5) continue;
+        if (fPt1 < ptCut || fPt2 < ptCut) continue; //equivalent to AR muonLowPt210SigmaPDCA
+        if (fPt > 20) continue;
         
-        double rap = vecJpsiRec.Rapidity();
-        if (TMath::Abs(rap) > 4.0 || TMath::Abs(rap) < 2.5) continue;
-        if (fPt1 < ptCut || fPt2 < ptCut) continue;
-        if (fPt > 20.0) continue;
-        
+        //std::cout << "mass_Jpsi_gen =  " << mass_Jpsi_gen << std::endl;
+
         if (iter == 0) {
             histPtJpsiRec->Fill(vecJpsiRec.Pt());
-            histRapJpsiRec->Fill(-rap);
+            histRapJpsiRec -> Fill(-vecJpsiRec.Rapidity());
             filled++;
         } else {
             int binPt = histFromFuncPtRatio->FindBin(vecJpsiGen.Pt());
@@ -162,7 +173,7 @@ void ProcessReconstructedTree(TTree* treeRec,
             double weightTot = weightPt * weightRap;
             
             histPtJpsiRec->Fill(vecJpsiRec.Pt(), weightTot);
-            histRapJpsiRec->Fill(-rap, weightTot);
+            histRapJpsiRec->Fill(-vecJpsiRec.Rapidity(), weightTot);
             filled++;
         }
         
@@ -171,5 +182,5 @@ void ProcessReconstructedTree(TTree* treeRec,
         }
     }
     
-    std::cout << "Filled " << filled << " entries in reconstructed histograms" << std::endl;
+    //std::cout << "Filled " << filled << " entries in reconstructed histograms" << std::endl;
 }

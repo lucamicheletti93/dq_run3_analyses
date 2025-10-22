@@ -1,16 +1,19 @@
 ---
 inputs:
-  pathFileDataPt: /Users/garetti/dq_fitter_lastV/dq_fitter_github/analysis/pp_ref/matchedMchMid/output/pass_stdAssoc_inputShapes/Pt_syst
-  fileNameDataPt: systematic_sig_Jpsi.txt
-  pathFileDataRap: /Users/garetti/dq_fitter_lastV/dq_fitter_github/analysis/pp_ref/matchedMchMid/output/pass_stdAssoc_inputShapes/Rap_syst
-  fileNameDataRap: systematic_sig_Jpsi.txt
+  pathFileDataPt: /Users/mattei/cernbox/LHC24_skimmed_TRIG_noVtxCut/good_runs/ALLTRACKS/pt_dependence_limtails/
+  fileNameDataPt_Jpsi: systematic_sig_Jpsi.txt
+  fileNameDataPt_Psi2S: systematic_sig_Psi2S.txt
+  pathFileDataRap: /Users/mattei/cernbox/LHC24_skimmed_TRIG_noVtxCut/good_runs/ALLTRACKS/rapidity_dependence_limtails/
+  fileNameDataRap_Jpsi: systematic_sig_Jpsi.txt
+  fileNameDataRap_Psi2S: systematic_sig_Psi2S.txt
   pathFileDataCentr: 
   fileNameDataCentr: 
-  pathAO2D: /Users/garetti/dq_fitter_tails/inputShapes/AO2D.root
+  pathAO2D_GEN: /Users/mattei/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/MC/PRODUCTIONS_2024_noVtxCut/AO2D_LHC25c3_518183_GEN.root
+  pathAO2D_REC: /Users/mattei/cernbox/JPSI/Psi2S_Jpsi_ratio_run3/MC/PRODUCTIONS_2024_noVtxCut/AO2D_LHC25c3_518184_REC.root
   beamType: pp
   ptCut: 0.7
-  ptMin: [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 12.0]
-  ptMax: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 12.0, 20.0]
+  ptMin: [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 14.0, 16.0]
+  ptMax: [0.5 ,1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 14.0, 16.0, 20.0]
   rapMin: [2.50, 2.75, 3.00, 3.25, 3.50, 3.75]
   rapMax: [2.75, 3.00, 3.25, 3.50, 3.75, 4.00]
   centrMin: [0.0, 20.0, 40.0, 60.0]
