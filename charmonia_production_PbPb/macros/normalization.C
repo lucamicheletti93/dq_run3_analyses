@@ -23,6 +23,8 @@
 #include <TH2.h>
 #include <TGridResult.h>
 #include <TSystem.h>
+#include <set>
+
 
 void RetrieveTriggerInfo(TString , bool , string, double [11]);
 
@@ -49,32 +51,27 @@ bool waitForAlienConnection(int maxRetries = 5, int waitSeconds = 5) {
     return false;
 }
 
-void get_normalization_from_multiple_files(std::string year = "2023",
-                                           std::string period = "LHC23_PbPb_pass4",
-                                           std::string subPeriod = "None",
-                                           std::string triggerMask = "minBias",
-                                           std::string assocType = "std_assoc",
-                                           std::string location = "alien") {
+void get_normalization_from_multiple_files(std::string year = "2023",std::string period = "LHC23_PbPb_pass4",std::string subPeriod = "None",std::string triggerMask = "minBias",std::string assocType = "std_assoc",std::string location = "alien") {
 
     gEnv->SetValue("XrdSecGSISRVNAMES", "");
     gEnv->SetValue("XrdSecGSISRVNAMESCANONICAL", "");
     gEnv->SetValue("XrdSecGSIUSERPROMPT", 0);
 
-    ifstream fInInputPath(Form("%s_input_path_short.txt", location.c_str()));
+    ifstream fInInputPath(Form("%s_input_path.txt", location.c_str()));
     if (!fInInputPath.is_open()) {
-        std::cout << "Error opening " << Form("%s_input_path_short.txt", location.c_str()) << std::endl;
+        std::cout << "Error opening " << Form("%s_input_path.txt", location.c_str()) << std::endl;
         return;
     }
 
-    ifstream fInRunList(Form("%s_run_list_short.txt", location.c_str()));
+    ifstream fInRunList(Form("%s_run_list.txt", location.c_str()));
     if (!fInRunList.is_open()) {
-        std::cout << "Error opening " << Form("%s_run_list_short.txt", location.c_str()) << std::endl;
+        std::cout << "Error opening " << Form("%s_run_list.txt", location.c_str()) << std::endl;
         return;
     }
 
     string subRunListName;
     if (subPeriod == "None") {
-        subRunListName = Form("%s_run_list_short.txt", location.c_str());
+        subRunListName = Form("%s_run_list.txt", location.c_str());
     } else {
         subRunListName = Form("%s.txt", subPeriod.c_str());
     }
@@ -118,8 +115,24 @@ void get_normalization_from_multiple_files(std::string year = "2023",
     }
     
     bool resuming = std::filesystem::exists(fOutName);
-    TFile *fOut = TFile::Open(fOutName.c_str(), resuming ? "UPDATE" : "RECREATE");
-    if (!fOut || fOut->IsZombie()) { std::cerr << "[ERROR] Cannot open/create output ROOT file.\n"; return; }
+    //TFile *fOut = TFile::Open(fOutName.c_str(), resuming ? "UPDATE" : "RECREATE");
+    //if (!fOut || fOut->IsZombie()) { std::cerr << "[ERROR] Cannot open/create output ROOT file.\n"; return; }
+    TFile *fOut = nullptr;
+    if (resuming) {
+        fOut = TFile::Open(fOutName.c_str(), "UPDATE");
+        if (!fOut || fOut->IsZombie()) {
+            std::cerr << "[WARNING] Existing file corrupted, file recreation..." << std::endl;
+            std::filesystem::remove(fOutName);
+            fOut = TFile::Open(fOutName.c_str(), "RECREATE");
+            resuming = false;
+        }
+    } else {
+        fOut = TFile::Open(fOutName.c_str(), "RECREATE");
+    }
+    if (!fOut || fOut->IsZombie()) {
+        std::cerr << "[ERROR] Cannot open/create output ROOT file.\n";
+        return;
+    }
 
     TH1D *histZorroInfoCounterTVX = (TH1D*)fOut->Get("histZorroInfoCounterTVX");
     if (!histZorroInfoCounterTVX) histZorroInfoCounterTVX = new TH1D("histZorroInfoCounterTVX", "", vecSubRunList.size(), 0, vecSubRunList.size());
@@ -609,6 +622,20 @@ void RetrieveTriggerInfo(TString dirName = "path/to/file", bool fromAlien = true
     double counterTVXafterBCcuts = 0;
     double colCounterTVX = 0;
 
+    std::set<int> processedSubruns;
+    ifstream progressFileIn("progress_log.txt");
+    if (progressFileIn.is_open()) {
+        string jobID;
+        int subrunID;
+        while (progressFileIn >> jobID >> subrunID) {
+            if (dirName.Contains(jobID.c_str()))
+                processedSubruns.insert(subrunID);
+        }
+        progressFileIn.close();
+        cout << "[INFO] Found " << processedSubruns.size() << " processed subruns for this job, skipping them \n";
+    }
+
+
     if (fromAlien) {
         try {
             if (!gGrid || !gGrid->IsConnected()) TGrid::Connect("alien://");
@@ -619,6 +646,11 @@ void RetrieveTriggerInfo(TString dirName = "path/to/file", bool fromAlien = true
     }
 
     for (int iDir = 1; iDir < 7000; iDir++) {
+        
+        if (processedSubruns.count(iDir)) {
+            std::cout << "[INFO] Skipping already processed subrun " << iDir << std::endl;
+            continue;
+        }
         TString fInName;
         if (iDir < 10) fInName = dirName + Form("/00%i/AnalysisResults.root", iDir);
         else if (iDir < 100) fInName = dirName + Form("/0%i/AnalysisResults.root", iDir);
@@ -650,6 +682,17 @@ void RetrieveTriggerInfo(TString dirName = "path/to/file", bool fromAlien = true
         }
 
         std::cout << "[INFO] File exists: " << fInName << std::endl;
+        std::ofstream progressFile("progress_log.txt", std::ios::app);
+        if (progressFile.is_open()) {
+            std::string dirStr = dirName.Data();
+            std::string jobID = "unknown";
+            size_t pos = dirStr.find("hy_");
+            if (pos != std::string::npos)
+                jobID = dirStr.substr(pos + 3, dirStr.find("/", pos) - (pos + 3));
+
+            progressFile << jobID << " " << iDir << std::endl;
+            progressFile.close();
+        }
 
 
         for (auto dirKey : *fIn->GetListOfKeys()) {
