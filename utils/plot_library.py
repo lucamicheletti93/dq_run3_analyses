@@ -23,13 +23,28 @@ def SetLegend(legend):
     legend.SetTextFont(42)
     legend.SetTextSize(0.04)
 
-def SetGraStat(gra, style, color):
+def SetGraStat(gra, markerStyle, color, markerSize = 1, lineWidth = 1):
+    gra.SetMarkerStyle(markerStyle)
+    gra.SetMarkerColor(color)
+    gra.SetMarkerSize(markerSize)
+    gra.SetLineWidth(lineWidth)
+    gra.SetLineColor(color)
+
+def SetGraSyst(gra, markerStyle, color, markerSize = 1, lineWidth = 1):
+    gra.SetMarkerStyle(markerStyle)
+    gra.SetMarkerColor(color)
+    gra.SetMarkerSize(markerSize)
+    gra.SetLineWidth(lineWidth)
+    gra.SetLineColor(color)
+    gra.SetFillStyle(0)
+
+def SetHistStat(gra, style, color):
     gra.SetMarkerStyle(style)
     gra.SetMarkerColor(color)
     gra.SetLineWidth(2)
     gra.SetLineColor(color)
 
-def SetGraSyst(gra, style, color):
+def SetHistSyst(gra, style, color):
     gra.SetMarkerStyle(style)
     gra.SetMarkerColor(color)
     gra.SetLineWidth(2)
