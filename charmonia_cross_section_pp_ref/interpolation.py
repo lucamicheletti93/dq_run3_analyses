@@ -289,6 +289,8 @@ def interpolation(config):
 
 
     graErrXsecJpsis = []
+    graInterpStatXsecJpsis = []
+    graInterpSystXsecJpsis = []
 
     for iPt in range(0, len(ptEdgesInterp)-1):
         xSecs = matrixJpsiXsec[iPt, :]
@@ -319,35 +321,41 @@ def interpolation(config):
         histGridInterp.DrawCopy()
 
         funcPol1 = ROOT.TF1("funcPol1", "pol1", 2, 15, 2)
-        funcPol1.SetLineColor(ROOT.kRed+1)
+        funcPol1.SetLineColorAlpha(ROOT.kOrange+7, 0.8)
+        funcPol1.SetLineStyle(ROOT.kDashed)
+        funcPol1.SetLineWidth(1)
         fitResPol1 = graErrXsecJpsis[iPt].Fit(funcPol1, "RS0Q")
         covMatrixPol1 = fitResPol1.GetCovarianceMatrix()
         valInterpPol1 = funcPol1.Eval(sqrtsInterp)
         errInterpPol1 = funcPol1.IntegralError(sqrtsInterp-rangeSqrtsInterp,sqrtsInterp+rangeSqrtsInterp, fitResPol1.GetParams() , covMatrixPol1.GetMatrixArray())
 
         funcPowerLow = ROOT.TF1("funcPowerLow", "[0]* x**([1])", 2, 15)
-        funcPowerLow.SetLineColor(ROOT.kBlue+1)
+        funcPowerLow.SetLineColorAlpha(ROOT.kAzure+4, 0.8)
+        funcPowerLow.SetLineStyle(ROOT.kDashed)
+        funcPowerLow.SetLineWidth(1)
         fitResPowerLow = graErrXsecJpsis[iPt].Fit(funcPowerLow, "RS0Q")
         covMatrixPowerLow = fitResPowerLow.GetCovarianceMatrix()
         valInterpPowerLow = funcPowerLow.Eval(sqrtsInterp)
         errInterpPowerLow = funcPowerLow.IntegralError(sqrtsInterp-rangeSqrtsInterp,sqrtsInterp+rangeSqrtsInterp, fitResPowerLow.GetParams() , covMatrixPowerLow.GetMatrixArray())
 
         #funcExpo = ROOT.TF1("funcExpo", "TMath::Exp([0]) + x * TMath::Exp([1])", 2, 15)
-        funcExpo = ROOT.TF1("funcExpo", "pol2", 2, 15, 3)
-        funcExpo.SetLineColor(ROOT.kGreen+1)
-        fitResExpo = graErrXsecJpsis[iPt].Fit(funcExpo, "RS")
+        funcPol2 = ROOT.TF1("funcPol2", "pol2", 2, 15, 3)
+        funcPol2.SetLineColorAlpha(ROOT.kGreen+1, 0.8)
+        funcPol2.SetLineStyle(ROOT.kDashed)
+        funcPol2.SetLineWidth(1)
+        fitResExpo = graErrXsecJpsis[iPt].Fit(funcPol2, "RS")
         covMatrixExpo = fitResExpo.GetCovarianceMatrix()
-        valInterpExpo = funcExpo.Eval(sqrtsInterp)
-        errInterpExpo = funcExpo.IntegralError(sqrtsInterp-rangeSqrtsInterp,sqrtsInterp+rangeSqrtsInterp, fitResExpo.GetParams() , covMatrixExpo.GetMatrixArray()) / (2 * rangeSqrtsInterp)
+        valInterpExpo = funcPol2.Eval(sqrtsInterp)
+        errInterpExpo = funcPol2.IntegralError(sqrtsInterp-rangeSqrtsInterp,sqrtsInterp+rangeSqrtsInterp, fitResExpo.GetParams() , covMatrixExpo.GetMatrixArray()) / (2 * rangeSqrtsInterp)
 
-        latexText.DrawLatex(0.50, 0.35, f'#color[2]{{Pol1}}    = {valInterpPol1:0.3f} #pm {errInterpPol1:0.3f}')
+        latexText.DrawLatex(0.50, 0.35, f'#color[807]{{Pol1}}    = {valInterpPol1:0.3f} #pm {errInterpPol1:0.3f}')
         latexText.DrawLatex(0.50, 0.30, f'#color[417]{{Pol2}}    = {valInterpExpo:0.3f} #pm {errInterpExpo:0.3f}')
-        latexText.DrawLatex(0.50, 0.25, f'#color[4]{{Pow.Low}} = {valInterpPowerLow:0.3f} #pm {errInterpPowerLow:0.3f}')
+        latexText.DrawLatex(0.50, 0.25, f'#color[864]{{Pow.Low}} = {valInterpPowerLow:0.3f} #pm {errInterpPowerLow:0.3f}')
 
         graErrXsecJpsis[iPt].Draw("EP SAME")
         funcPol1.Draw("SAME")
         funcPowerLow.Draw("SAME")
-        funcExpo.Draw("SAME")
+        funcPol2.Draw("SAME")
 
         latexTitle.DrawLatex(0.25, 0.85, f'{ptEdgesInterp[iPt]} < #it{{p}}_{{T}} < {ptEdgesInterp[iPt+1]} GeV/#it{{c}}')
 
@@ -356,7 +364,16 @@ def interpolation(config):
         meanErrInterp.append((errInterpPol1 + errInterpPowerLow + errInterpExpo) / 3.)
         meanSystInterp.append(ComputeStdDev(vecInterpVals))
 
-        latexText.DrawLatex(0.45, 0.40, f'#bf{{Mean    = {meanValInterp[iPt]:0.3f} #pm {meanErrInterp[iPt]:0.3f} #pm {meanSystInterp[iPt]:0.3f}}}')
+        xInterp = [sqrtsInterp]
+        yInterp = [(valInterpPol1 + valInterpPowerLow + valInterpExpo) / 3.]
+        yStatInterp = [(errInterpPol1 + errInterpPowerLow + errInterpExpo) / 3.]
+        ySystInterp = [ComputeStdDev(vecInterpVals)]
+
+        graInterpStatXsecJpsis.append(ROOT.TGraphErrors(1, np.array(xInterp), np.array(yInterp), np.zeros(1), np.array(yStatInterp)))
+        SetGraStat(graInterpStatXsecJpsis[iPt], 20, ROOT.kRed+1)
+        graInterpStatXsecJpsis[iPt].Draw("EP SAME")
+
+        latexText.DrawLatex(0.45, 0.40, f'#bf{{#color[633]{{Mean}}    = {meanValInterp[iPt]:0.3f} #pm {meanErrInterp[iPt]:0.3f} #pm {meanSystInterp[iPt]:0.3f}}}')
 
     canvasInterpolation.cd(8)
 
@@ -384,7 +401,7 @@ def interpolation(config):
     graStatJpsiXsecInterp.Draw("EP SAME")
     graSystJpsiXsecInterp.Draw("E2P SAME")
 
-    legendJpsiXsecInterp = ROOT.TLegend(0.55, 0.70, 0.80, 0.90, " ", "brNDC")
+    legendJpsiXsecInterp = ROOT.TLegend(0.60, 0.70, 0.85, 0.90, " ", "brNDC")
     SetLegend(legendJpsiXsecInterp)
     legendJpsiXsecInterp.SetTextSize(0.045)
     legendJpsiXsecInterp.AddEntry(graSystJpsiXsec5TeVRebin, "#sqrt{#it{s}} = 5.02 TeV", "FP")
@@ -393,10 +410,25 @@ def interpolation(config):
 
     canvasInterpolation.Update()
 
+
+    canvasInterpolationResult = ROOT.TCanvas("canvasInterpolationResult", "", 800, 600)
+    ROOT.gPad.SetLogy(True)
+    #histGridJpsiXsecInterp = ROOT.TH2D("histGridJpsiXsecInterp", ";#it{p}_{T} (GeV/#it{c});d^{2}#sigma/d#it{p}_{T} d#it{y} (#mub/GeV/#it{c})", 100, 0, 8, 100, 0.01, 5)
+    histGridJpsiXsecInterp.Draw()
+    graStatJpsiXsec5TeVRebin.Draw("EP SAME")
+    graSystJpsiXsec5TeVRebin.Draw("E2P SAME")
+    graStatJpsiXsecInterp.Draw("EP SAME")
+    graSystJpsiXsecInterp.Draw("E2P SAME")
+    legendJpsiXsecInterp.Draw("SAME")
+
+    canvasInterpolationResult.Update()
+
     input()
 
     canvasInterpolation.SaveAs("figures/interpolation/interpolation_vs_pt.pdf")
+    canvasInterpolationResult.SaveAs("figures/interpolation/results_interpolation_vs_pt.pdf")
 
+    print(f'Writing output in {config["outputs"]["fOut"]} ...')
     fOut = ROOT.TFile(config["outputs"]["fOut"], "RECREATE")
     histStatJpsiXsecInterp.Write()
     histSystJpsiXsecInterp.Write()
