@@ -1,0 +1,39 @@
+dependent_variables:
+- header: {name: DSIG/DYRAP, units: NB}
+  qualifiers:
+  - {name: YRAP, value: '$2.5 < y < 4$' }
+  - {name: RE, value: P P --> J/PSI < MU+ MU- >}
+  values:
+  - errors:
+    - {label: stat, symerror: 86.66667}
+    - {label: sys, symerror: 179.57742}
+    - {label: 'sys,BR', symerror: 12.32679}
+    value: 2226.66667
+  - errors:
+    - {label: stat, symerror: 53.33333}
+    - {label: sys, symerror: 185.51486}
+    - {label: 'sys,BR', symerror: 20.70458}
+    value: 3740.0
+  - errors:
+    - {label: stat, symerror: 26.66667}
+    - {label: sys, symerror: 419.27363}
+    - {label: 'sys,BR', symerror: 24.69049}
+    value: 4460.0
+  - errors:
+    - {label: stat, symerror: 26.66667}
+    - {label: sys, symerror: 545.66111}
+    - {label: 'sys,BR', symerror: 33.14209}
+    value: 5986.66667
+  - errors:
+    - {label: stat, symerror: 26.66667}
+    - {label: sys, symerror: 491.56741}
+    - {label: 'sys,BR', symerror: 41.70441}
+    value: 7533.33333
+independent_variables:
+- header: {name: SQRT(S), units: GEV}
+  values:
+  - {value: 2760.0}
+  - {value: 5020.0}
+  - {value: 7000.0}
+  - {value: 8000.0}
+  - {value: 13000.0}
