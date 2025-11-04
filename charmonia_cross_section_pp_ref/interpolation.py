@@ -394,14 +394,14 @@ def interpolation(config):
     SetGraSyst(graSystJpsiXsecInterp, 20, ROOT.kRed+1)
 
     ROOT.gPad.SetLogy(True)
-    histGridJpsiXsecInterp = ROOT.TH2D("histGridJpsiXsecInterp", ";#it{p}_{T} (GeV/#it{c});d^{2}#sigma/d#it{p}_{T} d#it{y} (#mub/GeV/#it{c})", 100, 0, 8, 100, 0.01, 5)
+    histGridJpsiXsecInterp = ROOT.TH2D("histGridJpsiXsecInterp", ";#it{p}_{T} (GeV/#it{c});d^{2}#sigma/d#it{p}_{T} d#it{y} (#mub/GeV/#it{c})", 100, 0, 8, 100, 0.03, 7)
     histGridJpsiXsecInterp.Draw()
     graStatJpsiXsec5TeVRebin.Draw("EP SAME")
     graSystJpsiXsec5TeVRebin.Draw("E2P SAME")
     graStatJpsiXsecInterp.Draw("EP SAME")
     graSystJpsiXsecInterp.Draw("E2P SAME")
 
-    legendJpsiXsecInterp = ROOT.TLegend(0.60, 0.70, 0.85, 0.90, " ", "brNDC")
+    legendJpsiXsecInterp = ROOT.TLegend(0.68, 0.65, 0.88, 0.85, " ", "brNDC")
     SetLegend(legendJpsiXsecInterp)
     legendJpsiXsecInterp.SetTextSize(0.045)
     legendJpsiXsecInterp.AddEntry(graSystJpsiXsec5TeVRebin, "#sqrt{#it{s}} = 5.02 TeV", "FP")
@@ -413,13 +413,15 @@ def interpolation(config):
 
     canvasInterpolationResult = ROOT.TCanvas("canvasInterpolationResult", "", 800, 600)
     ROOT.gPad.SetLogy(True)
-    #histGridJpsiXsecInterp = ROOT.TH2D("histGridJpsiXsecInterp", ";#it{p}_{T} (GeV/#it{c});d^{2}#sigma/d#it{p}_{T} d#it{y} (#mub/GeV/#it{c})", 100, 0, 8, 100, 0.01, 5)
     histGridJpsiXsecInterp.Draw()
     graStatJpsiXsec5TeVRebin.Draw("EP SAME")
     graSystJpsiXsec5TeVRebin.Draw("E2P SAME")
     graStatJpsiXsecInterp.Draw("EP SAME")
     graSystJpsiXsecInterp.Draw("E2P SAME")
     legendJpsiXsecInterp.Draw("SAME")
+
+    latexTitle.DrawLatex(0.2, 0.87, "ALICE Work in progress")
+    latexTitle.DrawLatex(0.2, 0.80, "J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
 
     canvasInterpolationResult.Update()
 
