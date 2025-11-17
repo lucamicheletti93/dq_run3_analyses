@@ -1,0 +1,86 @@
+dependent_variables:
+- header: {name: RAA}
+  qualifiers:
+  - {name: RE, value: PB PB --> JPSI < MU+ MU- > X}
+  - {name: SQRT(S)/NUCLEON, units: GEV, value: 8016.0}
+  - {name: CENTRALITY, units: pct, value: 40.00 TO 60.00}
+  - {name: YRAP, value: 2.50 TO 4.00}
+  values:
+  - errors:
+    - {label: stat, symerror: 0.01}
+    - {label: 'sys, uncorrel', symerror: 0.04}
+    - {label: 'sys, correl', symerror: 0.13}
+    value: 0.57
+  - errors:
+    - {label: stat, symerror: 0.01}
+    - {label: 'sys, uncorrel', symerror: 0.05}
+    - {label: 'sys, correl', symerror: 0.12}
+    value: 0.6
+  - errors:
+    - {label: stat, symerror: 0.01}
+    - {label: 'sys, uncorrel', symerror: 0.05}
+    - {label: 'sys, correl', symerror: 0.01}
+    value: 0.69
+  - errors:
+    - {label: stat, symerror: 0.01}
+    - {label: 'sys, uncorrel', symerror: 0.05}
+    - {label: 'sys, correl', symerror: 0.09}
+    value: 0.77
+  - errors:
+    - {label: stat, symerror: 0.01}
+    - {label: 'sys, uncorrel', symerror: 0.06}
+    - {label: 'sys, correl', symerror: 0.09}
+    value: 0.82
+  - errors:
+    - {label: stat, symerror: 0.01}
+    - {label: 'sys, uncorrel', symerror: 0.06}
+    - {label: 'sys, correl', symerror: 0.08}
+    value: 0.87
+  - errors:
+    - {label: stat, symerror: 0.01}
+    - {label: 'sys, uncorrel', symerror: 0.06}
+    - {label: 'sys, correl', symerror: 0.08}
+    value: 0.9
+  - errors:
+    - {label: stat, symerror: 0.02}
+    - {label: 'sys, uncorrel', symerror: 0.06}
+    - {label: 'sys, correl', symerror: 0.08}
+    value: 0.94
+  - errors:
+    - {label: stat, symerror: 0.03}
+    - {label: 'sys, uncorrel', symerror: 0.07}
+    - {label: 'sys, correl', symerror: 0.07}
+    value: 1.01
+  - errors:
+    - {label: stat, symerror: 0.05}
+    - {label: 'sys, uncorrel', symerror: 0.07}
+    - {label: 'sys, correl', symerror: 0.07}
+    value: 1.06
+  - errors:
+    - {label: stat, symerror: 0.07}
+    - {label: 'sys, uncorrel', symerror: 0.13}
+    - {label: 'sys, correl', symerror: 0.09}
+    value: 0.79
+  - errors:
+    - {label: stat, symerror: 0.01}
+    - {label: 'sys, uncorrel', symerror: 0.19}
+    - {label: 'sys, correl', symerror: 0.07}
+    value: 1.04
+
+independent_variables:
+- header: {name: PT, units: GEV/C}
+  values:
+  - {low: 0.3, high: 1.0}
+  - {low: 1.0, high: 2.0}
+  - {low: 2.0, high: 3.0}
+  - {low: 3.0, high: 4.0}
+  - {low: 4.0, high: 5.0}
+  - {low: 5.0, high: 6.0}
+  - {low: 6.0, high: 8.0}
+  - {low: 8.0, high: 10.0}
+  - {low: 10.0, high: 12.0}
+  - {low: 12.0, high: 14.0}
+  - {low: 14.0, high: 16.0}
+  - {low: 16.0, high: 20.0}
+
+name: Fig2_40_90.yaml

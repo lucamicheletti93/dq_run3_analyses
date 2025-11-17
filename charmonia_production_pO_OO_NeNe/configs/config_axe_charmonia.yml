@@ -1,13 +1,12 @@
 inputs:
-  path: /Users/lucamicheletti/cernbox/JPSI/Jpsi_pO_OO_NeNe_run3/MC
+  path: /home/rebecca/cernbox/O_O/MC
   production: LHC25i4
   prefixGen: AnalysisResults_dq_efficiency_with_assoc # [AnalysisResults_dq_efficiency_with_assoc, AnalysisResults]
   prefixRec: AnalysisResults_dq_efficiency_with_assoc # [AnalysisResults_dq_efficiency_with_assoc, AnalysisResults]
   assocType: std_association
   sigGen: Jpsi
   sigRec: mumuFromJpsi
-  #cuts: [matchedMchMid]
-  cuts: [muonLowPt210SigmaPDCA]
+  cuts: [matchedMchMid]
   hlistGen: analysis-same-event-pairing/output
   listGen: MCTruthGenSel
   #histGen: Pt_Rapidity # dq-efficiency

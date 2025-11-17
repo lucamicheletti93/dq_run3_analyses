@@ -17,6 +17,7 @@
 #include <filesystem>
 #include <algorithm>
 #include <string>
+#include "THashList.h"
 
 // xSecTVX cross section
 //const double xSecTVX = 50.3e9; // pb-1, pp@5.36TeV, taken from https://alice-notes.web.cern.ch/system/files/notes/analysis/1671/2025-09-04-Analysis_Note_Pi0_OO.pdf, page 14
@@ -161,10 +162,8 @@ void get_normalization_from_multiple_files(string year = "2024", string period =
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void get_normalization_from_single_file(string year = "2024", string period = "LHC24aq_pass1_small", string triggerMask = "minBias", string assocType = "std_assoc") {
-    //string fInName = Form("data/%s/%s_%s_%s.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str());
-    //string fInName = Form("/Users/lucamicheletti/cernbox/JPSI/Jpsi_pp_ref_cross_section_run3/data/%s/%s/AnalysisResults_%s.root", year.c_str(), period.c_str(), assocType.c_str());
-    string fInName = Form("/Users/lucamicheletti/cernbox/JPSI/Jpsi_pO_OO_NeNe_run3/data/%s/%s/AnalysisResults_%s.root", year.c_str(), period.c_str(), assocType.c_str());
-    string fOutName = Form("data/%s/%s_%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str());
+    string fInName = "/home/rebecca/cernbox/O_O/Pass2/Train_540779/AnalysisResults.root"; // LHC25ae_pass2, std assoc 
+    string fOutName = Form("data/%s/pass2/%s_%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str());
 
     TFile *fIn = TFile::Open(fInName.c_str());
     if (!fIn || fIn -> IsZombie()) {
@@ -182,6 +181,7 @@ void get_normalization_from_single_file(string year = "2024", string period = "L
     TH1D *histBcSelCounterTVX = nullptr;
     TH1D *histBcSelCounterTVXafterBCcuts = nullptr;
     TH1D *histEvSelColCounterTVX = nullptr;
+    TH1D *histRatioIntegralsCentrFT0C = nullptr;
 
     for (auto const& dirKey : *fIn -> GetListOfKeys()) {
         if (TString(dirKey -> GetName()).Contains("table-maker")) {
@@ -252,35 +252,29 @@ void get_normalization_from_single_file(string year = "2024", string period = "L
             histEvSelCollisionBeforeFiltering -> SetBinContent(1, collisionsBeforeFiltering);
             histEvSelCollisionBeforeCuts -> SetBinContent(1, collisionsBeforeCuts);
             histEvSelCollisionAfterCuts -> SetBinContent(1, collisionsAfterCuts);
-        }
 
 
-        if (TString(dirKey -> GetName()).Contains("eventselection-run3")) {
-            TH1D *histCounterTVX = (TH1D*) fIn -> Get("eventselection-run3/luminosity/hCounterTVX");
-            TH1D *histCounterTVXafterBCcuts = (TH1D*) fIn -> Get("eventselection-run3/luminosity/hCounterTVXafterBCcuts");
+            fIn->cd("table-maker"); 
+            THashList* hashList = (THashList*)gDirectory->Get("output"); 
+            TList* list_output = (TList*)hashList->FindObject("Event_AfterCuts");
+            TH1D *histCentFTOC = (TH1D*) list_output->FindObject("CentFT0C");
 
-            int nRuns = histCounterTVX -> GetXaxis() -> GetNbins();
-            vector <string> vecRunList;
-            for (int iRun = 0;iRun < nRuns;iRun++) {
-                string tmpRunNumber = histCounterTVX -> GetXaxis() -> GetBinLabel(iRun+1);
-                if (!(tmpRunNumber.empty())) {
-                    vecRunList.push_back(histCounterTVX -> GetXaxis() -> GetBinLabel(iRun+1));
-                }
+            const int centMin[] = { 0,10,20,30,40,50,60, 0,  0}; 
+            const int centMax[] = {10,20,30,40,50,60,90,90,100}; 
+            int nCentBins = sizeof(centMin) / sizeof(int); 
+
+            histRatioIntegralsCentrFT0C = new TH1D("histRatioIntegralsCentrFT0C", "Centrality Fractions;Centrality interval;Fraction", nCentBins, 0, nCentBins);
+
+            for (int i = 0; i < nCentBins; i++) {
+                double integral_Selected = histCentFTOC->Integral(centMin[i], centMax[i]);
+                double integral_Total = histCentFTOC->Integral(0, 100);
+                double ratio = integral_Selected / integral_Total;
+                histRatioIntegralsCentrFT0C->SetBinContent(i + 1, ratio);
+                TString label = Form("%d-%d", centMin[i], centMax[i]);
+                histRatioIntegralsCentrFT0C->GetXaxis()->SetBinLabel(i + 1, label);
             }
 
-            histBcSelCounterTVX = new TH1D("histBcSelCounterTVX", "", vecRunList.size(), 0, vecRunList.size());
-            histBcSelCounterTVXafterBCcuts = new TH1D("histBcSelCounterTVXafterBCcuts", "", vecRunList.size(), 0, vecRunList.size());
-
-            for (int iRun = 0;iRun < int (vecRunList.size());iRun++) {
-                string runNumber = vecRunList.at(iRun).c_str();
-                histBcSelCounterTVX -> SetBinContent(iRun+1, histCounterTVX -> GetBinContent(iRun+1));
-                histBcSelCounterTVX -> GetXaxis() -> SetBinLabel(iRun+1, runNumber.c_str());
-
-                histBcSelCounterTVXafterBCcuts -> SetBinContent(iRun+1, histCounterTVXafterBCcuts -> GetBinContent(iRun+1));
-                histBcSelCounterTVXafterBCcuts -> GetXaxis() -> SetBinLabel(iRun+1, runNumber.c_str());
-            }
         }
-
 
 
         if (TString(dirKey -> GetName()).Contains("bc-selection-task")) {
@@ -374,12 +368,12 @@ void get_normalization_from_single_file(string year = "2024", string period = "L
     histBcSelCounterTVX -> Write();
     histBcSelCounterTVXafterBCcuts -> Write();
     histEvSelColCounterTVX -> Write();
+    histRatioIntegralsCentrFT0C -> Write();
     fOut -> Close();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", string triggerMask = "minBias", string assocType = "std_assoc") {
-    //TFile *fIn = new TFile(Form("run_lists/%s/%s_%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str()), "READ");
-    TFile *fIn = new TFile(Form("data/%s/%s_%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str()), "READ");
+    TFile *fIn = new TFile(Form("data/%s/pass2/%s_%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str()), "READ");
     TH1D *histZorroInfoCounterTVX = (TH1D*) fIn -> Get("histZorroInfoCounterTVX");
     TH1D *histZorroInfoCounterScalTrig = (TH1D*) fIn -> Get("histZorroInfoCounterScalTrig");
     TH1D *histZorroInfoCounterSelTrig = (TH1D*) fIn -> Get("histZorroInfoCounterSelTrig");
@@ -391,6 +385,7 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
     TH1D *histBcSelCounterTVX = (TH1D*) fIn -> Get("histBcSelCounterTVX");
     TH1D *histBcSelCounterTVXafterBCcuts = (TH1D*) fIn -> Get("histBcSelCounterTVXafterBCcuts");
     TH1D *histEvSelColCounterTVX = (TH1D*) fIn -> Get("histEvSelColCounterTVX");
+    TH1D *histRatioIntegralsCentrFT0C = (TH1D*) fIn -> Get("histRatioIntegralsCentrFT0C");
 
     const int nRuns = histZorroInfoCounterTVX -> GetEntries();
     double inspectedTVX = histZorroInfoCounterTVX -> Integral();
@@ -405,16 +400,23 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
     double bcCounterTVXafterBCcuts = histBcSelCounterTVXafterBCcuts -> Integral();
     double evColCounterTVX = histEvSelColCounterTVX -> Integral();
 
-    TH1D *histLumiSummary = new TH1D("histLumiSummary", "", 9, 0, 9);
-    histLumiSummary -> GetXaxis() -> SetBinLabel(1, "bcCounterTVX");
-    histLumiSummary -> GetXaxis() -> SetBinLabel(2, "bcCounterTVXafterBCcuts");
-    histLumiSummary -> GetXaxis() -> SetBinLabel(3, "bcCounterEfficiency");
-    histLumiSummary -> GetXaxis() -> SetBinLabel(4, "nEvtsBcSel");
-    histLumiSummary -> GetXaxis() -> SetBinLabel(5, "nEvtsBcSelAfterCuts");
-    histLumiSummary -> GetXaxis() -> SetBinLabel(6, "collsBeforeCuts");
-    histLumiSummary -> GetXaxis() -> SetBinLabel(7, "collsAfterCuts");
-    histLumiSummary -> GetXaxis() -> SetBinLabel(8, "luminosityBcSel");
-    histLumiSummary -> GetXaxis() -> SetBinLabel(9, "luminosityBcSelAfterCuts");
+    int nCentrBins = histRatioIntegralsCentrFT0C->GetNbinsX();
+    int nSummaryBins = 9 + nCentrBins; 
+    TH1D *histLumiSummary = new TH1D("histLumiSummary", "", nSummaryBins, 0, nSummaryBins);
+    histLumiSummary->GetXaxis()->SetBinLabel(1, "bcCounterTVX");
+    histLumiSummary->GetXaxis()->SetBinLabel(2, "bcCounterTVXafterBCcuts");
+    histLumiSummary->GetXaxis()->SetBinLabel(3, "bcCounterEfficiency");
+    histLumiSummary->GetXaxis()->SetBinLabel(4, "nEvtsBcSel");
+    histLumiSummary->GetXaxis()->SetBinLabel(5, "nEvtsBcSelAfterCuts");
+    histLumiSummary->GetXaxis()->SetBinLabel(6, "collsBeforeCuts");
+    histLumiSummary->GetXaxis()->SetBinLabel(7, "collsAfterCuts");
+    histLumiSummary->GetXaxis()->SetBinLabel(8, "luminosityBcSel");
+    histLumiSummary->GetXaxis()->SetBinLabel(9, "luminosityBcSelAfterCuts");
+    for (int i = 0; i < nCentrBins; i++) {
+        TString originalLabel = histRatioIntegralsCentrFT0C->GetXaxis()->GetBinLabel(i+1);
+        TString newLabel = originalLabel + "%";
+        histLumiSummary->GetXaxis()->SetBinLabel(10 + i, newLabel);
+    }
 
     std::cout << "****************************************************" << std::endl;
     std::cout << "nRuns = " << nRuns << std::endl;
@@ -429,13 +431,22 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
     std::cout << "bcCounterTVX = " << bcCounterTVX << std::endl;
     std::cout << "bcCounterTVXafterBCcuts = " << bcCounterTVXafterBCcuts << std::endl;
     std::cout << "evColCounterTVX = " << evColCounterTVX << std::endl;
+    std::cout << "ratioIntegralsCentrFT0C per bin:" << std::endl;
+    for (int i = 0; i < nCentrBins; i++) {
+        TString label = histRatioIntegralsCentrFT0C->GetXaxis()->GetBinLabel(i+1);
+        double value = histRatioIntegralsCentrFT0C->GetBinContent(i+1);
+        std::cout << label << " : " << value << std::endl;
+    }
     std::cout << "****************************************************" << std::endl;
-
+    std::vector<double> nEvtsBcSelCentr(nCentrBins, -999);
     double bcCounterEfficiency = bcCounterTVXafterBCcuts / bcCounterTVX;
     double nEvtsBcSel, nEvtsBcSelAfterCuts = -999;
     double luminosityBcSel, luminosityBcSelAfterCuts = -999;
     if (triggerMask.find("minBias") != std::string::npos) {
         nEvtsBcSel = (bcCounterTVX * (collsAfterCuts / collsBeforeCuts));
+        for (int i = 0; i < nCentrBins; i++) {
+            nEvtsBcSelCentr[i] = nEvtsBcSel * histRatioIntegralsCentrFT0C->GetBinContent(i+1);
+        }
         nEvtsBcSelAfterCuts = (bcCounterTVXafterBCcuts * (collsAfterCuts / collsBeforeCuts));
         luminosityBcSel = nEvtsBcSel / xSecTVX;
         luminosityBcSelAfterCuts = nEvtsBcSelAfterCuts / xSecTVX;
@@ -446,6 +457,12 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
         std::cout << "BC selection efficiency = " << bcCounterTVXafterBCcuts / bcCounterTVX << std::endl;
         std::cout << "N. events            = " << (bcCounterTVX * (collsAfterCuts / collsBeforeCuts)) << std::endl;
         std::cout << "Colls after cuts     = " << collsAfterCuts << std::endl;
+        std::cout << "nEvtsBcSelCentr = ";
+        for (size_t i = 0; i < nEvtsBcSelCentr.size(); i++) {
+            std::cout << nEvtsBcSelCentr[i];
+            if (i != nEvtsBcSelCentr.size() - 1) std::cout << ", ";
+        }
+        std::cout << std::endl;
         std::cout << "luminosity Min. Bias [bc-selection-task]                  = " << luminosityBcSelMinBias << " pb-1" << std::endl;
         std::cout << "luminosity Min. Bias after BC cuts [bc-selection-task]    = " << luminosityBcSelAfterCutsMinBias << " pb-1" << std::endl;
         std::cout << "luminosity Min. Bias [event-selection-task]               = " << luminosityEvSelMinBias << " pb-1" << std::endl;
@@ -474,8 +491,11 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
     histLumiSummary -> SetBinContent(7, collsAfterCuts);
     histLumiSummary -> SetBinContent(8, luminosityBcSel);
     histLumiSummary -> SetBinContent(9, luminosityBcSelAfterCuts);
+    for (int i = 0; i < nCentrBins; i++) {
+        histLumiSummary->SetBinContent(10 + i, nEvtsBcSelCentr[i]);
+    }
 
-    TFile *fOut = new TFile(Form("data/%s/%s_%s_%s_luminosity.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str()), "RECREATE");
+    TFile *fOut = new TFile(Form("data/%s/pass2/%s_%s_%s_luminosity.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str()), "RECREATE");
     histLumiSummary -> Write();
     fOut -> Close();
 }
@@ -486,6 +506,14 @@ void check_normalization(string fInName = "LHC25ae_minBias_std_assoc_luminosity.
     double nEvtsMinBias2024StdAssoc = histLumiMinBias2024StdAssoc -> GetBinContent(histLumiMinBias2024StdAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
     double lumiMinBias2024StdAssoc = histLumiMinBias2024StdAssoc -> GetBinContent(histLumiMinBias2024StdAssoc -> GetXaxis() -> FindBin("luminosityBcSel"));
 
+    const char* centLabels[] = {"0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-90%", "0-90%", "0-100%"};
+    int nCentrBins = sizeof(centLabels)/sizeof(char*);
+    std::vector<double> nEvtsBcSelCentr(nCentrBins);
+    for (int i = 0; i < nCentrBins; i++) {
+        nEvtsBcSelCentr[i] = histLumiMinBias2024StdAssoc->GetBinContent(histLumiMinBias2024StdAssoc->GetXaxis()->FindBin(centLabels[i]));
+    }
+
+    /*
     TFile *fInMinBias2024StdAssoc = TFile::Open("/Users/lucamicheletti/cernbox/JPSI/Jpsi_pp_ref_cross_section_run3/data/2024/LHC24_ppref_pass1/AnalysisResults_std_assoc.root");
     TList *listMinBias2024StdAssoc = (TList*) fInMinBias2024StdAssoc -> Get("analysis-same-event-pairing/output");
     TList *listMinBias2024StdAssocSE = (TList*) listMinBias2024StdAssoc -> FindObject("PairsMuonSEPM_matchedMchMid");
@@ -495,6 +523,7 @@ void check_normalization(string fInName = "LHC25ae_minBias_std_assoc_luminosity.
     TH1D *histProjIntMinBias2024StdAssoc = (TH1D*) histSparseMinBias2024StdAssoc -> Projection(0, "Proj_Mass_Pt_Rapidity");
     double countsMinBias2024StdAssoc = histProjIntMinBias2024StdAssoc -> Integral();
     histProjIntMinBias2024StdAssoc -> Scale(1. / (lumiMinBias2024StdAssoc));
+    */
 
     // Added for J/psi - D0 associated production
     TH1D *histLuminosityMinBias2024StdAssoc = new TH1D("histLumi", "; ; Luminosity (pb-1)", 1, 0, 1);
@@ -503,17 +532,28 @@ void check_normalization(string fInName = "LHC25ae_minBias_std_assoc_luminosity.
     TH1D *histNeventMinBias2024StdAssoc = new TH1D("histNevMinBias", "; ; N. Events min bias", 1, 0, 1);
     histNeventMinBias2024StdAssoc -> SetBinContent(1, nEvtsMinBias2024StdAssoc);
 
-    TFile *fOutLumiMinBias2024StdAssoc = new TFile(Form("data/%s", fOutName.c_str()), "RECREATE");
+    TH1D *histNeventMinBiasCentr = new TH1D("histNeventMinBias_Centr", "; ; N. Events min bias for a given centrality",nCentrBins, 0, nCentrBins);
+    for (int i = 0; i < nCentrBins; i++) {
+        histNeventMinBiasCentr->SetBinContent(i+1, nEvtsBcSelCentr[i]);
+        histNeventMinBiasCentr->GetXaxis()->SetBinLabel(i+1, centLabels[i]);
+    }
+
+    TFile *fOutLumiMinBias2024StdAssoc = new TFile(Form("data/2025/pass2/Train_540779/%s", fOutName.c_str()), "RECREATE");
     histLuminosityMinBias2024StdAssoc -> Write();
     histNeventMinBias2024StdAssoc -> Write();
+    histNeventMinBiasCentr -> Write();
     fOutLumiMinBias2024StdAssoc -> Close();
 
     std::cout << "---------------------------" << std::endl;
     std::cout << "[Min. Bias, std. assoc.]" << std::endl;
-    std::cout << "N. evts.         = " << nEvtsMinBias2024StdAssoc << std::endl;
-    std::cout << "Luminosity       = " << lumiMinBias2024StdAssoc << std::endl;
-    std::cout << "N. evts. corr.   = " << nEvtsMinBias2024StdAssoc << std::endl;
-    std::cout << "Luminosity corr. = " << lumiMinBias2024StdAssoc << std::endl;
+    std::cout << "N. evts.          = " << nEvtsMinBias2024StdAssoc << std::endl;
+    for (int i = 0; i < nCentrBins; i++) {
+        double nEvts = nEvtsBcSelCentr[i];
+        std::cout << "N. evts " << centLabels[i] << " = " << nEvts << std::endl;
+    }
+    std::cout << "Luminosity        = " << lumiMinBias2024StdAssoc << std::endl;
+    std::cout << "N. evts. corr.    = " << nEvtsMinBias2024StdAssoc << std::endl;
+    std::cout << "Luminosity corr.  = " << lumiMinBias2024StdAssoc << std::endl;
     std::cout << "---------------------------" << std::endl;
 
 
