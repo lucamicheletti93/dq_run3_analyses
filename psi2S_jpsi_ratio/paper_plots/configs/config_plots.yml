@@ -1,0 +1,5 @@
+inputs:
+  fInFwdRatioVsPt: "fwd_ratio_vs_pt.txt"
+  fInFwdRatioVsRap: "fwd_ratio_vs_rap.txt"
+  fInFwdRatioVsPtRun2: "HEP_Data/fwd_ratio_vs_pt_run2.yaml"
+  fInFwdRatioVsRapRun2: "HEP_Data/fwd_ratio_vs_rap_run2.yaml"

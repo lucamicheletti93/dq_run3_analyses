@@ -1,0 +1,84 @@
+dependent_variables:
+- header: {name: SIG RATIO}
+  qualifiers:
+  - {name: '$p_{\rm T}$', units: GeV/c, value: '0 < $p_{\rm T}$ < 16'}
+  - {name: YRAP, value: '$2.5 < y < 4$' }
+  - {name: RE, value: P P --> J/PSI < MU+ MU- >}
+  - {name: RE, value: P P --> PSI(2S) < MU+ MU- >}
+  - {name: SQRT(S), units: GeV, value: '13000.0'}
+  values:
+  - errors:
+    - {label: stat, symerror: 0.014}
+    - {label: sys, symerror: 0.005}
+    - {label: 'sys,BR', symerror: 0.008}
+    value: 0.067
+  - errors:
+    - {label: stat, symerror: 0.012}
+    - {label: sys, symerror: 0.007}
+    - {label: 'sys,BR', symerror: 0.016}
+    value: 0.138
+  - errors:
+    - {label: stat, symerror: 0.013}
+    - {label: sys, symerror: 0.009}
+    - {label: 'sys,BR', symerror: 0.019}
+    value: 0.163
+  - errors:
+    - {label: stat, symerror: 0.015}
+    - {label: sys, symerror: 0.007}
+    - {label: 'sys,BR', symerror: 0.017}
+    value: 0.153
+  - errors:
+    - {label: stat, symerror: 0.018}
+    - {label: sys, symerror: 0.01}
+    - {label: 'sys,BR', symerror: 0.021}
+    value: 0.181
+  - errors:
+    - {label: stat, symerror: 0.021}
+    - {label: sys, symerror: 0.009}
+    - {label: 'sys,BR', symerror: 0.023}
+    value: 0.205
+  - errors:
+    - {label: stat, symerror: 0.024}
+    - {label: sys, symerror: 0.015}
+    - {label: 'sys,BR', symerror: 0.022}
+    value: 0.195
+  - errors:
+    - {label: stat, symerror: 0.031}
+    - {label: sys, symerror: 0.012}
+    - {label: 'sys,BR', symerror: 0.025}
+    value: 0.221
+  - errors:
+    - {label: stat, symerror: 0.032}
+    - {label: sys, symerror: 0.034}
+    - {label: 'sys,BR', symerror: 0.025}
+    value: 0.218
+  - errors:
+    - {label: stat, symerror: 0.052}
+    - {label: sys, symerror: 0.03}
+    - {label: 'sys,BR', symerror: 0.025}
+    value: 0.22
+  - errors:
+    - {label: stat, symerror: 0.077}
+    - {label: sys, symerror: 0.036}
+    - {label: 'sys,BR', symerror: 0.04}
+    value: 0.348
+  - errors:
+    - {label: stat, symerror: 0.13}
+    - {label: sys, symerror: 0.032}
+    - {label: 'sys,BR', symerror: 0.042}
+    value: 0.365
+independent_variables:
+- header: {name: '$p_{\rm T}$', units: GEV}
+  values:
+  - {high: 1.0, low: 0.0}
+  - {high: 2.0, low: 1.0}
+  - {high: 3.0, low: 2.0}
+  - {high: 4.0, low: 3.0}
+  - {high: 5.0, low: 4.0}
+  - {high: 6.0, low: 5.0}
+  - {high: 7.0, low: 6.0}
+  - {high: 8.0, low: 7.0}
+  - {high: 10.0, low: 8.0}
+  - {high: 12.0, low: 10.0}
+  - {high: 14.0, low: 12.0}
+  - {high: 16.0, low: 14.0}
