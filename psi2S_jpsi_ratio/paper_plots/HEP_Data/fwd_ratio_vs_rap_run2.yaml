@@ -1,0 +1,48 @@
+dependent_variables:
+- header: {name: SIG RATIO}
+  qualifiers:
+  - {name: '$p_{\rm T}$', units: GeV/c, value: '0 < $p_{\rm T}$ < 16'}
+  - {name: YRAP, value: '$2.5 < y < 4$' }
+  - {name: RE, value: P P --> J/PSI < MU+ MU- >}
+  - {name: RE, value: P P --> PSI(2S) < MU+ MU- >}
+  - {name: SQRT(S), units: GeV, value: '13000.0'}
+  values:
+  - errors:
+    - {label: stat, symerror: 0.022}
+    - {label: sys, symerror: 0.01}
+    - {label: 'sys,BR', symerror: 0.01792}
+    value: 0.157
+  - errors:
+    - {label: stat, symerror: 0.012}
+    - {label: sys, symerror: 0.007}
+    - {label: 'sys,BR', symerror: 0.01689}
+    value: 0.148
+  - errors:
+    - {label: stat, symerror: 0.011}
+    - {label: sys, symerror: 0.005}
+    - {label: 'sys,BR', symerror: 0.01696}
+    value: 0.149
+  - errors:
+    - {label: stat, symerror: 0.011}
+    - {label: sys, symerror: 0.008}
+    - {label: 'sys,BR', symerror: 0.01676}
+    value: 0.147
+  - errors:
+    - {label: stat, symerror: 0.013}
+    - {label: sys, symerror: 0.006}
+    - {label: 'sys,BR', symerror: 0.01618}
+    value: 0.142
+  - errors:
+    - {label: stat, symerror: 0.021}
+    - {label: sys, symerror: 0.008}
+    - {label: 'sys,BR', symerror: 0.01306}
+    value: 0.115
+independent_variables:
+- header: {name: YRAP}
+  values:
+  - {high: 2.75, low: 2.5}
+  - {high: 3.0, low: 2.75}
+  - {high: 3.25, low: 3.0}
+  - {high: 3.5, low: 3.25}
+  - {high: 3.75, low: 3.5}
+  - {high: 4.0, low: 3.75}
