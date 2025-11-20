@@ -134,6 +134,30 @@ def plotResults(config):
     SetGraStat(graStatMidPsi2sOverJpsiVsPt, 24, ROOT.kBlack)
     SetGraSyst(graSystMidPsi2sOverJpsiVsPt, 20, ROOT.kAzure+4, 1, 2)
 
+
+
+    fInMidPsi2sOverJpsiVsRap = ROOT.TFile("mid_ratio_vs_rap.root", "READ")
+    histStatMidPsi2sOverJpsiVsRap = fInMidPsi2sOverJpsiVsRap.Get("h_ratio_pt_corr")
+    histSystMidPsi2sOverJpsiVsRap = fInMidPsi2sOverJpsiVsRap.Get("h_syst_all")
+
+    rapMinMid, rapMaxMid , midPsi2sOverJpsiVsRap, statMidPsi2sOverJpsiVsRap, systMidPsi2sOverJpsiVsRap = [], [], [], [], []
+    for iRap in range(histStatMidPsi2sOverJpsiVsRap.GetXaxis().GetNbins()):
+        rapMinMid.append(histStatMidPsi2sOverJpsiVsRap.GetBinLowEdge(iRap+1))
+        rapMaxMid.append(histStatMidPsi2sOverJpsiVsRap.GetBinLowEdge(iRap+1) + histStatMidPsi2sOverJpsiVsRap.GetBinWidth(iRap+1))
+        midPsi2sOverJpsiVsRap.append(histStatMidPsi2sOverJpsiVsRap.GetBinContent(iRap+1))
+        statMidPsi2sOverJpsiVsRap.append(histStatMidPsi2sOverJpsiVsRap.GetBinError(iRap+1))
+        systMidPsi2sOverJpsiVsRap.append(histSystMidPsi2sOverJpsiVsRap.GetBinContent(iRap+1))
+
+    rapCentersMid = (np.array(rapMaxMid) + np.array(rapMinMid)) / 2.
+    rapWidthsMid = (np.array(rapMaxMid) - np.array(rapMinMid)) / 2.
+    rapSystWidthsMid = np.repeat(0.05, len(rapWidthsMid))
+
+    graStatMidPsi2sOverJpsiVsRap = ROOT.TGraphErrors(len(rapCentersMid), np.array(rapCentersMid), np.array(midPsi2sOverJpsiVsRap), np.array(rapWidthsMid), np.array(statMidPsi2sOverJpsiVsRap))
+    graSystMidPsi2sOverJpsiVsRap = ROOT.TGraphErrors(len(rapCentersMid), np.array(rapCentersMid), np.array(midPsi2sOverJpsiVsRap), np.array(rapSystWidthsMid), np.array(systMidPsi2sOverJpsiVsRap))
+
+    SetGraStat(graStatMidPsi2sOverJpsiVsRap, 24, ROOT.kBlack)
+    SetGraSyst(graSystMidPsi2sOverJpsiVsRap, 20, ROOT.kAzure+4, 1, 2)
+
     # ------------ #
     # Plot results
     # ------------ #    
@@ -215,16 +239,19 @@ def plotResults(config):
     canvasFwdPsi2sOverJpsiVsRapVsMid = ROOT.TCanvas("canvasFwdPsi2sOverJpsiVsRapVsMid", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
     #ROOT.gPad.SetLogy(True)
-    histGridFwdPsi2sOverJpsiVsRapVsMid = ROOT.TH2D("histGridFwdPsi2sOverJpsiVsRapVsMid", ";#it{y};#sigma_{#psi(2S)} / #sigma_{J/#psi}", 100, 0, 4.5, 100, 0.0, 0.35)
+    histGridFwdPsi2sOverJpsiVsRapVsMid = ROOT.TH2D("histGridFwdPsi2sOverJpsiVsRapVsMid", ";#it{y};#sigma_{#psi(2S)} / #sigma_{J/#psi}", 100, -1, 4.5, 100, 0.0, 0.25)
     histGridFwdPsi2sOverJpsiVsRapVsMid.Draw()
+    graSystMidPsi2sOverJpsiVsRap.Draw("E2P SAME")
+    graStatMidPsi2sOverJpsiVsRap.Draw("EP SAME")
     graSystFwdPsi2sOverJpsiVsRap.Draw("E2P SAME")
     graStatFwdPsi2sOverJpsiVsRap.Draw("EP SAME")
 
-    legendFwdPsi2sOverJpsiVsRapVsRun2 = ROOT.TLegend(0.20, 0.60, 0.40, 0.80, " ", "brNDC")
+    legendFwdPsi2sOverJpsiVsRapVsRun2 = ROOT.TLegend(0.20, 0.70, 0.40, 0.90, " ", "brNDC")
     SetLegend(legendFwdPsi2sOverJpsiVsRapVsRun2)
     legendFwdPsi2sOverJpsiVsRapVsRun2.SetTextSize(0.045)
     #legendFwdPsi2sOverJpsiVsRapVsRun2.AddEntry(graSystFwdPsi2sOverJpsiVsRapRun2, "#sqrt{#it{s}} = 13 TeV", "FP")
-    legendFwdPsi2sOverJpsiVsRapVsRun2.AddEntry(graSystFwdPsi2sOverJpsiVsRap, "J/#psi, #psi(2S) #rightarrow #mu^{#plus}#mu^{#minus}", "FP")
+    legendFwdPsi2sOverJpsiVsRapVsRun2.AddEntry(graSystFwdPsi2sOverJpsiVsRap, "J/#psi, #psi(2S) #rightarrow #mu^{#plus}#mu^{#minus}, #it{p}_{T} < 20 GeV/#it{c}", "FP")
+    legendFwdPsi2sOverJpsiVsRapVsRun2.AddEntry(graSystMidPsi2sOverJpsiVsRap, "J/#psi, #psi(2S) #rightarrow e^{#plus}e^{#minus}, #it{p}_{T} < 16 GeV/#it{c}", "FP")
     legendFwdPsi2sOverJpsiVsRapVsRun2.Draw("SAME")
 
 
