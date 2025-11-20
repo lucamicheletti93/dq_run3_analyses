@@ -257,7 +257,7 @@ def plotResults(config):
 
     latexTitle.DrawLatex(0.20, 0.87, "ALICE, pp #sqrt{#it{s}} = 13.6 TeV")
     #latexTitle.DrawLatex(0.20, 0.80, "J/#psi, #psi(2S) #rightarrow #mu^{#plus}#mu^{#minus}, #it{p}_{T} < 20 GeV/#it{c}")
-    #latexTitle.DrawLatex(0.52, 0.20, "#pm 7.5% BR unc. not shown")
+    latexTitle.DrawLatex(0.52, 0.20, "#pm 7.5% BR unc. not shown")
     canvasFwdPsi2sOverJpsiVsRapVsMid.Update()
     canvasFwdPsi2sOverJpsiVsRapVsMid.SaveAs("FwdPsi2sOverJpsiVsRapVsMid.pdf")
 
