@@ -1,0 +1,38 @@
+Jobtag = {
+   "comment: Pythia8 simulation"
+};
+# Output directory
+OutputDir = "/alice/cern.ch/user/i/iarsene/work/pythia8SimuCR_Gauthier/$1/#alien_counter_03i#";
+# List of requested packages
+Packages = {
+   "VO_ALICE@pythia::v8311-1", 
+   "VO_ALICE@ROOT::v6-20-02-alice6-2"
+};
+# List of input files to be uploaded to workers
+InputFile = {
+   "LF:/alice/cern.ch/user/i/iarsene/work/pythia8SimuCR_Gauthier/jpsiHadrons.C",
+   "LF:/alice/cern.ch/user/i/iarsene/work/pythia8SimuCR_Gauthier/settings.cmnd"
+};
+# This is the startup script
+Executable = "/alice/cern.ch/user/i/iarsene/work/runJob.sh";
+# Time after which the job is killed (333 min.)
+TTL = "80000";
+# List of output files and archivesList of output files and archives
+Output = {
+   "log_archive.zip:std*@disk=1",
+   "root_archive.zip:*.root@disk=2",
+   "pythiaJpsiHadron.root"
+};
+# AliEn price for this job
+Price = "1";
+User = "iarsene";
+
+Split = "production:1-$2";
+
+# JDL variables
+JDLVariables = 
+{
+   "Packages",
+   "OutputDir"
+};
+Workdirectorysize = {"5000MB"};

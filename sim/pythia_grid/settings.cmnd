@@ -1,0 +1,48 @@
+Beams:eCM = 13000.
+SoftQCD:Inelastic = on
+#Charmonium:all=on
+#HardQCD:all = on
+
+Tune:pp =14
+PhaseSpace:pTHatMax = 13000.
+
+#StringZ:rFactB = 1.071
+#StringZ:rFactB = 0.581
+
+#PartonLevel:MPI = off
+#PartonLevel:ISR = off
+#ColourReconnection:reconnect = off
+
+#onia shower (arXiv:2312.05203) - do not use with hard process
+OniaShower:all = on
+#CharmoniumShower:all = on
+
+#Onia:all = on
+# color octet LDMEs
+#Charmonium:O(3S1)[3S1(8)] = 0.0,0.0
+#Charmonium:O(3S1)[1S0(8)] = 0.0,0.0
+#Charmonium:O(3S1)[3P0(8)] = 0.0,0.0
+# color singlet LDMEs
+#Charmonium:O(3S1)[3S1(1)] = 0.0,0.0
+# short distance processes
+#Charmonium:gg2ccbar(3S1)[3S1(1)]g = on,on
+#Charmonium:gg2ccbar(3S1)[3S1(1)]gm = on,on
+#Charmonium:gg2ccbar(3S1)[3S1(8)]g = on,on
+#Charmonium:qg2ccbar(3S1)[3S1(8)]q = on,on
+#Charmonium:qqbar2ccbar(3S1)[3S1(8)]g = on,on
+#Charmonium:gg2ccbar(3S1)[1S0(8)]g = on,on
+#Charmonium:qg2ccbar(3S1)[1S0(8)]q = on,on
+#Charmonium:qqbar2ccbar(3S1)[1S0(8)]g = on,on
+#Charmonium:gg2ccbar(3S1)[3PJ(8)]g = on,on
+#Charmonium:qg2ccbar(3S1)[3PJ(8)]q = on,on
+#Charmonium:qqbar2ccbar(3S1)[3PJ(8)]g = on,on
+# Force decays to one new channel - https://pythia.org/latest-manual/ParticleDataScheme.html
+443:oneChannel = 1 1 100 11 -11
+#310:mayDecay  = off
+#3122:mayDecay = off
+#3112:mayDecay = off
+#3222:mayDecay = off
+#3312:mayDecay = off
+#3322:mayDecay = off
+#3334:mayDecay = off
+#111:mayDecay  = off
