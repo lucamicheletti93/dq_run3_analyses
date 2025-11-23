@@ -43,6 +43,8 @@ def raa(config):
     deltaRap = config["inputs"]["deltaRap"]
     Taa = config["inputs"]["Taa"]
     TaaVsCentr = config["inputs"]["TaaVsCentr"]
+    Ncoll = config["inputs"]["Ncoll"]
+    Npart = config["inputs"]["Npart"]
 
     print("***** Compute corrected yield *****")
     # Lumi computed with normalization.C  + check_normalization
@@ -56,7 +58,7 @@ def raa(config):
 
     histNevMinBiasCentr = fInLumi.Get("histNeventMinBias_Centr")
     nCentrBins = histNevMinBiasCentr.GetNbinsX()
-    centrLabels = ["0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-90%", "0-90%", "0-100%"]
+    centrLabels = ["0-5%","5-10%","10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%","70-90%", "0-90%", "0-100%"]
     nevCentrDict = {}  # Dictionary for nEvts vs Centr
     for i in range(nCentrBins):
         nEvts = histNevMinBiasCentr.GetBinContent(i+1)
@@ -113,7 +115,7 @@ def raa(config):
     centrMax = dfJpsiRawYieldVsCentr["x_max"]
     centrCenters = (centrMax + centrMin) / 2.
     centrWidths = (centrMax - centrMin) / 2.
-    centrSystWidths = np.repeat(0.2, len(centrWidths))
+    centrSystWidths = np.repeat(1.5, len(centrWidths))
     centrEdges = np.append(centrMin.to_numpy(), centrMax.to_numpy()[len(centrMax)-1])
     jpsiRawYieldVsCentr = dfJpsiRawYieldVsCentr["val"] / deltaRap
     jpsiStatRawYieldVsCentr = dfJpsiRawYieldVsCentr["stat"] / deltaRap
@@ -208,7 +210,7 @@ def raa(config):
 
     canvasRaaVsCentrVsRun2 = ROOT.TCanvas("canvasRaaVsCentrVsRun2", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
-    histGridRaaVsCentr = ROOT.TH2D("histGridRaaVsCentr", ";Centrality (%);#it{R}_{AA}", 100, 0, 90, 100, 0, 2.2)
+    histGridRaaVsCentr = ROOT.TH2D("histGridRaaVsCentr", ";Centrality (%);#it{R}_{AA}", 100, 0, 90, 100, 0, 1.8)
     histGridRaaVsCentr.Draw()
     lineUnityVsCentr.Draw("SAME")
     #graStatRaaVsCentrRun2.Draw("EP SAME")
@@ -223,9 +225,209 @@ def raa(config):
     #legendRaaVsCentrVsRun2.AddEntry(graStatRaaVsCentrRun2, "#sqrt{#it{s}} = 5.02 TeV, Pb-Pb, 0#minus90%", "FP")
     legendRaaVsCentrVsRun2.Draw("SAME")
 
-    latexTitle.DrawLatex(0.15, 0.87, "ALICE Work in Progress, J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
+    latexTitle.DrawLatex(0.20, 0.90, "ALICE Work in Progress")
+    latexTitle.DrawLatex(0.20, 0.84, "J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
     canvasRaaVsCentrVsRun2.Update()
     canvasRaaVsCentrVsRun2.SaveAs("plots/Jpsi_RAA_vs_Centr.pdf")
+    canvasRaaVsCentrVsRun2.SaveAs("plots/Jpsi_RAA_vs_Centr.png")
+
+    print("-------- RAA vs Ncoll --------") 
+    centrSystWidths_NColl = np.repeat(0.2, len(centrWidths))
+    graStatRaaVsNcoll = ROOT.TGraphErrors(len(centrMin),
+                                          np.array(Ncoll, dtype=float),
+                                          np.array(jpsiRaaVsCentr, dtype=float),
+                                          np.array(centrSystWidths_NColl),
+                                          np.array(jpsiStatRaaVsCentr, dtype=float))
+
+    graSystRaaVsNcoll = ROOT.TGraphErrors(len(centrMin),
+                                          np.array(Ncoll, dtype=float),
+                                          np.array(jpsiRaaVsCentr, dtype=float),
+                                          np.array(centrSystWidths_NColl),
+                                          np.array(jpsiSystRaaVsCentr, dtype=float))
+
+    SetGraStat(graStatRaaVsNcoll, 20, ROOT.kRed+1)
+    SetGraSyst(graSystRaaVsNcoll, 20, ROOT.kRed+1)
+
+    lineUnityVsNcoll = ROOT.TLine(0., 1., max(Ncoll)*1.1, 1.)
+    lineUnityVsNcoll.SetLineColor(ROOT.kGray+1)
+    lineUnityVsNcoll.SetLineWidth(2)
+    lineUnityVsNcoll.SetLineStyle(ROOT.kDashed)
+
+    canvasRaaVsNcoll = ROOT.TCanvas("canvasRaaVsNcoll", "", 800, 600)
+    histGridRaaVsNcoll = ROOT.TH2D("histGridRaaVsNcoll",";N_{coll};R_{AA}",100, 0, max(Ncoll)*1.1,100, 0, 1.6)
+    histGridRaaVsNcoll.Draw()
+    lineUnityVsNcoll.Draw("SAME")
+    graSystRaaVsNcoll.Draw("E2P SAME")
+    graStatRaaVsNcoll.Draw("EP SAME")
+
+    legendRaaVsNcoll = ROOT.TLegend(0.20, 0.70, 0.40, 0.90, " ", "brNDC")
+    SetLegend(legendRaaVsNcoll)
+    legendRaaVsNcoll.SetTextSize(0.045)
+    legendRaaVsNcoll.AddEntry(graStatRaaVsNcoll, "#sqrt{#it{s}} = 5.36 TeV, OO, 0 < #it{p}_{T} (GeV/#it{c}) < 20 ", "FP")
+    legendRaaVsNcoll.Draw("SAME")
+
+    latexTitle.DrawLatex(0.20, 0.90, "ALICE Work In Progress")
+    latexTitle.DrawLatex(0.20, 0.84, "J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
+    canvasRaaVsNcoll.SaveAs("plots/Jpsi_RAA_vs_Ncoll.pdf")
+    canvasRaaVsNcoll.SaveAs("plots/Jpsi_RAA_vs_Ncoll.png")
+
+    # Compare to Run 2 results, pPb
+    print("***** Extract RAA from Run 2, pPb and Pbp *****")
+
+    # --- p-Pb: pT 0–20, 2.03 < y < 3.53  ---
+    filePathJpsi_020pT_pPb_pos_y = "HEP_Data/jpsi_raa_pPb_8TeV_0_20_pT_pos_y.yaml"
+    ptCenters_020pT_pPb_pos_y, ptWidths_020pT_pPb_pos_y, jpsiRaaVsCentr_020pT_pPb_pos_y, jpsiStatRaaVsCentr_020pT_pPb_pos_y, jpsiSystRaaVsCentr_020pT_pPb_pos_y = ExtractFromYaml(filePathJpsi_020pT_pPb_pos_y)
+    jpsiPtSystWidths_020pT_pPb_pos_y = np.repeat(0.2, len(ptCenters_020pT_pPb_pos_y))
+    
+    graStatRaaVsNColl_020pT_pPb_pos_y = ROOT.TGraphErrors(len(ptCenters_020pT_pPb_pos_y), np.array(ptCenters_020pT_pPb_pos_y), np.array(jpsiRaaVsCentr_020pT_pPb_pos_y),
+                                    np.array(ptWidths_020pT_pPb_pos_y), np.array(jpsiStatRaaVsCentr_020pT_pPb_pos_y))
+    graSystRaaVsNColl_020pT_pPb_pos_y = ROOT.TGraphErrors(len(ptCenters_020pT_pPb_pos_y), np.array(ptCenters_020pT_pPb_pos_y), np.array(jpsiRaaVsCentr_020pT_pPb_pos_y),
+                                    jpsiPtSystWidths_020pT_pPb_pos_y, np.array(jpsiSystRaaVsCentr_020pT_pPb_pos_y))
+    SetGraStat(graStatRaaVsNColl_020pT_pPb_pos_y, 20, ROOT.kBlack)
+    SetGraSyst(graSystRaaVsNColl_020pT_pPb_pos_y, 20, ROOT.kBlack)
+
+    # --- Pb-p: pT 0–20, -4.46 < y < -2.96  ---
+    filePathJpsi_020pT_pPb_neg_y = "HEP_Data/jpsi_raa_pPb_8TeV_0_20_pT_neg_y.yaml"
+    ptCenters_020pT_pPb_neg_y, ptWidths_020pT_pPb_neg_y, jpsiRaaVsCentr_020pT_pPb_neg_y, jpsiStatRaaVsCentr_020pT_pPb_neg_y, jpsiSystRaaVsCentr_020pT_pPb_neg_y = ExtractFromYaml(filePathJpsi_020pT_pPb_neg_y)
+    jpsiPtSystWidths_020pT_pPb_neg_y = np.repeat(0.2, len(ptCenters_020pT_pPb_neg_y))
+    
+    graStatRaaVsNColl_020pT_pPb_neg_y = ROOT.TGraphErrors(len(ptCenters_020pT_pPb_neg_y), np.array(ptCenters_020pT_pPb_neg_y), np.array(jpsiRaaVsCentr_020pT_pPb_neg_y),
+                                    np.array(ptWidths_020pT_pPb_neg_y), np.array(jpsiStatRaaVsCentr_020pT_pPb_neg_y))
+    graSystRaaVsNColl_020pT_pPb_neg_y = ROOT.TGraphErrors(len(ptCenters_020pT_pPb_neg_y), np.array(ptCenters_020pT_pPb_neg_y), np.array(jpsiRaaVsCentr_020pT_pPb_neg_y),
+                                    jpsiPtSystWidths_020pT_pPb_neg_y, np.array(jpsiSystRaaVsCentr_020pT_pPb_neg_y))
+    SetGraStat(graStatRaaVsNColl_020pT_pPb_neg_y, 20, ROOT.kBlue+1)
+    SetGraSyst(graSystRaaVsNColl_020pT_pPb_neg_y, 20, ROOT.kBlue+1)
+    
+    # --- Canvas setup ---
+    canvasRaaVsNcoll_Comparison_pPb = ROOT.TCanvas("canvasRaaVsNcoll_Comparison_pPb", "", 800, 600)
+    canvasRaaVsNcoll_Comparison_pPb.SetLogx()
+    ROOT.gStyle.SetOptStat(False)
+    
+    histGridRaaVsNColl_Comparison_pPb = ROOT.TH2D("histGridRaaVsNColl_Comparison_pPb",
+                                ";N_{coll};#it{R}_{AA}",
+                                100, 1, max(Ncoll)*1.1, 100, 0, 2.2)
+    histGridRaaVsNColl_Comparison_pPb.Draw()
+    
+    # --- Unity line ---
+    lineUnityVsNColl_Comparison_pPb = ROOT.TLine(0., 1., max(Ncoll)*1.1, 1.)
+    lineUnityVsNColl_Comparison_pPb.SetLineColor(ROOT.kGray+1)
+    lineUnityVsNColl_Comparison_pPb.SetLineWidth(2)
+    lineUnityVsNColl_Comparison_pPb.SetLineStyle(ROOT.kDashed)
+    lineUnityVsNColl_Comparison_pPb.Draw("SAME")
+    
+    # --- Draw graphs ---
+    graSystRaaVsNColl_020pT_pPb_pos_y.Draw("2 SAME")
+    graStatRaaVsNColl_020pT_pPb_pos_y.Draw("P SAME")
+    graSystRaaVsNColl_020pT_pPb_neg_y.Draw("2 SAME")
+    graStatRaaVsNColl_020pT_pPb_neg_y.Draw("P SAME")
+    graStatRaaVsNcoll.Draw("EP SAME")
+    graSystRaaVsNcoll.Draw("E2P SAME")
+
+    legendRaaVsNColl_Comparison_pPb = ROOT.TLegend(0.20, 0.63, 0.40, 0.89, " ", "brNDC")
+    SetLegend(legendRaaVsNColl_Comparison_pPb)
+    legendRaaVsNColl_Comparison_pPb.SetTextSize(0.045)
+    legendRaaVsNColl_Comparison_pPb.AddEntry(graStatRaaVsNcoll, "#sqrt{#it{s}} = 5.36 TeV, OO, 2.5 < #it{y} < 4", "FP")
+    legendRaaVsNColl_Comparison_pPb.AddEntry(graStatRaaVsNColl_020pT_pPb_pos_y, "#sqrt{#it{s}} = 8.16 TeV, p–Pb, 2.03  < #it{y} < 3.53", "FP")
+    legendRaaVsNColl_Comparison_pPb.AddEntry(graStatRaaVsNColl_020pT_pPb_neg_y, "#sqrt{#it{s}} = 8.16 TeV, Pb–p, -4.46  < #it{y} < -2.06", "FP")
+    legendRaaVsNColl_Comparison_pPb.Draw("SAME")
+
+    latexTitle.DrawLatex(0.20, 0.90, "ALICE Work In Progress")
+    latexTitle.DrawLatex(0.20, 0.84, "J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 0 < #it{p}_{T} (GeV/#it{c}) < 20")
+    canvasRaaVsNcoll_Comparison_pPb.Update()
+    canvasRaaVsNcoll_Comparison_pPb.SaveAs("plots/Jpsi_RAA_vs_Ncoll_Comparison_pPb.pdf")
+    canvasRaaVsNcoll_Comparison_pPb.SaveAs("plots/Jpsi_RAA_vs_Ncoll_Comparison_pPb.png")
+
+    print("-------- RAA vs Npart --------") 
+    centrSystWidths_Npart = np.repeat(1.2, len(centrWidths))
+    graStatRaaVsNpart = ROOT.TGraphErrors(len(centrMin),
+                                          np.array(Npart, dtype=float),
+                                          np.array(jpsiRaaVsCentr, dtype=float),
+                                          np.array(centrSystWidths_Npart),
+                                          np.array(jpsiStatRaaVsCentr, dtype=float))
+
+    graSystRaaVsNpart = ROOT.TGraphErrors(len(centrMin),
+                                          np.array(Npart, dtype=float),
+                                          np.array(jpsiRaaVsCentr, dtype=float),
+                                          np.array(centrSystWidths_Npart),
+                                          np.array(jpsiSystRaaVsCentr, dtype=float))
+
+    SetGraStat(graStatRaaVsNpart, 20, ROOT.kRed+1)
+    SetGraSyst(graSystRaaVsNpart, 20, ROOT.kRed+1)
+
+    lineUnityVsNpart = ROOT.TLine(0., 1., max(Npart)*1.1, 1.)
+    lineUnityVsNpart.SetLineColor(ROOT.kGray+1)
+    lineUnityVsNpart.SetLineWidth(2)
+    lineUnityVsNpart.SetLineStyle(ROOT.kDashed)
+
+    canvasRaaVsNpart = ROOT.TCanvas("canvasRaaVsNpart", "", 800, 600)
+    histGridRaaVsNpart = ROOT.TH2D("histGridRaaVsNcoll",";N_{part};R_{AA}",100, 0, max(Npart)*1.1,100, 0, 1.6)
+    histGridRaaVsNpart.Draw()
+    lineUnityVsNpart.Draw("SAME")
+    graSystRaaVsNpart.Draw("E2P SAME")
+    graStatRaaVsNpart.Draw("EP SAME")
+
+    legendRaaVsNpart = ROOT.TLegend(0.20, 0.70, 0.40, 0.90, " ", "brNDC")
+    SetLegend(legendRaaVsNpart)
+    legendRaaVsNpart.SetTextSize(0.045)
+    legendRaaVsNpart.AddEntry(graStatRaaVsNpart, "#sqrt{#it{s}} = 5.36 TeV, OO, 0 < #it{p}_{T} (GeV/#it{c}) < 20 ", "FP")
+    legendRaaVsNpart.Draw("SAME")
+
+    latexTitle.DrawLatex(0.20, 0.90, "ALICE Work In Progress")
+    latexTitle.DrawLatex(0.20, 0.84, "J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
+    canvasRaaVsNpart.SaveAs("plots/Jpsi_RAA_vs_Npart.pdf")
+    canvasRaaVsNpart.SaveAs("plots/Jpsi_RAA_vs_Npart.png")
+
+    # Compare to Run 2 results, PbPb
+    print("***** Extract RAA from Run 2, PbPb *****")
+
+    # --- PbPb: pT 0.3–8 GeV/c ---
+    filePathJpsi_0_8pT_PbPb = "HEP_Data/jpsi_raa_PbPb_5TeV_0_8_pT.yaml"
+    ptCenters_0_8pT_PbPb, ptWidths_0_8pT_PbPb, jpsiRaaVsNpart_0_8pT_PbPb, jpsiStatRaaVsNpart_0_8pT_PbPb, jpsiSystRaaVsNpart_0_8pT_PbPb = ExtractFromYaml(filePathJpsi_0_8pT_PbPb)
+    jpsiPtSystWidths_0_8pT_PbPb = np.repeat(1.2, len(ptCenters_0_8pT_PbPb))
+    
+    graStatRaaVsNpart_0_8pT_PbPb = ROOT.TGraphErrors(len(ptCenters_0_8pT_PbPb), np.array(ptCenters_0_8pT_PbPb), np.array(jpsiRaaVsNpart_0_8pT_PbPb),
+                                    np.array(ptWidths_0_8pT_PbPb), np.array(jpsiStatRaaVsNpart_0_8pT_PbPb))
+    graSystRaaVsNpart_0_8pT_PbPb = ROOT.TGraphErrors(len(ptCenters_0_8pT_PbPb), np.array(ptCenters_0_8pT_PbPb), np.array(jpsiRaaVsNpart_0_8pT_PbPb),
+                                    jpsiPtSystWidths_0_8pT_PbPb, np.array(jpsiSystRaaVsNpart_0_8pT_PbPb))
+    SetGraStat(graStatRaaVsNpart_0_8pT_PbPb, 20, ROOT.kBlack)
+    SetGraSyst(graSystRaaVsNpart_0_8pT_PbPb, 20, ROOT.kBlack)
+    
+    # --- Canvas setup ---
+    canvasRaaVsNpart_Comparison_PbPb = ROOT.TCanvas("canvasRaaVsNpart_Comparison_PbPb", "", 800, 600)
+    canvasRaaVsNpart_Comparison_PbPb.SetLogx()
+    ROOT.gStyle.SetOptStat(False)
+    
+    histGridRaaVsNpart_Comparison_PbPb = ROOT.TH2D("histGridRaaVsNpart_Comparison_PbPb",
+                                ";N_{part};#it{R}_{AA}",
+                                100, 0, 370, 100, 0, 2.2)
+    histGridRaaVsNpart_Comparison_PbPb.Draw()
+    
+    # --- Unity line ---
+    lineUnityVsNpart_Comparison_PbPb = ROOT.TLine(0., 1., 370, 1.)
+    lineUnityVsNpart_Comparison_PbPb.SetLineColor(ROOT.kGray+1)
+    lineUnityVsNpart_Comparison_PbPb.SetLineWidth(2)
+    lineUnityVsNpart_Comparison_PbPb.SetLineStyle(ROOT.kDashed)
+    lineUnityVsNpart_Comparison_PbPb.Draw("SAME")
+    
+    # --- Draw graphs ---
+    graSystRaaVsNpart_0_8pT_PbPb.Draw("2 SAME")
+    graStatRaaVsNpart_0_8pT_PbPb.Draw("P SAME")
+    graStatRaaVsNpart.Draw("EP SAME")
+    graSystRaaVsNpart.Draw("E2P SAME")
+
+    legendRaaVsNpart_Comparison_PbPb = ROOT.TLegend(0.20, 0.63, 0.40, 0.89, " ", "brNDC")
+    SetLegend(legendRaaVsNpart_Comparison_PbPb)
+    legendRaaVsNpart_Comparison_PbPb.SetTextSize(0.045)
+    legendRaaVsNpart_Comparison_PbPb.AddEntry(graStatRaaVsNpart, "#sqrt{#it{s}} = 5.36 TeV, OO, 0 < #it{p}_{T} (GeV/#it{c}) < 20", "FP")
+    legendRaaVsNpart_Comparison_PbPb.AddEntry(graStatRaaVsNpart_0_8pT_PbPb, "#sqrt{#it{s}} = 5.02 TeV, p–Pb, 0.3 < #it{p}_{T} (GeV/#it{c}) < 8", "FP")
+    legendRaaVsNpart_Comparison_PbPb.Draw("SAME")
+
+    latexTitle.DrawLatex(0.20, 0.90, "ALICE Work In Progress")
+    latexTitle.DrawLatex(0.20, 0.84, "J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
+    canvasRaaVsNpart_Comparison_PbPb.Update()
+    canvasRaaVsNpart_Comparison_PbPb.SaveAs("plots/Jpsi_RAA_vs_Npart_Comparison_PbPb.pdf")
+    canvasRaaVsNpart_Comparison_PbPb.SaveAs("plots/Jpsi_RAA_vs_Npart_Comparison_PbPb.png")
+
 
 
     print("-------- Pt dependence --------")
@@ -405,7 +607,8 @@ def raa(config):
     legendRaaVsPtVsRun2.AddEntry(graStatRaaVsPt, "#sqrt{#it{s}} = 5.36 TeV, OO, 0#minus90%", "FP")
     legendRaaVsPtVsRun2.Draw("SAME")
 
-    latexTitle.DrawLatex(0.22, 0.87, "ALICE Work In Progress, J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
+    latexTitle.DrawLatex(0.20, 0.90, "ALICE Work In Progress")
+    latexTitle.DrawLatex(0.20, 0.84, "J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
     
     canvasRaaVsPt.Update()
     canvasRaaVsPt.SaveAs("plots/Jpsi_RAA_vs_Pt.pdf")
@@ -485,7 +688,7 @@ def raa(config):
     legendRaaVsPtVsRun2_Comparison1.AddEntry(graStatRaaVsPt_4060, "#sqrt{#it{s}} = 5.02 TeV, Pb-Pb, 40#minus90%", "FP")
     legendRaaVsPtVsRun2_Comparison1.Draw("SAME")
 
-    latexTitle.DrawLatex(0.16, 0.90, "ALICE Work In Progress, J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
+    latexTitle.DrawLatex(0.22, 0.90, "ALICE Work In Progress, J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
     canvasRaaVsPt_Comparison1.Update()
     canvasRaaVsPt_Comparison1.SaveAs("plots/Jpsi_RAA_vs_Pt__Comparison_manycentralities.pdf")
 
@@ -608,7 +811,7 @@ def raa(config):
     legendRaaVsPtVsRun2_pPb.Draw("SAME")
     graStatRaaVsPtComparison_pO.Draw("EP SAME")
 
-    latexTitle.DrawLatex(0.22, 0.87, "ALICE Work In Progress, J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
+    latexTitle.DrawLatex(0.22, 0.87, "ALICE Work In Progress, J/#psi #rightarrow #mu^{#plus}#mu^{#minus}")
 
     canvasRaaVsPtVsRun2_pPb.Update()
     canvasRaaVsPtVsRun2_pPb.SaveAs("plots/Jpsi_Comparison_pO_pPbRun2.pdf")

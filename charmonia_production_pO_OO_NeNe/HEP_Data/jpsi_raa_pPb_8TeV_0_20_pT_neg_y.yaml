@@ -1,0 +1,66 @@
+dependent_variables:
+- header: {name: RAA}
+  qualifiers:
+  - {name: RE, value: p Pb --> JPSI < MU+ MU- > X}
+  - {name: SQRT(S)/NUCLEON, units: GEV, value: 8160.0}
+  - {name: PT, units: GEV/c, value: 0.00 TO 20.00}
+  - {name: YRAP, value: -4.46 TO -2.96}
+  values:
+  - errors:
+    - {label: stat, symerror: 0.014}
+    - {label: 'sys, uncorrel', symerror: 0.069}
+    - {label: 'sys, correl', symerror: 0.099}
+    value: 1.156
+  - errors:
+    - {label: stat, symerror: 0.011}
+    - {label: 'sys, uncorrel', symerror: 0.054}
+    - {label: 'sys, correl', symerror: 0.096}
+    value: 1.121
+  - errors:
+    - {label: stat, symerror: 0.012}
+    - {label: 'sys, uncorrel', symerror: 0.047}
+    - {label: 'sys, correl', symerror: 0.093}
+    value: 1.088
+  - errors:
+    - {label: stat, symerror: 0.011}
+    - {label: 'sys, uncorrel', symerror: 0.044}
+    - {label: 'sys, correl', symerror: 0.088}
+    value: 1.024
+  - errors:
+    - {label: stat, symerror: 0.011}
+    - {label: 'sys, uncorrel', symerror: 0.049}
+    - {label: 'sys, correl', symerror: 0.081}
+    value: 0.952
+  - errors:
+    - {label: stat, symerror: 0.011}
+    - {label: 'sys, uncorrel', symerror: 0.054}
+    - {label: 'sys, correl', symerror: 0.077}
+    value: 0.904
+  - errors:
+    - {label: stat, symerror: 0.013}
+    - {label: 'sys, uncorrel', symerror: 0.055}
+    - {label: 'sys, correl', symerror: 0.074}
+    value: 0.862
+  - errors:
+    - {label: stat, symerror: 0.014}
+    - {label: 'sys, uncorrel', symerror: 0.048}
+    - {label: 'sys, correl', symerror: 0.071}
+    value: 0.836
+  - errors:
+    - {label: stat, symerror: 0.016}
+    - {label: 'sys, uncorrel', symerror: 0.033}
+    - {label: 'sys, correl', symerror: 0.069}
+    value: 0.803
+independent_variables:
+- header: {name: Ncoll, units: }
+  values:
+  - {high: 12.7, low: 12.7}
+  - {high: 11.5, low: 11.5}
+  - {high: 10.4, low: 10.4}
+  - {high: 9.21, low: 9.21}
+  - {high: 7.82, low: 7.82}
+  - {high: 6.37, low: 6.37}
+  - {high: 4.93, low: 4.93}
+  - {high: 3.63, low: 3.63}
+  - {high: 2.53, low: 2.53}
+name: Fig4_left.yaml
