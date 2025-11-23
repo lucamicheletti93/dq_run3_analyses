@@ -612,6 +612,7 @@ def raa(config):
     
     canvasRaaVsPt.Update()
     canvasRaaVsPt.SaveAs("plots/Jpsi_RAA_vs_Pt.pdf")
+    canvasRaaVsPt.SaveAs("plots/Jpsi_RAA_vs_Pt.png")
 
 
     # Compare to Run 2 results
@@ -690,7 +691,8 @@ def raa(config):
 
     latexTitle.DrawLatex(0.22, 0.90, "ALICE Work In Progress, J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
     canvasRaaVsPt_Comparison1.Update()
-    canvasRaaVsPt_Comparison1.SaveAs("plots/Jpsi_RAA_vs_Pt__Comparison_manycentralities.pdf")
+    canvasRaaVsPt_Comparison1.SaveAs("plots/Jpsi_RAA_vs_Pt_Comparison_PbPb_3_centralities.pdf")
+    canvasRaaVsPt_Comparison1.SaveAs("plots/Jpsi_RAA_vs_Pt_Comparison_PbPb_3_centralities.png")
 
 
     # --- Centrality 0–90% ---
@@ -729,7 +731,8 @@ def raa(config):
     latexTitle.DrawLatex(0.22, 0.87, "ALICE Work In Progress, J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
 
     canvasRaaVsPtVsRun2_Comparison2.Update()
-    canvasRaaVsPtVsRun2_Comparison2.SaveAs("plots/Jpsi_RAA_vs_Pt__Comparison_0_90_centr.pdf")
+    canvasRaaVsPtVsRun2_Comparison2.SaveAs("plots/Jpsi_RAA_vs_Pt_Comparison_PbPb_0_90_centr.pdf")
+    canvasRaaVsPtVsRun2_Comparison2.SaveAs("plots/Jpsi_RAA_vs_Pt_Comparison_PbPb_0_90_centr.png")
 
     # ***** Comparison with pO *****
     x_vect0 = np.array([0.5, 1.5, 2.5, 3.5, 5.0, 8.0], dtype='float64')
@@ -776,6 +779,7 @@ def raa(config):
 
     canvasRaaVsPtComparison_pO.Update()
     canvasRaaVsPtComparison_pO.SaveAs("plots/Jpsi_RAA_vs_Pt_Comparison_with_pO.pdf")
+    canvasRaaVsPtComparison_pO.SaveAs("plots/Jpsi_RAA_vs_Pt_Comparison_with_pO.png")
 
     # ***** Comparison pO and Run 2 results pPb *****
     filePathJpsi_pPb = "HEP_Data/jpsi_raa_PbPb_5TeV_pPb.yaml"
@@ -815,6 +819,7 @@ def raa(config):
 
     canvasRaaVsPtVsRun2_pPb.Update()
     canvasRaaVsPtVsRun2_pPb.SaveAs("plots/Jpsi_Comparison_pO_pPbRun2.pdf")
+    canvasRaaVsPtVsRun2_pPb.SaveAs("plots/Jpsi_Comparison_pO_pPbRun2.png")
 
     input()
 
