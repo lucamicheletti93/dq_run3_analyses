@@ -259,8 +259,8 @@ void get_normalization_from_single_file(string year = "2024", string period = "L
             TList* list_output = (TList*)hashList->FindObject("Event_AfterCuts");
             TH1D *histCentFTOC = (TH1D*) list_output->FindObject("CentFT0C");
 
-            const int centMin[] = { 0,10,20,30,40,50,60, 0,  0}; 
-            const int centMax[] = {10,20,30,40,50,60,90,90,100}; 
+            const int centMin[] = { 0, 5,10,20,30,40,50,60,70, 0,  0}; 
+            const int centMax[] = { 5,10,20,30,40,50,60,70,90,90,100}; 
             int nCentBins = sizeof(centMin) / sizeof(int); 
 
             histRatioIntegralsCentrFT0C = new TH1D("histRatioIntegralsCentrFT0C", "Centrality Fractions;Centrality interval;Fraction", nCentBins, 0, nCentBins);
@@ -506,7 +506,7 @@ void check_normalization(string fInName = "LHC25ae_minBias_std_assoc_luminosity.
     double nEvtsMinBias2024StdAssoc = histLumiMinBias2024StdAssoc -> GetBinContent(histLumiMinBias2024StdAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
     double lumiMinBias2024StdAssoc = histLumiMinBias2024StdAssoc -> GetBinContent(histLumiMinBias2024StdAssoc -> GetXaxis() -> FindBin("luminosityBcSel"));
 
-    const char* centLabels[] = {"0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-90%", "0-90%", "0-100%"};
+    const char* centLabels[] = {"0-5%","5-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%","70-90%", "0-90%", "0-100%"};
     int nCentrBins = sizeof(centLabels)/sizeof(char*);
     std::vector<double> nEvtsBcSelCentr(nCentrBins);
     for (int i = 0; i < nCentrBins; i++) {
@@ -538,7 +538,7 @@ void check_normalization(string fInName = "LHC25ae_minBias_std_assoc_luminosity.
         histNeventMinBiasCentr->GetXaxis()->SetBinLabel(i+1, centLabels[i]);
     }
 
-    TFile *fOutLumiMinBias2024StdAssoc = new TFile(Form("data/2025/pass2/Train_540779/%s", fOutName.c_str()), "RECREATE");
+    TFile *fOutLumiMinBias2024StdAssoc = new TFile(Form("data/2025/pass2/%s", fOutName.c_str()), "RECREATE");
     histLuminosityMinBias2024StdAssoc -> Write();
     histNeventMinBias2024StdAssoc -> Write();
     histNeventMinBiasCentr -> Write();

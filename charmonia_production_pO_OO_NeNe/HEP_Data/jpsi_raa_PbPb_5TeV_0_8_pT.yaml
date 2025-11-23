@@ -1,0 +1,66 @@
+dependent_variables:
+- header: {name: RAA}
+  qualifiers:
+  - {name: RE, value: PB PB --> JPSI < MU+ MU- > X}
+  - {name: SQRT(S)/NUCLEON, units: GEV, value: 5020.0}
+  - {name: PT, units: , value: 0.3 TO 8}
+  - {name: YRAP, value: 2.5 TO 4.}
+  values:
+  - errors:
+    - {label: stat, symerror: 0.01}
+    - {label: 'sys, uncorrel', symerror: 0.03}
+    - {label: 'sys, correl', symerror: 0.05}
+    value: 0.63
+  - errors:
+    - {label: stat, symerror: 0.01}
+    - {label: 'sys, uncorrel', symerror: 0.02}
+    - {label: 'sys, correl', symerror: 0.05}
+    value: 0.64
+  - errors:
+    - {label: stat, symerror: 0.01}
+    - {label: 'sys, uncorrel', symerror: 0.02}
+    - {label: 'sys, correl', symerror: 0.05}
+    value: 0.67
+  - errors:
+    - {label: stat, symerror: 0.01}
+    - {label: 'sys, uncorrel', symerror: 0.03}
+    - {label: 'sys, correl', symerror: 0.05}
+    value: 0.62
+  - errors:
+    - {label: stat, symerror: 0.02}
+    - {label: 'sys, uncorrel', symerror: 0.03}
+    - {label: 'sys, correl', symerror: 0.05}
+    value: 0.69
+  - errors:
+    - {label: stat, symerror: 0.02}
+    - {label: 'sys, uncorrel', symerror: 0.04}
+    - {label: 'sys, correl', symerror: 0.05}
+    value: 0.72
+  - errors:
+    - {label: stat, symerror: 0.02}
+    - {label: 'sys, uncorrel', symerror: 0.05}
+    - {label: 'sys, correl', symerror: 0.06}
+    value: 0.81
+  - errors:
+    - {label: stat, symerror: 0.03}
+    - {label: 'sys, uncorrel', symerror: 0.07}
+    - {label: 'sys, correl', symerror: 0.07}
+    value: 0.92
+  - errors:
+    - {label: stat, symerror: 0.04}
+    - {label: 'sys, uncorrel', symerror: 0.09}
+    - {label: 'sys, correl', symerror: 0.07}
+    value: 0.90
+independent_variables:
+- header: {name: Npart, units: }
+  values:
+  - {high: 359.0, low: 359.0}
+  - {high: 263.0, low: 263.0}
+  - {high: 188.0, low: 188.0}
+  - {high: 131.0, low: 131.0}
+  - {high: 86.3, low: 86.3}
+  - {high: 53.6, low: 53.6}
+  - {high: 30.4, low: 30.4}
+  - {high: 15.6, low: 15.6}
+  - {high: 7.6, low: 7.6}
+name: Fig4.yaml
