@@ -327,8 +327,8 @@ def raa(config):
     SetLegend(legendRaaVsNColl_Comparison_pPb)
     legendRaaVsNColl_Comparison_pPb.SetTextSize(0.045)
     legendRaaVsNColl_Comparison_pPb.AddEntry(graStatRaaVsNcoll, "#sqrt{#it{s}} = 5.36 TeV, OO, 2.5 < #it{y} < 4", "FP")
-    legendRaaVsNColl_Comparison_pPb.AddEntry(graStatRaaVsNColl_020pT_pPb_pos_y, "#sqrt{#it{s}} = 8.16 TeV, p–Pb, 2.03  < #it{y} < 3.53", "FP")
-    legendRaaVsNColl_Comparison_pPb.AddEntry(graStatRaaVsNColl_020pT_pPb_neg_y, "#sqrt{#it{s}} = 8.16 TeV, Pb–p, -4.46  < #it{y} < -2.06", "FP")
+    legendRaaVsNColl_Comparison_pPb.AddEntry(graStatRaaVsNColl_020pT_pPb_pos_y, "#sqrt{#it{s}} = 8.16 TeV, p-Pb, 2.03  < #it{y} < 3.53", "FP")
+    legendRaaVsNColl_Comparison_pPb.AddEntry(graStatRaaVsNColl_020pT_pPb_neg_y, "#sqrt{#it{s}} = 8.16 TeV, p-Pb, -4.46  < #it{y} < -2.06", "FP")
     legendRaaVsNColl_Comparison_pPb.Draw("SAME")
 
     latexTitle.DrawLatex(0.20, 0.90, "ALICE Work In Progress")
@@ -419,7 +419,7 @@ def raa(config):
     SetLegend(legendRaaVsNpart_Comparison_PbPb)
     legendRaaVsNpart_Comparison_PbPb.SetTextSize(0.045)
     legendRaaVsNpart_Comparison_PbPb.AddEntry(graStatRaaVsNpart, "#sqrt{#it{s}} = 5.36 TeV, OO, 0 < #it{p}_{T} (GeV/#it{c}) < 20", "FP")
-    legendRaaVsNpart_Comparison_PbPb.AddEntry(graStatRaaVsNpart_0_8pT_PbPb, "#sqrt{#it{s}} = 5.02 TeV, p–Pb, 0.3 < #it{p}_{T} (GeV/#it{c}) < 8", "FP")
+    legendRaaVsNpart_Comparison_PbPb.AddEntry(graStatRaaVsNpart_0_8pT_PbPb, "#sqrt{#it{s}} = 5.02 TeV, Pb-Pb, 0.3 < #it{p}_{T} (GeV/#it{c}) < 8", "FP")
     legendRaaVsNpart_Comparison_PbPb.Draw("SAME")
 
     latexTitle.DrawLatex(0.20, 0.90, "ALICE Work In Progress")
@@ -428,7 +428,7 @@ def raa(config):
     canvasRaaVsNpart_Comparison_PbPb.SaveAs("plots/Jpsi_RAA_vs_Npart_Comparison_PbPb.pdf")
     canvasRaaVsNpart_Comparison_PbPb.SaveAs("plots/Jpsi_RAA_vs_Npart_Comparison_PbPb.png")
 
-
+    input()
 
     print("-------- Pt dependence --------")
 
@@ -689,7 +689,7 @@ def raa(config):
     legendRaaVsPtVsRun2_Comparison1.AddEntry(graStatRaaVsPt_4060, "#sqrt{#it{s}} = 5.02 TeV, Pb-Pb, 40#minus90%", "FP")
     legendRaaVsPtVsRun2_Comparison1.Draw("SAME")
 
-    latexTitle.DrawLatex(0.22, 0.90, "ALICE Work In Progress, J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
+    latexTitle.DrawLatex(0.16, 0.90, "ALICE Work In Progress, J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
     canvasRaaVsPt_Comparison1.Update()
     canvasRaaVsPt_Comparison1.SaveAs("plots/Jpsi_RAA_vs_Pt_Comparison_PbPb_3_centralities.pdf")
     canvasRaaVsPt_Comparison1.SaveAs("plots/Jpsi_RAA_vs_Pt_Comparison_PbPb_3_centralities.png")
