@@ -45,6 +45,7 @@ def raa(config):
     TaaVsCentr = config["inputs"]["TaaVsCentr"]
     Ncoll = config["inputs"]["Ncoll"]
     Npart = config["inputs"]["Npart"]
+    errNpart = config["inputs"]["errNpart"]
 
     print("***** Compute corrected yield *****")
     # Lumi computed with normalization.C  + check_normalization
@@ -180,7 +181,6 @@ def raa(config):
         print(f"N. events {label} = {nevCentrDict[label]}")
     print(f"TaaVsCentr: {TaaVsCentr}")
     print(f"jpsiPPrefXsecVsCentr: {jpsiPPrefXsecVsCentr}")
-    input()
 
     print("Relative systematic on raw yield extraction")
     jpsiSystRelRawYieldVsCentr = (np.array(jpsiStatRawYieldVsCentr) / np.array(jpsiRawYieldVsCentr))
@@ -338,11 +338,11 @@ def raa(config):
     canvasRaaVsNcoll_Comparison_pPb.SaveAs("plots/Jpsi_RAA_vs_Ncoll_Comparison_pPb.png")
 
     print("-------- RAA vs Npart --------") 
-    centrSystWidths_Npart = np.repeat(1.2, len(centrWidths))
+    centrSystWidths_Npart = np.repeat(0.5, len(centrWidths))
     graStatRaaVsNpart = ROOT.TGraphErrors(len(centrMin),
                                           np.array(Npart, dtype=float),
                                           np.array(jpsiRaaVsCentr, dtype=float),
-                                          np.array(centrSystWidths_Npart),
+                                          np.array(errNpart),
                                           np.array(jpsiStatRaaVsCentr, dtype=float))
 
     graSystRaaVsNpart = ROOT.TGraphErrors(len(centrMin),
@@ -351,8 +351,8 @@ def raa(config):
                                           np.array(centrSystWidths_Npart),
                                           np.array(jpsiSystRaaVsCentr, dtype=float))
 
-    SetGraStat(graStatRaaVsNpart, 20, ROOT.kRed+1)
-    SetGraSyst(graSystRaaVsNpart, 20, ROOT.kRed+1)
+    SetGraStat(graStatRaaVsNpart, 24, ROOT.kBlack)
+    SetGraSyst(graSystRaaVsNpart, 20, ROOT.kRed+1, 1, 2)
 
     lineUnityVsNpart = ROOT.TLine(0., 1., max(Npart)*1.1, 1.)
     lineUnityVsNpart.SetLineColor(ROOT.kGray+1)
@@ -360,7 +360,7 @@ def raa(config):
     lineUnityVsNpart.SetLineStyle(ROOT.kDashed)
 
     canvasRaaVsNpart = ROOT.TCanvas("canvasRaaVsNpart", "", 800, 600)
-    histGridRaaVsNpart = ROOT.TH2D("histGridRaaVsNcoll",";N_{part};R_{AA}",100, 0, max(Npart)*1.1,100, 0, 1.6)
+    histGridRaaVsNpart = ROOT.TH2D("histGridRaaVsNcoll",";#it{N}_{part};R_{AA}",100, 0, max(Npart)*1.1,100, 0, 1.6)
     histGridRaaVsNpart.Draw()
     lineUnityVsNpart.Draw("SAME")
     graSystRaaVsNpart.Draw("E2P SAME")
@@ -389,8 +389,8 @@ def raa(config):
                                     np.array(ptWidths_0_8pT_PbPb), np.array(jpsiStatRaaVsNpart_0_8pT_PbPb))
     graSystRaaVsNpart_0_8pT_PbPb = ROOT.TGraphErrors(len(ptCenters_0_8pT_PbPb), np.array(ptCenters_0_8pT_PbPb), np.array(jpsiRaaVsNpart_0_8pT_PbPb),
                                     jpsiPtSystWidths_0_8pT_PbPb, np.array(jpsiSystRaaVsNpart_0_8pT_PbPb))
-    SetGraStat(graStatRaaVsNpart_0_8pT_PbPb, 20, ROOT.kBlack)
-    SetGraSyst(graSystRaaVsNpart_0_8pT_PbPb, 20, ROOT.kBlack)
+    SetGraStat(graStatRaaVsNpart_0_8pT_PbPb, 20, ROOT.kGray+2)
+    SetGraSyst(graSystRaaVsNpart_0_8pT_PbPb, 20, ROOT.kGray+2)
     
     # --- Canvas setup ---
     canvasRaaVsNpart_Comparison_PbPb = ROOT.TCanvas("canvasRaaVsNpart_Comparison_PbPb", "", 800, 600)
@@ -398,12 +398,12 @@ def raa(config):
     ROOT.gStyle.SetOptStat(False)
     
     histGridRaaVsNpart_Comparison_PbPb = ROOT.TH2D("histGridRaaVsNpart_Comparison_PbPb",
-                                ";N_{part};#it{R}_{AA}",
-                                100, 0, 370, 100, 0, 2.2)
+                                ";#it{N}_{part};#it{R}_{AA}",
+                                100, 0, 400, 100, 0, 1.8)
     histGridRaaVsNpart_Comparison_PbPb.Draw()
     
     # --- Unity line ---
-    lineUnityVsNpart_Comparison_PbPb = ROOT.TLine(0., 1., 370, 1.)
+    lineUnityVsNpart_Comparison_PbPb = ROOT.TLine(0., 1., 400, 1.)
     lineUnityVsNpart_Comparison_PbPb.SetLineColor(ROOT.kGray+1)
     lineUnityVsNpart_Comparison_PbPb.SetLineWidth(2)
     lineUnityVsNpart_Comparison_PbPb.SetLineStyle(ROOT.kDashed)
@@ -412,14 +412,14 @@ def raa(config):
     # --- Draw graphs ---
     graSystRaaVsNpart_0_8pT_PbPb.Draw("2 SAME")
     graStatRaaVsNpart_0_8pT_PbPb.Draw("P SAME")
-    graStatRaaVsNpart.Draw("EP SAME")
     graSystRaaVsNpart.Draw("E2P SAME")
+    graStatRaaVsNpart.Draw("EP SAME")
 
-    legendRaaVsNpart_Comparison_PbPb = ROOT.TLegend(0.20, 0.63, 0.40, 0.89, " ", "brNDC")
+    legendRaaVsNpart_Comparison_PbPb = ROOT.TLegend(0.20, 0.65, 0.40, 0.85, " ", "brNDC")
     SetLegend(legendRaaVsNpart_Comparison_PbPb)
     legendRaaVsNpart_Comparison_PbPb.SetTextSize(0.045)
-    legendRaaVsNpart_Comparison_PbPb.AddEntry(graStatRaaVsNpart, "#sqrt{#it{s}} = 5.36 TeV, OO, 0 < #it{p}_{T} (GeV/#it{c}) < 20", "FP")
-    legendRaaVsNpart_Comparison_PbPb.AddEntry(graStatRaaVsNpart_0_8pT_PbPb, "#sqrt{#it{s}} = 5.02 TeV, Pb-Pb, 0.3 < #it{p}_{T} (GeV/#it{c}) < 8", "FP")
+    legendRaaVsNpart_Comparison_PbPb.AddEntry(graSystRaaVsNpart, "#sqrt{#it{s}} = 5.36 TeV, OO, 0 < #it{p}_{T} < 20 GeV/#it{c}", "FP")
+    legendRaaVsNpart_Comparison_PbPb.AddEntry(graStatRaaVsNpart_0_8pT_PbPb, "#sqrt{#it{s}} = 5.02 TeV, Pb#minusPb, 0.3 < #it{p}_{T} < 8 GeV/#it{c}", "FP")
     legendRaaVsNpart_Comparison_PbPb.Draw("SAME")
 
     latexTitle.DrawLatex(0.20, 0.90, "ALICE Work In Progress")
@@ -428,7 +428,8 @@ def raa(config):
     canvasRaaVsNpart_Comparison_PbPb.SaveAs("plots/Jpsi_RAA_vs_Npart_Comparison_PbPb.pdf")
     canvasRaaVsNpart_Comparison_PbPb.SaveAs("plots/Jpsi_RAA_vs_Npart_Comparison_PbPb.png")
 
-    input()
+    #input()
+    #exit()
 
     print("-------- Pt dependence --------")
 
@@ -555,11 +556,11 @@ def raa(config):
     graStatRaaVsPt = ROOT.TGraphErrors(len(ptCenters), np.array(ptCenters), np.array(jpsiRaaVsPt), np.array(ptWidths), np.array(jpsiStatRaaVsPt))
     graSystRaaVsPt = ROOT.TGraphErrors(len(ptCenters), np.array(ptCenters), np.array(jpsiRaaVsPt), np.array(ptSystWidths), np.array(jpsiSystRaaVsPt))
 
-    SetGraStat(graStatXsecVsPt, 20, ROOT.kGreen+2)
-    SetGraSyst(graSystXsecVsPt, 20, ROOT.kGreen+2)
+    SetGraStat(graStatXsecVsPt, 24, ROOT.kBlack)
+    SetGraSyst(graSystXsecVsPt, 20, ROOT.kRed+1, 1, 2)
 
-    SetGraStat(graStatRaaVsPt, 20, ROOT.kGreen+2)
-    SetGraSyst(graSystRaaVsPt, 20, ROOT.kGreen+2)
+    SetGraStat(graStatRaaVsPt, 24, ROOT.kBlack)
+    SetGraSyst(graSystRaaVsPt, 20, ROOT.kRed+1, 1, 2)
 
 
     canvasXsecVsPt = ROOT.TCanvas("canvasXsecVsPt", "", 800, 600)
@@ -627,8 +628,8 @@ def raa(config):
                                     np.array(ptWidths_020), np.array(jpsiStatRaaVsPt_020))
     graSystRaaVsPt_020 = ROOT.TGraphErrors(len(ptCenters_020), np.array(ptCenters_020), np.array(jpsiRaaVsPt_020),
                                     jpsiPtSystWidths_020, np.array(jpsiSystRaaVsPt_020))
-    SetGraStat(graStatRaaVsPt_020, 20, ROOT.kRed+1)
-    SetGraSyst(graSystRaaVsPt_020, 20, ROOT.kRed+1)
+    SetGraStat(graStatRaaVsPt_020, 20, ROOT.kOrange+7)
+    SetGraSyst(graSystRaaVsPt_020, 20, ROOT.kOrange+1)
     
     # --- Centrality 20–40% ---
     filePathJpsi_2040 = "HEP_Data/jpsi_raa_PbPb_5TeV_20_40_centr.yaml"
@@ -639,8 +640,8 @@ def raa(config):
                                      np.array(ptWidths_2040), np.array(jpsiStatRaaVsPt_2040))
     graSystRaaVsPt_2040 = ROOT.TGraphErrors(len(ptCenters_2040), np.array(ptCenters_2040), np.array(jpsiRaaVsPt_2040),
                                      jpsiPtSystWidths_2040, np.array(jpsiSystRaaVsPt_2040))
-    SetGraStat(graStatRaaVsPt_2040, 21, ROOT.kBlue)
-    SetGraSyst(graSystRaaVsPt_2040, 21, ROOT.kBlue)
+    SetGraStat(graStatRaaVsPt_2040, 20, ROOT.kGreen+2)
+    SetGraSyst(graSystRaaVsPt_2040, 20, ROOT.kGreen+2)
     
     # --- Centrality 40–60% ---
     filePathJpsi_4060 = "HEP_Data/jpsi_raa_PbPb_5TeV_40_90_centr.yaml"
@@ -651,8 +652,8 @@ def raa(config):
                                      np.array(ptWidths_4060), np.array(jpsiStatRaaVsPt_4060))
     graSystRaaVsPt_4060 = ROOT.TGraphErrors(len(ptCenters_4060), np.array(ptCenters_4060), np.array(jpsiRaaVsPt_4060),
                                      jpsiPtSystWidths_4060, np.array(jpsiSystRaaVsPt_4060))
-    SetGraStat(graStatRaaVsPt_4060, 22, ROOT.kBlack)
-    SetGraSyst(graSystRaaVsPt_4060, 22, ROOT.kBlack)
+    SetGraStat(graStatRaaVsPt_4060, 20, ROOT.kAzure+4)
+    SetGraSyst(graSystRaaVsPt_4060, 20, ROOT.kAzure+4)
     
     # --- Canvas setup ---
     canvasRaaVsPt_Comparison1 = ROOT.TCanvas("canvasRaaVsPt_Comparison1", "", 800, 600)
@@ -660,7 +661,7 @@ def raa(config):
     
     histGridRaaVsPt_Comparison1 = ROOT.TH2D("histGridRaaV_Comparison1",
                                 ";#it{p}_{T} (GeV/#it{c});#it{R}_{AA}",
-                                100, 0, 12, 100, 0, 1.7)
+                                100, 0, 12, 100, 0, 2)
     histGridRaaVsPt_Comparison1.Draw()
     
     # --- Unity line ---
@@ -677,19 +678,19 @@ def raa(config):
     graStatRaaVsPt_2040.Draw("P SAME")
     graSystRaaVsPt_4060.Draw("2 SAME")
     graStatRaaVsPt_4060.Draw("P SAME")
-    graStatRaaVsPt.Draw("EP SAME")
     graSystRaaVsPt.Draw("E2P SAME")
+    graStatRaaVsPt.Draw("EP SAME")
 
-    legendRaaVsPtVsRun2_Comparison1 = ROOT.TLegend(0.20, 0.66, 0.40, 0.90, " ", "brNDC")
+    legendRaaVsPtVsRun2_Comparison1 = ROOT.TLegend(0.20, 0.60, 0.40, 0.90, " ", "brNDC")
     SetLegend(legendRaaVsPtVsRun2_Comparison1)
     legendRaaVsPtVsRun2_Comparison1.SetTextSize(0.045)
-    legendRaaVsPtVsRun2_Comparison1.AddEntry(graStatRaaVsPt, "#sqrt{#it{s}} = 5.36 TeV, OO, 0#minus90%", "FP")
+    legendRaaVsPtVsRun2_Comparison1.AddEntry(graSystRaaVsPt, "#sqrt{#it{s}} = 5.36 TeV, OO, 0#minus90%", "FP")
     legendRaaVsPtVsRun2_Comparison1.AddEntry(graStatRaaVsPt_020, "#sqrt{#it{s}} = 5.02 TeV, Pb-Pb, 0#minus20%", "FP")
-    legendRaaVsPtVsRun2_Comparison1.AddEntry(graStatRaaVsPt_2040, "#sqrt{#it{s}} = 5.02 TeV, Pb-Pb, 20#minus60%", "FP")
+    legendRaaVsPtVsRun2_Comparison1.AddEntry(graStatRaaVsPt_2040, "#sqrt{#it{s}} = 5.02 TeV, Pb-Pb, 20#minus40%", "FP")
     legendRaaVsPtVsRun2_Comparison1.AddEntry(graStatRaaVsPt_4060, "#sqrt{#it{s}} = 5.02 TeV, Pb-Pb, 40#minus90%", "FP")
     legendRaaVsPtVsRun2_Comparison1.Draw("SAME")
 
-    latexTitle.DrawLatex(0.16, 0.90, "ALICE Work In Progress, J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
+    latexTitle.DrawLatex(0.18, 0.90, "ALICE Work In Progress, J/#psi #rightarrow #mu^{#plus}#mu^{#minus}, 2.5 < #it{y} < 4")
     canvasRaaVsPt_Comparison1.Update()
     canvasRaaVsPt_Comparison1.SaveAs("plots/Jpsi_RAA_vs_Pt_Comparison_PbPb_3_centralities.pdf")
     canvasRaaVsPt_Comparison1.SaveAs("plots/Jpsi_RAA_vs_Pt_Comparison_PbPb_3_centralities.png")
@@ -703,8 +704,8 @@ def raa(config):
     graStatRaaVsPtRun2_090 = ROOT.TGraphErrors(len(ptCentersRun2_090), np.array(ptCentersRun2_090), np.array(jpsiRaaVsPtRun2_090), np.array(ptWidthsRun2_090), np.array(jpsiStatRaaVsPtRun2_090))
     graSystRaaVsPtRun2_090 = ROOT.TGraphErrors(len(ptCentersRun2_090), np.array(ptCentersRun2_090), np.array(jpsiRaaVsPtRun2_090), jpsiPtSystWidthsRun2_090, np.array(jpsiSystRaaVsPtRun2_090))
 
-    SetGraStat(graStatRaaVsPtRun2_090, 20, ROOT.kGray+2)
-    SetGraSyst(graSystRaaVsPtRun2_090, 20, ROOT.kGray+2)
+    SetGraStat(graStatRaaVsPtRun2_090, 20, ROOT.kGray+1)
+    SetGraSyst(graSystRaaVsPtRun2_090, 20, ROOT.kGray+1)
 
     lineUnityVsPt = ROOT.TLine(0., 1., 12., 1.)
     lineUnityVsPt.SetLineColor(ROOT.kGray+1)
@@ -740,13 +741,9 @@ def raa(config):
     ex_vect2 = np.array([0, 0, 0, 0, 0, 0], dtype='float64')
     ey_vect3 = np.array([0.05321832374435311, 0.05126399014605561, 0.05428298032696315, 0.0715452447917095, 0.06328270207447632, 0.1384129436083637], dtype='float64')
 
-    graStatRaaVsPtComparison_pO = ROOT.TGraphErrors(len(x_vect0),
-                                                 x_vect0,
-                                                 y_vect1,
-                                                 ex_vect2,
-                                                 ey_vect3)
+    graStatRaaVsPtComparison_pO = ROOT.TGraphErrors(len(x_vect0), x_vect0, y_vect1, ex_vect2, ey_vect3)
 
-    SetGraStat(graStatRaaVsPtComparison_pO, 21, ROOT.kRed+1)
+    SetGraStat(graStatRaaVsPtComparison_pO, 20, ROOT.kAzure+4)
 
     canvasRaaVsPtComparison_pO = ROOT.TCanvas("canvasRaaVsPtComparison_pO", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
@@ -771,7 +768,7 @@ def raa(config):
     legendRaaVsPtComparison_pO = ROOT.TLegend(0.20, 0.70, 0.45, 0.90, " ", "brNDC")
     SetLegend(legendRaaVsPtComparison_pO)
     legendRaaVsPtComparison_pO.SetTextSize(0.045)
-    legendRaaVsPtComparison_pO.AddEntry(graStatRaaVsPt, "#sqrt{#it{s}} = 5.36 TeV, OO,  2.5 < #it{y} < 4", "FP")
+    legendRaaVsPtComparison_pO.AddEntry(graSystRaaVsPt, "#sqrt{#it{s}} = 5.36 TeV, OO,  2.5 < #it{y} < 4", "FP")
     legendRaaVsPtComparison_pO.AddEntry(graStatRaaVsPtComparison_pO, "#sqrt{#it{s}} = 9.62 TeV, pO,  2.15 < #it{y} < 3.65", "FP")
     legendRaaVsPtComparison_pO.Draw("SAME")
 
