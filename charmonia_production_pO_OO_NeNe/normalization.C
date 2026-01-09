@@ -163,7 +163,7 @@ void get_normalization_from_multiple_files(string year = "2024", string period =
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void get_normalization_from_single_file(string year = "2024", string period = "LHC24aq_pass1_small", string triggerMask = "minBias", string assocType = "std_assoc") {
     string fInName = "/home/rebecca/cernbox/O_O/Pass2/Train_540779/AnalysisResults.root"; // LHC25ae_pass2, std assoc 
-    string fOutName = Form("data/%s/pass2/%s_%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str());
+    string fOutName = Form("data/%s/pass2/%s_%s_%s_trigger_summary_Corrected.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str());
 
     TFile *fIn = TFile::Open(fInName.c_str());
     if (!fIn || fIn -> IsZombie()) {
@@ -180,8 +180,12 @@ void get_normalization_from_single_file(string year = "2024", string period = "L
     TH1D *histEvSelCollisionAfterCuts = nullptr;
     TH1D *histBcSelCounterTVX = nullptr;
     TH1D *histBcSelCounterTVXafterBCcuts = nullptr;
+    TH1D *histEvSelColCounterAll = nullptr;
     TH1D *histEvSelColCounterTVX = nullptr;
-    TH1D *histRatioIntegralsCentrFT0C = nullptr;
+    TH1D *histSelectedIntegrals_CentrFT0C_BeforeCuts = nullptr;
+    TH1D *histRatioIntegrals_CentrFT0C_BeforeCuts = nullptr;
+    TH1D *histSelectedIntegrals_CentrFT0C_AfterCuts = nullptr;
+    TH1D *histRatioIntegrals_CentrFT0C_AfterCuts = nullptr;
 
     for (auto const& dirKey : *fIn -> GetListOfKeys()) {
         if (TString(dirKey -> GetName()).Contains("table-maker")) {
@@ -255,9 +259,9 @@ void get_normalization_from_single_file(string year = "2024", string period = "L
 
 
             fIn->cd("table-maker"); 
-            THashList* hashList = (THashList*)gDirectory->Get("output"); 
-            TList* list_output = (TList*)hashList->FindObject("Event_AfterCuts");
-            TH1D *histCentFTOC = (TH1D*) list_output->FindObject("CentFT0C");
+            THashList* hashList_BeforeCuts = (THashList*)gDirectory->Get("output"); 
+            TList* list_output_BeforeCuts = (TList*)hashList_BeforeCuts->FindObject("Event_BeforeCuts");
+            TH1D *histCentFTOC_BeforeCuts = (TH1D*) list_output_BeforeCuts->FindObject("CentFT0C");
 
             const int centMin[] = { 0, 5,10,20,30,40,50,60,70, 0,  0}; 
             const int centMax[] = { 5,10,20,30,40,50,60,70,90,90,100}; 
@@ -265,15 +269,41 @@ void get_normalization_from_single_file(string year = "2024", string period = "L
             //const int centMax[] = {10,20,30,40,50,60,90,90,100};
             int nCentBins = sizeof(centMin) / sizeof(int); 
 
-            histRatioIntegralsCentrFT0C = new TH1D("histRatioIntegralsCentrFT0C", "Centrality Fractions;Centrality interval;Fraction", nCentBins, 0, nCentBins);
+            histSelectedIntegrals_CentrFT0C_BeforeCuts = new TH1D("histSelectedIntegrals_CentrFT0C_BeforeCuts", "SelectedIntegral of CentrFT0C BeforeCuts;Centrality interval;Value", nCentBins, 0, nCentBins);
+            histRatioIntegrals_CentrFT0C_BeforeCuts = new TH1D("histRatioIntegrals_CentrFT0C_BeforeCuts", "SelectedIntegral/TotalIntegral of CentrFT0C BeforeCuts;Centrality interval;Fraction", nCentBins, 0, nCentBins);
 
             for (int i = 0; i < nCentBins; i++) {
-                double integral_Selected = histCentFTOC->Integral(centMin[i], centMax[i]);
-                double integral_Total = histCentFTOC->Integral(0, 100);
-                double ratio = integral_Selected / integral_Total;
-                histRatioIntegralsCentrFT0C->SetBinContent(i + 1, ratio);
-                TString label = Form("%d-%d", centMin[i], centMax[i]);
-                histRatioIntegralsCentrFT0C->GetXaxis()->SetBinLabel(i + 1, label);
+                double selected_integral_BeforeCuts = histCentFTOC_BeforeCuts->Integral(centMin[i]+1, centMax[i]);
+                double total_integral_BeforeCuts = histCentFTOC_BeforeCuts->Integral();
+                double ratio_BeforeCuts = selected_integral_BeforeCuts / total_integral_BeforeCuts;
+                histSelectedIntegrals_CentrFT0C_BeforeCuts->SetBinContent(i + 1, selected_integral_BeforeCuts);
+                histRatioIntegrals_CentrFT0C_BeforeCuts->SetBinContent(i + 1, ratio_BeforeCuts);
+                TString label_selected_integral_BeforeCuts = Form("%d-%d", centMin[i], centMax[i]);
+                TString label_ratio_BeforeCuts = Form("%d-%d", centMin[i], centMax[i]);
+                histSelectedIntegrals_CentrFT0C_BeforeCuts->GetXaxis()->SetBinLabel(i + 1, label_selected_integral_BeforeCuts);
+                histRatioIntegrals_CentrFT0C_BeforeCuts->GetXaxis()->SetBinLabel(i + 1, label_ratio_BeforeCuts);
+            }
+
+            fIn->cd("table-maker"); 
+            THashList* hashList_AfterCuts = (THashList*)gDirectory->Get("output"); 
+            TList* list_output_AfterCuts = (TList*)hashList_AfterCuts->FindObject("Event_AfterCuts");
+            TH1D *histCentFTOC_AfterCuts = (TH1D*) list_output_AfterCuts->FindObject("CentFT0C");
+
+            // centMin[],centMax[] and nCentBins same as Before
+
+            histSelectedIntegrals_CentrFT0C_AfterCuts = new TH1D("histSelectedIntegrals_CentrFT0C_AfterCuts", "SelectedIntegral of CentrFT0C AfterCuts;Centrality interval;Value", nCentBins, 0, nCentBins);
+            histRatioIntegrals_CentrFT0C_AfterCuts = new TH1D("histRatioIntegrals_CentrFT0C_AfterCuts", "SelectedIntegral/TotalIntegral of CentrFT0C BeforeCuts;Centrality interval;Fraction", nCentBins, 0, nCentBins);
+
+            for (int i = 0; i < nCentBins; i++) {
+                double selected_integral_AfterCuts = histCentFTOC_AfterCuts->Integral(centMin[i]+1, centMax[i]);
+                double total_integral_AfterCuts = histCentFTOC_AfterCuts->Integral();
+                double ratio_AfterCuts = selected_integral_AfterCuts / total_integral_AfterCuts;
+                histSelectedIntegrals_CentrFT0C_AfterCuts->SetBinContent(i + 1, selected_integral_AfterCuts);
+                histRatioIntegrals_CentrFT0C_AfterCuts->SetBinContent(i + 1, ratio_AfterCuts);
+                TString label_selected_integral_AfterCuts = Form("%d-%d", centMin[i], centMax[i]);
+                TString label_ratio_AfterCuts = Form("%d-%d", centMin[i], centMax[i]);
+                histSelectedIntegrals_CentrFT0C_AfterCuts->GetXaxis()->SetBinLabel(i + 1, label_selected_integral_AfterCuts);
+                histRatioIntegrals_CentrFT0C_AfterCuts->GetXaxis()->SetBinLabel(i + 1, label_ratio_AfterCuts);
             }
 
         }
@@ -329,6 +359,7 @@ void get_normalization_from_single_file(string year = "2024", string period = "L
         if (TString(dirKey -> GetName()).Contains("eventselection-run3")) {
             TH1D *histCounterTVX = (TH1D*) fIn -> Get("eventselection-run3/luminosity/hCounterTVX");
             TH1D *histCounterTVXafterBCcuts = (TH1D*) fIn -> Get("eventselection-run3/luminosity/hCounterTVXafterBCcuts");
+            TH1D *histColCounterAll = (TH1D*) fIn -> Get("eventselection-run3/eventselection/hColCounterAll");
             TH1D *histColCounterTVX = (TH1D*) fIn -> Get("eventselection-run3/eventselection/hColCounterTVX");
 
             int nRuns = histCounterTVX -> GetXaxis() -> GetNbins();
@@ -342,6 +373,7 @@ void get_normalization_from_single_file(string year = "2024", string period = "L
 
             histBcSelCounterTVX = new TH1D("histBcSelCounterTVX", "", vecRunList.size(), 0, vecRunList.size());
             histBcSelCounterTVXafterBCcuts = new TH1D("histBcSelCounterTVXafterBCcuts", "", vecRunList.size(), 0, vecRunList.size());
+            histEvSelColCounterAll = new TH1D("histEvSelColCounterAll", "", vecRunList.size(), 0, vecRunList.size());
             histEvSelColCounterTVX = new TH1D("histEvSelColCounterTVX", "", vecRunList.size(), 0, vecRunList.size());
 
             for (int iRun = 0;iRun < int (vecRunList.size());iRun++) {
@@ -351,6 +383,9 @@ void get_normalization_from_single_file(string year = "2024", string period = "L
 
                 histBcSelCounterTVXafterBCcuts -> SetBinContent(iRun+1, histCounterTVXafterBCcuts -> GetBinContent(iRun+1));
                 histBcSelCounterTVXafterBCcuts -> GetXaxis() -> SetBinLabel(iRun+1, runNumber.c_str());
+
+                histEvSelColCounterAll -> SetBinContent(iRun+1, histColCounterAll -> GetBinContent(iRun+1));
+                histEvSelColCounterAll -> GetXaxis() -> SetBinLabel(iRun+1, runNumber.c_str());
 
                 histEvSelColCounterTVX -> SetBinContent(iRun+1, histColCounterTVX -> GetBinContent(iRun+1));
                 histEvSelColCounterTVX -> GetXaxis() -> SetBinLabel(iRun+1, runNumber.c_str());
@@ -369,13 +404,17 @@ void get_normalization_from_single_file(string year = "2024", string period = "L
     histEvSelCollisionAfterCuts -> Write();
     histBcSelCounterTVX -> Write();
     histBcSelCounterTVXafterBCcuts -> Write();
+    histEvSelColCounterAll -> Write();
     histEvSelColCounterTVX -> Write();
-    histRatioIntegralsCentrFT0C -> Write();
+    histSelectedIntegrals_CentrFT0C_BeforeCuts->Write();
+    histRatioIntegrals_CentrFT0C_BeforeCuts -> Write();
+    histSelectedIntegrals_CentrFT0C_AfterCuts->Write();
+    histRatioIntegrals_CentrFT0C_AfterCuts -> Write();
     fOut -> Close();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", string triggerMask = "minBias", string assocType = "std_assoc") {
-    TFile *fIn = new TFile(Form("data/%s/pass2/%s_%s_%s_trigger_summary.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str()), "READ");
+    TFile *fIn = new TFile(Form("data/%s/pass2/%s_%s_%s_trigger_summary_Corrected.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str()), "READ");
     TH1D *histZorroInfoCounterTVX = (TH1D*) fIn -> Get("histZorroInfoCounterTVX");
     TH1D *histZorroInfoCounterScalTrig = (TH1D*) fIn -> Get("histZorroInfoCounterScalTrig");
     TH1D *histZorroInfoCounterSelTrig = (TH1D*) fIn -> Get("histZorroInfoCounterSelTrig");
@@ -386,8 +425,12 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
     TH1D *histEvSelCollisionAfterCuts = (TH1D*) fIn -> Get("histEvSelCollisionAfterCuts");
     TH1D *histBcSelCounterTVX = (TH1D*) fIn -> Get("histBcSelCounterTVX");
     TH1D *histBcSelCounterTVXafterBCcuts = (TH1D*) fIn -> Get("histBcSelCounterTVXafterBCcuts");
+    TH1D *histEvSelColCounterAll = (TH1D*) fIn -> Get("histEvSelColCounterAll");
     TH1D *histEvSelColCounterTVX = (TH1D*) fIn -> Get("histEvSelColCounterTVX");
-    TH1D *histRatioIntegralsCentrFT0C = (TH1D*) fIn -> Get("histRatioIntegralsCentrFT0C");
+    TH1D *histSelectedIntegrals_CentrFT0C_BeforeCuts = (TH1D*) fIn -> Get("histSelectedIntegrals_CentrFT0C_BeforeCuts");
+    TH1D *histRatioIntegrals_CentrFT0C_BeforeCuts = (TH1D*) fIn -> Get("histRatioIntegrals_CentrFT0C_BeforeCuts");
+    TH1D *histSelectedIntegrals_CentrFT0C_AfterCuts = (TH1D*) fIn -> Get("histSelectedIntegrals_CentrFT0C_AfterCuts");
+    TH1D *histRatioIntegrals_CentrFT0C_AfterCuts = (TH1D*) fIn -> Get("histRatioIntegrals_CentrFT0C_AfterCuts");
 
     const int nRuns = histZorroInfoCounterTVX -> GetEntries();
     double inspectedTVX = histZorroInfoCounterTVX -> Integral();
@@ -400,24 +443,41 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
     double collsAfterCuts = histEvSelCollisionAfterCuts -> Integral();
     double bcCounterTVX = histBcSelCounterTVX -> Integral();
     double bcCounterTVXafterBCcuts = histBcSelCounterTVXafterBCcuts -> Integral();
+    double evColCounterAll = histEvSelColCounterAll -> Integral();
     double evColCounterTVX = histEvSelColCounterTVX -> Integral();
 
-    int nCentrBins = histRatioIntegralsCentrFT0C->GetNbinsX();
-    int nSummaryBins = 9 + nCentrBins; 
+    int nCentrBins = histSelectedIntegrals_CentrFT0C_BeforeCuts->GetNbinsX();
+    int nSummaryBins = 14; 
     TH1D *histLumiSummary = new TH1D("histLumiSummary", "", nSummaryBins, 0, nSummaryBins);
     histLumiSummary->GetXaxis()->SetBinLabel(1, "bcCounterTVX");
     histLumiSummary->GetXaxis()->SetBinLabel(2, "bcCounterTVXafterBCcuts");
     histLumiSummary->GetXaxis()->SetBinLabel(3, "bcCounterEfficiency");
-    histLumiSummary->GetXaxis()->SetBinLabel(4, "nEvtsBcSel");
-    histLumiSummary->GetXaxis()->SetBinLabel(5, "nEvtsBcSelAfterCuts");
-    histLumiSummary->GetXaxis()->SetBinLabel(6, "collsBeforeCuts");
-    histLumiSummary->GetXaxis()->SetBinLabel(7, "collsAfterCuts");
-    histLumiSummary->GetXaxis()->SetBinLabel(8, "luminosityBcSel");
-    histLumiSummary->GetXaxis()->SetBinLabel(9, "luminosityBcSelAfterCuts");
+    histLumiSummary->GetXaxis()->SetBinLabel(4, "evColCounterAll");
+    histLumiSummary->GetXaxis()->SetBinLabel(5, "evColCounterTVX");
+    histLumiSummary->GetXaxis()->SetBinLabel(6, "nEvtsBcSel");
+    histLumiSummary->GetXaxis()->SetBinLabel(7, "nEvtsBcSel_0100");
+    histLumiSummary->GetXaxis()->SetBinLabel(8, "nEvtsBcSelAfterCuts");
+    histLumiSummary->GetXaxis()->SetBinLabel(9, "collsBeforeCuts");
+    histLumiSummary->GetXaxis()->SetBinLabel(10, "collsBeforeCuts_0100");
+    histLumiSummary->GetXaxis()->SetBinLabel(11, "collsAfterCuts");
+    histLumiSummary->GetXaxis()->SetBinLabel(12, "collsAfterCuts_0100");
+    histLumiSummary->GetXaxis()->SetBinLabel(13, "luminosityBcSel");
+    histLumiSummary->GetXaxis()->SetBinLabel(14, "luminosityBcSelAfterCuts");    
+
+    int nSummaryBins_nEvtsBcSelCentr_BeforeCuts = nCentrBins; // nCentrBins is the same also for nSummaryBins_nEvtsBcSelCentr_AfterCuts, nEvtsBeforeCutsCentr_CollTVXdivCollAll and nEvtsAfterCutsCentr_CollTVXdivCollAll
+
+    TH1D *histLumiSummary_nEvtsBcSelCentr_BeforeCuts = new TH1D("histLumiSummary_nEvtsBcSelCentr_BeforeCuts", "histLumiSummary_nEvtsBcSelCentr_BeforeCuts", nSummaryBins_nEvtsBcSelCentr_BeforeCuts, 0, nSummaryBins_nEvtsBcSelCentr_BeforeCuts);
+    TH1D *histLumiSummary_nEvtsBcSelCentr_AfterCuts = new TH1D("histLumiSummary_nEvtsBcSelCentr_AfterCuts", "histLumiSummary_nEvtsBcSelCentr_AfterCuts", nSummaryBins_nEvtsBcSelCentr_BeforeCuts, 0, nSummaryBins_nEvtsBcSelCentr_BeforeCuts);
+    TH1D *histLumiSummary_nEvtsBeforeCutsCentr_CollTVXdivCollAll = new TH1D("histLumiSummary_nEvtsBeforeCutsCentr_CollTVXdivCollAll", "histLumiSummary_nEvtsBeforeCutsCentr_CollTVXdivCollAll", nSummaryBins_nEvtsBcSelCentr_BeforeCuts, 0, nSummaryBins_nEvtsBcSelCentr_BeforeCuts);
+    TH1D *histLumiSummary_nEvtsAfterCutsCentr_CollTVXdivCollAll = new TH1D("histLumiSummary_nEvtsAfterCutsCentr_CollTVXdivCollAll", "histLumiSummary_nEvtsAfterCutsCentr_CollTVXdivCollAll", nSummaryBins_nEvtsBcSelCentr_BeforeCuts, 0, nSummaryBins_nEvtsBcSelCentr_BeforeCuts);
+    
     for (int i = 0; i < nCentrBins; i++) {
-        TString originalLabel = histRatioIntegralsCentrFT0C->GetXaxis()->GetBinLabel(i+1);
-        TString newLabel = originalLabel + "%";
-        histLumiSummary->GetXaxis()->SetBinLabel(10 + i, newLabel);
+        TString originalLabel = histRatioIntegrals_CentrFT0C_BeforeCuts->GetXaxis()->GetBinLabel(i+1);
+        histLumiSummary_nEvtsBcSelCentr_BeforeCuts->GetXaxis()->SetBinLabel(1 + i, originalLabel);
+        histLumiSummary_nEvtsBcSelCentr_AfterCuts->GetXaxis()->SetBinLabel(1 + i, originalLabel);
+        histLumiSummary_nEvtsBeforeCutsCentr_CollTVXdivCollAll->GetXaxis()->SetBinLabel(1 + i, originalLabel);
+        histLumiSummary_nEvtsAfterCutsCentr_CollTVXdivCollAll->GetXaxis()->SetBinLabel(1 + i, originalLabel);
+        
     }
 
     std::cout << "****************************************************" << std::endl;
@@ -432,22 +492,56 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
     std::cout << "collsAfterCuts = " << collsAfterCuts << std::endl;
     std::cout << "bcCounterTVX = " << bcCounterTVX << std::endl;
     std::cout << "bcCounterTVXafterBCcuts = " << bcCounterTVXafterBCcuts << std::endl;
+    std::cout << "evColCounterAll = " << evColCounterAll << std::endl;
     std::cout << "evColCounterTVX = " << evColCounterTVX << std::endl;
-    std::cout << "ratioIntegralsCentrFT0C per bin:" << std::endl;
+    std::cout << "SelectedIntegral of CentrFT0C BeforeCuts (per bins):" << std::endl;
     for (int i = 0; i < nCentrBins; i++) {
-        TString label = histRatioIntegralsCentrFT0C->GetXaxis()->GetBinLabel(i+1);
-        double value = histRatioIntegralsCentrFT0C->GetBinContent(i+1);
+        TString label = histSelectedIntegrals_CentrFT0C_BeforeCuts->GetXaxis()->GetBinLabel(i+1);
+        double value = histSelectedIntegrals_CentrFT0C_BeforeCuts->GetBinContent(i+1);
+        std::cout << label << " : " << value << std::endl;
+    }
+    std::cout << "SelectedIntegral/TotalIntegral of CentrFT0C BeforeCuts:" << std::endl; 
+    for (int i = 0; i < nCentrBins; i++) {
+        TString label = histRatioIntegrals_CentrFT0C_BeforeCuts->GetXaxis()->GetBinLabel(i+1);
+        double value = histRatioIntegrals_CentrFT0C_BeforeCuts->GetBinContent(i+1);
+        std::cout << label << " : " << value << std::endl;
+    }
+    std::cout << "SelectedIntegral of CentrFT0C AfterCuts (per bins):" << std::endl;
+    for (int i = 0; i < nCentrBins; i++) {
+        TString label = histSelectedIntegrals_CentrFT0C_AfterCuts->GetXaxis()->GetBinLabel(i+1);
+        double value = histSelectedIntegrals_CentrFT0C_AfterCuts->GetBinContent(i+1);
+        std::cout << label << " : " << value << std::endl;
+    }
+    std::cout << "SelectedIntegral/TotalIntegral of CentrFT0C AfterCuts:" << std::endl; 
+    for (int i = 0; i < nCentrBins; i++) {
+        TString label = histRatioIntegrals_CentrFT0C_AfterCuts->GetXaxis()->GetBinLabel(i+1);
+        double value = histRatioIntegrals_CentrFT0C_AfterCuts->GetBinContent(i+1);
         std::cout << label << " : " << value << std::endl;
     }
     std::cout << "****************************************************" << std::endl;
-    std::vector<double> nEvtsBcSelCentr(nCentrBins, -999);
+
+    double collsBeforeCuts_0100 = histSelectedIntegrals_CentrFT0C_BeforeCuts->GetBinContent(histSelectedIntegrals_CentrFT0C_BeforeCuts->GetXaxis()->FindBin("0-100"));
+    double collsAfterCuts_0100 = histSelectedIntegrals_CentrFT0C_AfterCuts->GetBinContent(histSelectedIntegrals_CentrFT0C_AfterCuts->GetXaxis()->FindBin("0-100"));
+
+    std::vector<double> nEvtsBcSelCentr_BeforeCuts(nCentrBins, -999);
+    std::vector<double> nEvtsBcSelCentr_AfterCuts(nCentrBins, -999);
+    std::vector<double> nEvtsBeforeCutsCentr_CollTVXdivCollAll(nCentrBins, -999);
+    std::vector<double> nEvtsAfterCutsCentr_CollTVXdivCollAll(nCentrBins, -999);
+
     double bcCounterEfficiency = bcCounterTVXafterBCcuts / bcCounterTVX;
-    double nEvtsBcSel, nEvtsBcSelAfterCuts = -999;
+    double nEvtsBcSel, nEvtsBcSel_0100, nEvtsBcSelAfterCuts = -999;
     double luminosityBcSel, luminosityBcSelAfterCuts = -999;
+
     if (triggerMask.find("minBias") != std::string::npos) {
-        nEvtsBcSel = (bcCounterTVX * (collsAfterCuts / collsBeforeCuts));
+        nEvtsBcSel = (bcCounterTVX * (collsAfterCuts / collsBeforeCuts)); // in 'collsBeforeCuts' we could also have taken in account the 'overflow' and 'underflow' (also in 'collsAfterCuts') -> Taken everything from EventStats in Table-Maker/Statistics. Actually no, there are no underflow or overflow
+        nEvtsBcSel_0100 = (bcCounterTVX * (collsAfterCuts_0100 / collsBeforeCuts_0100)); // in this way in 'collsBeforeCuts' we are not taking the 'overflow' and 'underflow'
         for (int i = 0; i < nCentrBins; i++) {
-            nEvtsBcSelCentr[i] = nEvtsBcSel * histRatioIntegralsCentrFT0C->GetBinContent(i+1);
+            nEvtsBcSelCentr_BeforeCuts[i] = nEvtsBcSel_0100 * histRatioIntegrals_CentrFT0C_BeforeCuts->GetBinContent(i+1); // Taken into account of the centrality range we would like to study
+            nEvtsBcSelCentr_AfterCuts[i] = nEvtsBcSel_0100 * histRatioIntegrals_CentrFT0C_AfterCuts->GetBinContent(i+1); // Taken into account of the centrality range we would like to study
+
+            nEvtsBeforeCutsCentr_CollTVXdivCollAll[i] = histSelectedIntegrals_CentrFT0C_BeforeCuts->GetBinContent(i+1) * (evColCounterTVX / evColCounterAll); // Method 2 to calculate N. min Bias
+            nEvtsAfterCutsCentr_CollTVXdivCollAll[i] = histSelectedIntegrals_CentrFT0C_AfterCuts->GetBinContent(i+1) * (evColCounterTVX / evColCounterAll); // Method 2 to calculate N. min Bias
+            
         }
         nEvtsBcSelAfterCuts = (bcCounterTVXafterBCcuts * (collsAfterCuts / collsBeforeCuts));
         luminosityBcSel = nEvtsBcSel / xSecTVX;
@@ -458,11 +552,34 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
         double luminosityEvSelMinBias = (evColCounterTVX * (collsAfterCuts / collsBeforeCuts)) / xSecTVX;
         std::cout << "BC selection efficiency = " << bcCounterTVXafterBCcuts / bcCounterTVX << std::endl;
         std::cout << "N. events            = " << (bcCounterTVX * (collsAfterCuts / collsBeforeCuts)) << std::endl;
+        std::cout << "N. events (0-100%)           = " << (bcCounterTVX * (collsAfterCuts_0100 / collsBeforeCuts_0100)) << std::endl;
+        std::cout << "Colls before cuts     = " << collsBeforeCuts << std::endl;
+        std::cout << "Colls before cuts (0-100%)  = " << collsBeforeCuts_0100 << std::endl;
         std::cout << "Colls after cuts     = " << collsAfterCuts << std::endl;
-        std::cout << "nEvtsBcSelCentr = ";
-        for (size_t i = 0; i < nEvtsBcSelCentr.size(); i++) {
-            std::cout << nEvtsBcSelCentr[i];
-            if (i != nEvtsBcSelCentr.size() - 1) std::cout << ", ";
+        std::cout << "Colls after cuts (0-100%)  = " << collsAfterCuts_0100 << std::endl;
+        std::cout << "nEvtsBcSelCentr_BeforeCuts = ";
+        for (size_t i = 0; i < nEvtsBcSelCentr_BeforeCuts.size(); i++) {
+            TString label = histRatioIntegrals_CentrFT0C_BeforeCuts->GetXaxis()->GetBinLabel(i+1);         
+            std::cout << label << " : " << nEvtsBcSelCentr_BeforeCuts[i] << std::endl;
+            if (i != nEvtsBcSelCentr_BeforeCuts.size() - 1) std::cout << ", ";
+        }
+        std::cout << "nEvtsBcSelCentr_AfterCuts = ";
+        for (size_t i = 0; i < nEvtsBcSelCentr_AfterCuts.size(); i++) {
+            TString label = histRatioIntegrals_CentrFT0C_BeforeCuts->GetXaxis()->GetBinLabel(i+1);
+            std::cout << label << " : " << nEvtsBcSelCentr_AfterCuts[i] << std::endl;
+            if (i != nEvtsBcSelCentr_AfterCuts.size() - 1) std::cout << ", ";
+        }
+        std::cout << "nEvtsBeforeCutsCentr_CollTVXdivCollAll = ";
+        for (size_t i = 0; i < nEvtsBeforeCutsCentr_CollTVXdivCollAll.size(); i++) {
+            TString label = histRatioIntegrals_CentrFT0C_BeforeCuts->GetXaxis()->GetBinLabel(i+1);
+            std::cout << label << " : " << nEvtsBeforeCutsCentr_CollTVXdivCollAll[i] << std::endl;
+            if (i != nEvtsBeforeCutsCentr_CollTVXdivCollAll.size() - 1) std::cout << ", "; 
+        }
+        std::cout << "nEvtsAfterCutsCentr_CollTVXdivCollAll = ";
+        for (size_t i = 0; i < nEvtsAfterCutsCentr_CollTVXdivCollAll.size(); i++) {
+            TString label = histRatioIntegrals_CentrFT0C_BeforeCuts->GetXaxis()->GetBinLabel(i+1);
+            std::cout << label << " : " << nEvtsAfterCutsCentr_CollTVXdivCollAll[i] << std::endl;
+            if (i != nEvtsAfterCutsCentr_CollTVXdivCollAll.size() - 1) std::cout << ", ";
         }
         std::cout << std::endl;
         std::cout << "luminosity Min. Bias [bc-selection-task]                  = " << luminosityBcSelMinBias << " pb-1" << std::endl;
@@ -487,33 +604,56 @@ void luminosity(string year = "2024", string period = "LHC24_ppref_pass1", strin
     histLumiSummary -> SetBinContent(1, bcCounterTVX);
     histLumiSummary -> SetBinContent(2, bcCounterTVXafterBCcuts);
     histLumiSummary -> SetBinContent(3, bcCounterEfficiency);
-    histLumiSummary -> SetBinContent(4, nEvtsBcSel);
-    histLumiSummary -> SetBinContent(5, nEvtsBcSelAfterCuts);
-    histLumiSummary -> SetBinContent(6, collsBeforeCuts);
-    histLumiSummary -> SetBinContent(7, collsAfterCuts);
-    histLumiSummary -> SetBinContent(8, luminosityBcSel);
-    histLumiSummary -> SetBinContent(9, luminosityBcSelAfterCuts);
+    histLumiSummary -> SetBinContent(4, evColCounterAll);
+    histLumiSummary -> SetBinContent(5, evColCounterTVX);
+    histLumiSummary -> SetBinContent(6, nEvtsBcSel);
+    histLumiSummary -> SetBinContent(7, nEvtsBcSel_0100);
+    histLumiSummary -> SetBinContent(8, nEvtsBcSelAfterCuts);
+    histLumiSummary -> SetBinContent(9, collsBeforeCuts);
+    histLumiSummary -> SetBinContent(10, collsBeforeCuts_0100);
+    histLumiSummary -> SetBinContent(11, collsAfterCuts);
+    histLumiSummary -> SetBinContent(12, collsAfterCuts_0100);
+    histLumiSummary -> SetBinContent(13, luminosityBcSel);
+    histLumiSummary -> SetBinContent(14, luminosityBcSelAfterCuts);
+
     for (int i = 0; i < nCentrBins; i++) {
-        histLumiSummary->SetBinContent(10 + i, nEvtsBcSelCentr[i]);
+        histLumiSummary_nEvtsBcSelCentr_BeforeCuts->SetBinContent(1 + i, nEvtsBcSelCentr_BeforeCuts[i]);
+        histLumiSummary_nEvtsBcSelCentr_AfterCuts->SetBinContent(1 + i, nEvtsBcSelCentr_AfterCuts[i]);
+        histLumiSummary_nEvtsBeforeCutsCentr_CollTVXdivCollAll->SetBinContent(1 + i, nEvtsBeforeCutsCentr_CollTVXdivCollAll[i]);
+        histLumiSummary_nEvtsAfterCutsCentr_CollTVXdivCollAll->SetBinContent(1 + i, nEvtsAfterCutsCentr_CollTVXdivCollAll[i]);
     }
 
-    TFile *fOut = new TFile(Form("data/%s/pass2/%s_%s_%s_luminosity.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str()), "RECREATE");
+    TFile *fOut = new TFile(Form("data/%s/pass2/%s_%s_%s_luminosity_Corrected.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str()), "RECREATE");
     histLumiSummary -> Write();
+    histLumiSummary_nEvtsBcSelCentr_BeforeCuts -> Write();
+    histLumiSummary_nEvtsBcSelCentr_AfterCuts -> Write();
+    histLumiSummary_nEvtsBeforeCutsCentr_CollTVXdivCollAll -> Write();
+    histLumiSummary_nEvtsAfterCutsCentr_CollTVXdivCollAll -> Write();
     fOut -> Close();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void check_normalization(string fInName = "LHC25ae_minBias_std_assoc_luminosity.root", string fOutName = "luminosity_jpsi_LHC25ae_pass2_minBias.root") {
     TFile *fInLumiMinBias2024StdAssoc = TFile::Open(Form("data/2025/pass2/%s", fInName.c_str()));
     TH1D *histLumiMinBias2024StdAssoc = (TH1D*) fInLumiMinBias2024StdAssoc -> Get("histLumiSummary");
-    double nEvtsMinBias2024StdAssoc = histLumiMinBias2024StdAssoc -> GetBinContent(histLumiMinBias2024StdAssoc -> GetXaxis() -> FindBin("nEvtsBcSel"));
+    TH1D *histLumiMinBias2024StdAssoc_nEvtsBcSelCentr_BeforeCuts = (TH1D*) fInLumiMinBias2024StdAssoc -> Get("histLumiSummary_nEvtsBcSelCentr_BeforeCuts");
+    TH1D *histLumiMinBias2024StdAssoc_nEvtsBcSelCentr_AfterCuts = (TH1D*) fInLumiMinBias2024StdAssoc -> Get("histLumiSummary_nEvtsBcSelCentr_AfterCuts");
+    TH1D *histLumiMinBias2024StdAssoc_nEvtsBeforeCutsCentr_CollTVXdivCollAll = (TH1D*) fInLumiMinBias2024StdAssoc -> Get("histLumiSummary_nEvtsBeforeCutsCentr_CollTVXdivCollAll");
+    TH1D *histLumiMinBias2024StdAssoc_nEvtsAfterCutsCentr_CollTVXdivCollAll = (TH1D*) fInLumiMinBias2024StdAssoc -> Get("histLumiSummary_nEvtsAfterCutsCentr_CollTVXdivCollAll");
+    double nEvtsMinBias2024StdAssoc_0100 = histLumiMinBias2024StdAssoc -> GetBinContent(histLumiMinBias2024StdAssoc -> GetXaxis() -> FindBin("nEvtsBcSel_0100")); 
     double lumiMinBias2024StdAssoc = histLumiMinBias2024StdAssoc -> GetBinContent(histLumiMinBias2024StdAssoc -> GetXaxis() -> FindBin("luminosityBcSel"));
 
     const char* centLabels[] = {"0-5%","5-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%","70-90%", "0-90%", "0-100%"};
     //const char* centLabels[] = {"0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-90%","0-90%", "0-100%"};
     int nCentrBins = sizeof(centLabels)/sizeof(char*);
-    std::vector<double> nEvtsBcSelCentr(nCentrBins);
+    std::vector<double> nEvtsBcSelCentr_BeforeCuts(nCentrBins);
+    std::vector<double> nEvtsBcSelCentr_AfterCuts(nCentrBins);
+    std::vector<double> nEvtsBeforeCutsCentr_CollTVXdivCollAll(nCentrBins);
+    std::vector<double> nEvtsAfterCutsCentr_CollTVXdivCollAll(nCentrBins);
     for (int i = 0; i < nCentrBins; i++) {
-        nEvtsBcSelCentr[i] = histLumiMinBias2024StdAssoc->GetBinContent(histLumiMinBias2024StdAssoc->GetXaxis()->FindBin(centLabels[i]));
+        nEvtsBcSelCentr_BeforeCuts[i] = histLumiMinBias2024StdAssoc_nEvtsBcSelCentr_BeforeCuts->GetBinContent(i+1);
+        nEvtsBcSelCentr_AfterCuts[i] = histLumiMinBias2024StdAssoc_nEvtsBcSelCentr_AfterCuts->GetBinContent(i+1);
+        nEvtsBeforeCutsCentr_CollTVXdivCollAll[i] = histLumiMinBias2024StdAssoc_nEvtsBeforeCutsCentr_CollTVXdivCollAll->GetBinContent(i+1);
+        nEvtsAfterCutsCentr_CollTVXdivCollAll[i] = histLumiMinBias2024StdAssoc_nEvtsAfterCutsCentr_CollTVXdivCollAll->GetBinContent(i+1);
     }
 
     /*
@@ -532,30 +672,50 @@ void check_normalization(string fInName = "LHC25ae_minBias_std_assoc_luminosity.
     TH1D *histLuminosityMinBias2024StdAssoc = new TH1D("histLumi", "; ; Luminosity (pb-1)", 1, 0, 1);
     histLuminosityMinBias2024StdAssoc -> SetBinContent(1, lumiMinBias2024StdAssoc);
 
-    TH1D *histNeventMinBias2024StdAssoc = new TH1D("histNevMinBias", "; ; N. Events min bias", 1, 0, 1);
-    histNeventMinBias2024StdAssoc -> SetBinContent(1, nEvtsMinBias2024StdAssoc);
+    TH1D *histNeventMinBias2024StdAssoc = new TH1D("histNevMinBias", "; ; N. Events min bias (0-100%)", 1, 0, 1);
+    histNeventMinBias2024StdAssoc -> SetBinContent(1, nEvtsMinBias2024StdAssoc_0100);
 
-    TH1D *histNeventMinBiasCentr = new TH1D("histNeventMinBias_Centr", "; ; N. Events min bias for a given centrality",nCentrBins, 0, nCentrBins);
+    TH1D *histnEvtsBcSelCentr_BeforeCuts = new TH1D("histnEvtsBcSelCentr_BeforeCuts", "; ; nEvtsBcSelCentr_BeforeCuts (N. Events min bias for a given centrality Before Cuts - Method 1)",nCentrBins, 0, nCentrBins);
     for (int i = 0; i < nCentrBins; i++) {
-        histNeventMinBiasCentr->SetBinContent(i+1, nEvtsBcSelCentr[i]);
-        histNeventMinBiasCentr->GetXaxis()->SetBinLabel(i+1, centLabels[i]);
+        histnEvtsBcSelCentr_BeforeCuts->SetBinContent(i+1, nEvtsBcSelCentr_BeforeCuts[i]);
+        histnEvtsBcSelCentr_BeforeCuts->GetXaxis()->SetBinLabel(i+1, centLabels[i]);
+    }
+    TH1D *histnEvtsBcSelCentr_AfterCuts = new TH1D("histnEvtsBcSelCentr_AfterCuts", "; ; nEvtsBcSelCentr_AfterCuts (N. Events min bias for a given centrality After Cuts - Method 1)",nCentrBins, 0, nCentrBins);
+    for (int i = 0; i < nCentrBins; i++) {
+        histnEvtsBcSelCentr_AfterCuts->SetBinContent(i+1, nEvtsBcSelCentr_AfterCuts[i]);
+        histnEvtsBcSelCentr_AfterCuts->GetXaxis()->SetBinLabel(i+1, centLabels[i]);
+    }
+    TH1D *histnEvtsBeforeCutsCentr_CollTVXdivCollAll = new TH1D("histnEvtsBeforeCutsCentr_CollTVXdivCollAll", "; ; nEvtsBeforeCutsCentr_CollTVXdivCollAll (N. Events min bias for a given centrality Before Cuts - Method 2)",nCentrBins, 0, nCentrBins);
+    for (int i = 0; i < nCentrBins; i++) {
+        histnEvtsBeforeCutsCentr_CollTVXdivCollAll->SetBinContent(i+1, nEvtsBeforeCutsCentr_CollTVXdivCollAll[i]);
+        histnEvtsBeforeCutsCentr_CollTVXdivCollAll->GetXaxis()->SetBinLabel(i+1, centLabels[i]);
+    }
+    TH1D *histnEvtsAfterCutsCentr_CollTVXdivCollAll = new TH1D("histnEvtsAfterCutsCentr_CollTVXdivCollAll", "; ; nEvtsAfterCutsCentr_CollTVXdivCollAll (N. Events min bias for a given centrality After Cuts - Method 2)",nCentrBins, 0, nCentrBins);
+    for (int i = 0; i < nCentrBins; i++) {
+        histnEvtsAfterCutsCentr_CollTVXdivCollAll->SetBinContent(i+1, nEvtsAfterCutsCentr_CollTVXdivCollAll[i]);
+        histnEvtsAfterCutsCentr_CollTVXdivCollAll->GetXaxis()->SetBinLabel(i+1, centLabels[i]);
     }
 
     TFile *fOutLumiMinBias2024StdAssoc = new TFile(Form("data/2025/pass2/%s", fOutName.c_str()), "RECREATE");
     histLuminosityMinBias2024StdAssoc -> Write();
     histNeventMinBias2024StdAssoc -> Write();
-    histNeventMinBiasCentr -> Write();
+    histnEvtsBcSelCentr_BeforeCuts -> Write();
+    histnEvtsBcSelCentr_AfterCuts -> Write();
+    histnEvtsBeforeCutsCentr_CollTVXdivCollAll-> Write();
+    histnEvtsAfterCutsCentr_CollTVXdivCollAll-> Write();
     fOutLumiMinBias2024StdAssoc -> Close();
 
     std::cout << "---------------------------" << std::endl;
     std::cout << "[Min. Bias, std. assoc.]" << std::endl;
-    std::cout << "N. evts.          = " << nEvtsMinBias2024StdAssoc << std::endl;
+    std::cout << "N. evts. (0-100%)         = " << nEvtsMinBias2024StdAssoc_0100 << std::endl;
     for (int i = 0; i < nCentrBins; i++) {
-        double nEvts = nEvtsBcSelCentr[i];
-        std::cout << "N. evts " << centLabels[i] << " = " << nEvts << std::endl;
+        std::cout << "N. evts (nEvtsBcSelCentr_BeforeCuts) " << centLabels[i] << " = " << nEvtsBcSelCentr_BeforeCuts[i] << std::endl;
+        std::cout << "N. evts (nEvtsBcSelCentr_AfterCuts) " << centLabels[i] << " = " << nEvtsBcSelCentr_AfterCuts[i] << std::endl;
+        std::cout << "N. evts (nEvtsBeforeCutsCentr_CollTVXdivCollAll) " << centLabels[i] << " = " << nEvtsBeforeCutsCentr_CollTVXdivCollAll[i] << std::endl;
+        std::cout << "N. evts (nEvtsAfterCutsCentr_CollTVXdivCollAll) " << centLabels[i] << " = " << nEvtsAfterCutsCentr_CollTVXdivCollAll[i] << std::endl;
     }
     std::cout << "Luminosity        = " << lumiMinBias2024StdAssoc << std::endl;
-    std::cout << "N. evts. corr.    = " << nEvtsMinBias2024StdAssoc << std::endl;
+    //std::cout << "N. evts. corr.    = " << nEvtsMinBias2024StdAssoc << std::endl;
     std::cout << "Luminosity corr.  = " << lumiMinBias2024StdAssoc << std::endl;
     std::cout << "---------------------------" << std::endl;
 

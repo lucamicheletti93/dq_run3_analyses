@@ -4,25 +4,34 @@ inputs:
   prefixGen: AnalysisResults_dq_efficiency_with_assoc # [AnalysisResults_dq_efficiency_with_assoc, AnalysisResults]
   prefixRec: AnalysisResults_dq_efficiency_with_assoc # [AnalysisResults_dq_efficiency_with_assoc, AnalysisResults]
   assocType: std_association
+
   sigGen: Jpsi
   sigRec: mumuFromJpsi
+
   cuts: [matchedMchMid]
+
   hlistGen: analysis-same-event-pairing/output
   listGen: MCTruthGenSel
   #histGen: Pt_Rapidity # dq-efficiency
-  histGen: PtMC_YMC # dq-efficiency-with-assoc
+  #histGen: PtMC_YMC # dq-efficiency-with-assoc # vs Pt
+  histGen: PtMC_YMC_CentFT0CMC # dq-efficiency-with-assoc # vs Pt and Centr
+
   hlistRec: analysis-same-event-pairing/output
   listRec: PairsMuonSEPM
   histRec: Mass_Pt_centrFT0C_V2
-  # Integrated Pt and Rap bins for THn, TH2 projections
+
+  # Integrated Pt, Rap and CentFT0C bins for THn, TH3 projections
   # Keep the same limits also in the differential bins!
   minPtBinInt: 0.0
   maxPtBinInt: 20.0
   minRapBinInt: 2.50
   maxRapBinInt: 4.00
-  #ptBins: [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0]
-  #rapBins: [2.50, 4.00]
-  ptBins: [0.0, 20.0]
+  minCentFT0CBinInt: 0.0
+  maxCentFT0CBinInt: 90.0
+  ptBins: [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0]
+  #ptBins: [0.0, 20.0]
+  #centFT0CBins: [0.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 90.0]
+  centFT0CBins: [0.0, 90.0]
   rapBins: [2.50, 4.00]
 
 scan:
@@ -32,4 +41,4 @@ scan:
 
 outputs:
   path: data/MC
-  prefix: axe_integrated # [integrated, pt_dependence, rap_dependence]
+  prefix: axe_pt_dependence_Rap_2.5_4_Cent_0_90 # [integrated, pt_dependence, rap_dependence, cent_dependance]
