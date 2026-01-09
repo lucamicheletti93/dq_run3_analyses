@@ -5,16 +5,17 @@ inputs:
   Taa: 0.00020955882 # 0-90%     # <Ncoll> / sigmas_NN = 14.25 / 68000.0 mub-1 (68 mb)    -->   <Ncoll> = weight average (weighthing with the centrality binning) using the values in slides 13 https://indico.cern.ch/event/1567135/contributions/6732178/attachments/3168316/5631388/DDChinellato-APWNov2025-Centrality-02.pdf 
   TaaVsCentr: [0.00062221,0.0005267647,0.00042308824,0.00030264706,0.00020867647,0.00014176471,0.00009573529,0.00006485294,0.00003735294]  # <Ncoll> / sigma_NN = Value / 68000.0 mub-1 (68 mb)    -->   <Ncoll> = weight average (weighthing with the centrality binning) using the values in slides 13 https://indico.cern.ch/event/1567135/contributions/6732178/attachments/3168316/5631388/DDChinellato-APWNov2025-Centrality-02.pdf 
   Ncoll:      [42.31        ,35.82    ,28.77        ,20.58        ,14.19        ,9.64         ,6.51         ,4.41         ,2.54         ]  # <Ncoll> = weight average (weighthing with the centrality binning) using the values in slides 13 https://indico.cern.ch/event/1567135/contributions/6732178/attachments/3168316/5631388/DDChinellato-APWNov2025-Centrality-02.pdf
+  errNcoll:   [2.61         ,2.7      ,2.73         ,2.35         ,1.75         ,1.22         ,0.82         ,0.54         ,0.31         ]  # Err <Ncoll>, using the values in slides 13 https://indico.cern.ch/event/1567135/contributions/6732178/attachments/3168316/5631388/DDChinellato-APWNov2025-Centrality-02.pdf
   Npart:      [26.34        ,24.08    ,21.03        ,16.88        ,13.05        ,9.88         ,7.39         ,5.51         ,3.66         ]  # <Npart> = weight average (weighthing with the centrality binning) using the values in slides 13 https://indico.cern.ch/event/1567135/contributions/6732178/attachments/3168316/5631388/DDChinellato-APWNov2025-Centrality-02.pdf
-  errNpart:   [0.59         ,0.69     ,0.84         ,0.89         ,0.75         ,0.61         ,0.48         ,0.36         ,0.26         ]  # Last bin to be correctly computed
-  fInLumi: "data/2025/pass2/luminosity_jpsi_LHC25ae_pass2_minBias.root"
+  errNpart:   [0.59         ,0.69     ,0.84         ,0.89         ,0.75         ,0.61         ,0.48         ,0.36         ,0.25         ]  # Err <Npart>, using the values in slides 13 https://indico.cern.ch/event/1567135/contributions/6732178/attachments/3168316/5631388/DDChinellato-APWNov2025-Centrality-02.pdf
+  fInLumi: "data/2025/pass2/luminosity_jpsi_LHC25ae_pass2_minBias_Corrected.root" # added 'Corrected'
   # centrality dependence
   fInRawYieldVsCentr: data/2025/pass2/systematic_sig_Jpsi_vs_centr.txt
-  fInAxeVsCentr: data/MC/LHC25i4/axe_integrated_std_association_Jpsi.txt # No centrality, quindi tutta - 0-20 pT
+  fInAxeVsCentr: data/MC/LHC25i4/axe_cent_dependence_Rap_2.5_4_Pt_0_20_std_association_Jpsi_100PercStat.txt 
   fInPPredVsCentr: data/ppRef/interp_jpsi_xsec_pp5dot36TeV.root
   # pt dependence
   fInRawYieldVsPt: data/2025/pass2/systematic_sig_Jpsi_vs_pt.txt
-  fInAxeVsPt: data/MC/LHC25i4/axe_pt_dependence_std_association_Jpsi.txt # No centrality, quindi tutta - 0-1, 1-2, 2-3, 3-4, 4-5, 5-6, 6-8 pT
+  fInAxeVsPt: data/MC/LHC25i4/axe_pt_dependence_Rap_2.5_4_Cent_0_90_std_association_Jpsi_100PercStat.txt
   fInPPredVsPt: data/ppRef/interp_jpsi_xsec_pp5dot36TeV.root
 
 outputs:
