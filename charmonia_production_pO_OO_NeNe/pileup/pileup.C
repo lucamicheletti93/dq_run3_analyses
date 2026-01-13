@@ -63,7 +63,6 @@ void pileup() {
     latexTitle -> DrawLatex(0.22, 0.60, Form("<#mu>_{MC}   = %5.4f", muMc));
     latexTitle -> DrawLatex(0.22, 0.54, Form("<#it{N}_{coll}^{TVX} | #it{N}_{coll}^{TVX} #geq 1>_{MC} = %5.4f", corrFactorMc));
 
-    
     canvasMu -> SaveAs("muDistribution.pdf");
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
