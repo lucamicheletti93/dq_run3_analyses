@@ -1,23 +1,25 @@
 void LoadStyle();
 void SetLegend(TLegend *, double);
 
-void pileup() {
+void pileup(string triggerMask = "all") { // all, tvx, sel8
     LoadStyle();
 
     TFile *fInData = new TFile("AnalysisResults_data.root", "READ");
-    TList *hlistDataStatistics = (TList*) fInData -> Get("table-maker/Statistics");
-    TH2D *histDataBcStats = (TH2D*) hlistDataStatistics -> FindObject("BcStats");
+    TList *hlistStatisticsData = (TList*) fInData -> Get("table-maker/Statistics");
+    TH2D *histBcStatsData = (TH2D*) hlistStatisticsData -> FindObject("BcStats");
 
-    TH1D *histMuData = (TH1D*) histDataBcStats -> ProjectionY("histMuData");
+    int binTriggerMaskData = histBcStatsData -> GetXaxis() -> FindBin(triggerMask.c_str());
+    TH1D *histMuData = (TH1D*) histBcStatsData -> ProjectionY("histMuData", binTriggerMaskData, binTriggerMaskData);
     histMuData -> Scale(1. / histMuData -> Integral());
     histMuData -> SetLineColor(kBlack);
     histMuData -> SetLineWidth(2);
 
     TFile *fInMc = new TFile("AnalysisResults_mc.root", "READ");
-    TList *hlistMcStatistics = (TList*) fInMc -> Get("table-maker/Statistics");
-    TH2D *histMcBcStats = (TH2D*) hlistMcStatistics -> FindObject("BcStats");
+    TList *hlistStatisticsMc = (TList*) fInMc -> Get("table-maker/Statistics");
+    TH2D *histBcStatsMc = (TH2D*) hlistStatisticsMc -> FindObject("BcStats");
 
-    TH1D *histMuMc = (TH1D*) histMcBcStats -> ProjectionY("histMuMc");
+    int binTriggerMaskMc = histBcStatsMc -> GetXaxis() -> FindBin(triggerMask.c_str());
+    TH1D *histMuMc = (TH1D*) histBcStatsMc -> ProjectionY("histMuMc", binTriggerMaskMc, binTriggerMaskMc);
     histMuMc -> Scale(1. / histMuMc -> Integral());
     histMuMc -> SetLineColor(kRed+1);
     histMuMc -> SetMarkerStyle(20);
@@ -63,7 +65,7 @@ void pileup() {
     latexTitle -> DrawLatex(0.22, 0.60, Form("<#mu>_{MC}   = %5.4f", muMc));
     latexTitle -> DrawLatex(0.22, 0.54, Form("<#it{N}_{coll}^{TVX} | #it{N}_{coll}^{TVX} #geq 1>_{MC} = %5.4f", corrFactorMc));
 
-    
+
     canvasMu -> SaveAs("muDistribution.pdf");
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
