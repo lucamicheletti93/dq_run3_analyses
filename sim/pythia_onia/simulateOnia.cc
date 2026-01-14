@@ -83,14 +83,18 @@ void runSimulation(PPythia& pythia, int tune, TNtuple* tuplePairs, TH1D* histEve
     // perform the simulation
     for (auto iEvent{0}; iEvent<nEvents; ++iEvent)
     {
+        std::cout << "Event : " << iEvent << std::endl;
         if(!pythia.next()) {
             continue;
         }
 
         histEvents->Fill(1.5f);
-        double impactParameter = pythia.info.hiInfo->b();
-        double nPart = pythia.info.hiInfo->nPartTarg() + pythia.info.hiInfo->nPartProj();
-        histImpParvsNpart -> Fill(impactParameter, nPart);
+        double impactParameter, nPart;
+        if (tune == kHeavyIon) {
+            impactParameter = pythia.info.hiInfo->b();
+            nPart = pythia.info.hiInfo->nPartTarg() + pythia.info.hiInfo->nPartProj();
+            histImpParvsNpart -> Fill(impactParameter, nPart);
+        }
 
         std::vector<Pythia8::Particle> jPsis;
         std::vector<bool> jPsiFromB{};
