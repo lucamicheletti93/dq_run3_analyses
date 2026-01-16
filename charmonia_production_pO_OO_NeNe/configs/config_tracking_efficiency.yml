@@ -1,0 +1,8 @@
+inputs:
+  fIn: /Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/AnalysisResults_LHC25ae_pass2.root
+  #fIn: /Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/AnalysisResults_LHC25i4.root
+
+outputs:
+  fOut: /Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/Histograms_trk_eff_LHC25ae_pass2.root
+  #fOut: /Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/Histograms_trk_eff_LHC25i4.root
+  fOutCorrMap: /Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/mch_trk_eff_LHC25ae.root
