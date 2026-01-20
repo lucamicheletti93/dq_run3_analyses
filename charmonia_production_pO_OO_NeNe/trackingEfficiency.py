@@ -219,6 +219,18 @@ def trackingEfficiency(config):
             histDataMchTrkEff[iVar].SetBinError(iBin+1, 0)
 
     # Plot results
+    lineUnityEta = ROOT.TLine(2.5, 1, 4, 1)
+    lineUnityEta.SetLineColor(ROOT.kGray+1)
+    lineUnityEta.SetLineStyle(ROOT.kDashed)
+
+    lineUnityPt = ROOT.TLine(0, 1, 65, 1)
+    lineUnityPt.SetLineColor(ROOT.kGray+1)
+    lineUnityPt.SetLineStyle(ROOT.kDashed)
+
+    lineUnityPhi = ROOT.TLine(-ROOT.TMath.Pi(), 1, ROOT.TMath.Pi(), 1)
+    lineUnityPhi.SetLineColor(ROOT.kGray+1)
+    lineUnityPhi.SetLineStyle(ROOT.kDashed)
+
     legendMchTrkEff = ROOT.TLegend(0.20, 0.78, 0.40, 0.93, " ", "brNDC")
     SetLegend(legendMchTrkEff)
     legendMchTrkEff.AddEntry(histDataMchTrkEff[0], "Data", "L")
@@ -230,20 +242,21 @@ def trackingEfficiency(config):
     for iSt, st in enumerate(stations):
         canvasEtaStEff.cd(iSt+1)
         histMcEffSt["Eta"][iSt].GetYaxis().SetRangeUser(0.98, 1.01)
-        SetHistStat(histMcEffSt["Eta"][iSt], 20, ROOT.kBlue)
+        SetHistStat(histMcEffSt["Eta"][iSt], 20, ROOT.kAzure+2)
         histMcEffSt["Eta"][iSt].Draw("H")
-        SetHistStat(histDataEffSt["Eta"][iSt], 20, ROOT.kRed)
+        SetHistStat(histDataEffSt["Eta"][iSt], 20, ROOT.kRed+1)
         histDataEffSt["Eta"][iSt].Draw("H SAME")
     canvasEtaStEff.Update()
 
     canvasEtaMchTrkEff = ROOT.TCanvas("canvasEtaMchTrkEff", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
     histMcMchTrkEff[0].GetYaxis().SetRangeUser(0.98, 1.01)
-    SetHistStat(histMcMchTrkEff[0], 20, ROOT.kBlue)
+    SetHistStat(histMcMchTrkEff[0], 20, ROOT.kAzure+2)
     histMcMchTrkEff[0].Draw("H")
-    SetHistStat(histDataMchTrkEff[0], 20, ROOT.kRed)
+    SetHistStat(histDataMchTrkEff[0], 20, ROOT.kRed+1)
     histDataMchTrkEff[0].Draw("H SAME")
     legendMchTrkEff.Draw("SAME")
+    lineUnityEta.Draw()
     canvasEtaMchTrkEff.Update()
 
     # Pt dependence
@@ -252,20 +265,22 @@ def trackingEfficiency(config):
     for iSt, st in enumerate(stations):
         canvasPt.cd(iSt+1)
         histMcEffSt["Pt"][iSt].GetYaxis().SetRangeUser(0.98, 1.01)
-        SetHistStat(histMcEffSt["Pt"][iSt], 20, ROOT.kBlue)
+        SetHistStat(histMcEffSt["Pt"][iSt], 20, ROOT.kAzure+2)
         histMcEffSt["Pt"][iSt].Draw("H")
-        SetHistStat(histDataEffSt["Pt"][iSt], 20, ROOT.kRed)
+        SetHistStat(histDataEffSt["Pt"][iSt], 20, ROOT.kRed+1)
         histDataEffSt["Pt"][iSt].Draw("H SAME")
     canvasPt.Update()
 
     canvasPtMchTrkEff = ROOT.TCanvas("canvasPtMchTrkEff", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
+    histMcMchTrkEff[1].GetXaxis().SetRangeUser(0, 65)
     histMcMchTrkEff[1].GetYaxis().SetRangeUser(0.98, 1.01)
-    SetHistStat(histMcMchTrkEff[1], 20, ROOT.kBlue)
+    SetHistStat(histMcMchTrkEff[1], 20, ROOT.kAzure+2)
     histMcMchTrkEff[1].Draw("H")
-    SetHistStat(histDataMchTrkEff[1], 20, ROOT.kRed)
+    SetHistStat(histDataMchTrkEff[1], 20, ROOT.kRed+1)
     histDataMchTrkEff[1].Draw("H SAME")
     legendMchTrkEff.Draw("SAME")
+    lineUnityPt.Draw()
     canvasPtMchTrkEff.Update()
 
     # Phi dependence
@@ -274,20 +289,21 @@ def trackingEfficiency(config):
     for iSt, st in enumerate(stations):
         canvasPhi.cd(iSt+1)
         histMcEffSt["Phi"][iSt].GetYaxis().SetRangeUser(0.98, 1.01)
-        SetHistStat(histMcEffSt["Phi"][iSt], 20, ROOT.kBlue)
+        SetHistStat(histMcEffSt["Phi"][iSt], 20, ROOT.kAzure+2)
         histMcEffSt["Phi"][iSt].Draw("H")
-        SetHistStat(histDataEffSt["Phi"][iSt], 20, ROOT.kRed)
+        SetHistStat(histDataEffSt["Phi"][iSt], 20, ROOT.kRed+1)
         histDataEffSt["Phi"][iSt].Draw("H SAME")
     canvasPhi.Update()
 
     canvasPhiMchTrkEff = ROOT.TCanvas("canvasPhiMchTrkEff", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
     histMcMchTrkEff[2].GetYaxis().SetRangeUser(0.98, 1.01)
-    SetHistStat(histMcMchTrkEff[2], 20, ROOT.kBlue)
+    SetHistStat(histMcMchTrkEff[2], 20, ROOT.kAzure+2)
     histMcMchTrkEff[2].Draw("H")
-    SetHistStat(histDataMchTrkEff[2], 20, ROOT.kRed)
+    SetHistStat(histDataMchTrkEff[2], 20, ROOT.kRed+1)
     histDataMchTrkEff[2].Draw("H SAME")
     legendMchTrkEff.Draw("SAME")
+    lineUnityPhi.Draw()
     canvasPhiMchTrkEff.Update()
 
     histCorrMap = []
