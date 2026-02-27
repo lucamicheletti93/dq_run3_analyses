@@ -80,7 +80,7 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
     TH1D *histCorrMapMchTrkEffPt = (TH1D*) fInMchTrkEff -> Get("histCorrMap_Pt");
     TH1D *histCorrMapMchTrkEffPhi = (TH1D*) fInMchTrkEff -> Get("histCorrMap_Phi");
 
-    double matchEff = 0.986;
+    double matchEff = 0.99;
 
     const int nPtBins = 10;
     double pTBinEdges[] = {0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 20.0};
