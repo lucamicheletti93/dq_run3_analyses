@@ -31,13 +31,28 @@ def compareToModels(config):
     LoadStyle()
     ROOT.gStyle.SetOptStat(False)
 
+    dfJpsiRaaVsCentr = pd.read_csv(config["inputs"]["fInJpsiRaaVsCentr"], sep=' ')
+    centrMin = dfJpsiRaaVsCentr["x_min"]
+    centrMax = dfJpsiRaaVsCentr["x_max"]
+    centrCenters = (centrMax + centrMin) / 2.
+    centrWidths = (centrMax - centrMin) / 2.
+    centrSystWidths = np.repeat(0.5, len(centrWidths))
+    jpsiRaaVsCentr = dfJpsiRaaVsCentr["val"]
+    jpsiStatRaaVsCentr = dfJpsiRaaVsCentr["stat"]
+    jpsiSystRaaVsCentr = dfJpsiRaaVsCentr["syst"]
+
+    graStatJpsiRaaVsCentr = ROOT.TGraphErrors(len(centrCenters), np.array(centrCenters), np.array(jpsiRaaVsCentr), np.array(centrWidths), np.array(jpsiStatRaaVsCentr))
+    graSystJpsiRaaVsCentr = ROOT.TGraphErrors(len(centrCenters), np.array(centrCenters), np.array(jpsiRaaVsCentr), np.array(centrSystWidths), np.array(jpsiSystRaaVsCentr))
+
+    SetHistStat(graStatJpsiRaaVsCentr, 20, ROOT.kRed+1)
+    SetHistSyst(graSystJpsiRaaVsCentr, 20, ROOT.kRed+1)
+
     dfJpsiRaaThuVsCentr = pd.read_csv(config["inputs"]["fInJpsiRaaThuVsCentr"], sep=' ')
     centrMin = dfJpsiRaaThuVsCentr["x_min"]
     centrMax = dfJpsiRaaThuVsCentr["x_max"]
     centrCenters = (centrMax + centrMin) / 2.
     centrWidths = (centrMax - centrMin) / 2.
     centrSystWidths = np.repeat(1.5, len(centrWidths))
-    centrEdges = np.append(centrMin.to_numpy(), centrMax.to_numpy()[len(centrMax)-1])
     jpsiRaaThuVsCentr = dfJpsiRaaThuVsCentr["val"]
 
     npartCenters = [25.21, 21.03, 16.88, 13.05, 9.88, 7.39, 5.51, 4.15, 3.17, 2.42]
@@ -51,6 +66,8 @@ def compareToModels(config):
     canvasJpsiRaaThuVsCentr = ROOT.TCanvas("canvasJpsiRaaThuVsCentr", "", 800, 600)
     histGridJpsiRaaVsCentr.Draw()
     graJpsiRaaThuVsCentr.Draw("EP SAME")
+    graStatJpsiRaaVsCentr.Draw("EP SAME")
+    graSystJpsiRaaVsCentr.Draw("E2P SAME")
 
     lineUnityVsCentr = ROOT.TLine(0, 1, 30, 1)
     lineUnityVsCentr.SetLineColor(ROOT.kGray+1)
@@ -68,6 +85,21 @@ def compareToModels(config):
 
 
 
+    dfJpsiRaaVsPt = pd.read_csv(config["inputs"]["fInJpsiRaaVsPt"], sep=' ')
+    ptMin = dfJpsiRaaVsPt["x_min"]
+    ptMax = dfJpsiRaaVsPt["x_max"]
+    ptCenters = (ptMax + ptMin) / 2.
+    ptWidths = (ptMax - ptMin) / 2.
+    ptSystWidths = np.repeat(0.2, len(ptWidths))
+    jpsiRaaVsPt = dfJpsiRaaVsPt["val"]
+    jpsiStatRaaVsPt = dfJpsiRaaVsPt["stat"]
+    jpsiSystRaaVsPt = dfJpsiRaaVsPt["syst"]
+
+    graStatJpsiRaaVsPt = ROOT.TGraphErrors(len(ptCenters), np.array(ptCenters), np.array(jpsiRaaVsPt), np.array(ptWidths), np.array(jpsiStatRaaVsPt))
+    graSystJpsiRaaVsPt = ROOT.TGraphErrors(len(ptCenters), np.array(ptCenters), np.array(jpsiRaaVsPt), np.array(ptSystWidths), np.array(jpsiSystRaaVsPt))
+
+    SetHistStat(graStatJpsiRaaVsPt, 20, ROOT.kRed+1)
+    SetHistSyst(graSystJpsiRaaVsPt, 20, ROOT.kRed+1)
 
     dfJpsiRaaThuVsPt = pd.read_csv(config["inputs"]["fInJpsiRaaThuVsPt"], sep=' ')
     ptMin = dfJpsiRaaThuVsPt["x_min"]
@@ -75,7 +107,6 @@ def compareToModels(config):
     ptCenters = (ptMax + ptMin) / 2.
     ptWidths = (ptMax - ptMin) / 2.
     ptSystWidths = np.repeat(1.5, len(ptWidths))
-    ptEdges = np.append(ptMin.to_numpy(), ptMax.to_numpy()[len(ptMax)-1])
     jpsiRaaThuVsPt = dfJpsiRaaThuVsPt["val"]
 
     graJpsiRaaThuVsPt = ROOT.TGraphErrors(len(ptCenters), np.array(ptCenters), np.array(jpsiRaaThuVsPt), np.array(ptWidths), np.zeros(len(ptCenters)))
@@ -86,6 +117,8 @@ def compareToModels(config):
     canvasJpsiRaaThuVsPt = ROOT.TCanvas("canvasJpsiRaaThuVsPt", "", 800, 600)
     histGridJpsiRaaVsPt.Draw()
     graJpsiRaaThuVsPt.Draw("EP SAME")
+    graStatJpsiRaaVsPt.Draw("EP SAME")
+    graSystJpsiRaaVsPt.Draw("E2P SAME")
 
     lineUnityVsPt = ROOT.TLine(0, 1, 16, 1)
     lineUnityVsPt.SetLineColor(ROOT.kGray+1)
