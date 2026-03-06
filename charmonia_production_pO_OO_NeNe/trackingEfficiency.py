@@ -111,8 +111,8 @@ def trackingEfficiency(config):
     group2 = hits[9:]
     stations = group1 + [group2]
 
-    fInMc = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/Histograms_trk_eff_LHC25i4.root", "READ")
-    fInData = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/Histograms_trk_eff_LHC25ae_pass2.root", "READ")
+    fInMc = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/without_pt_cut/Histograms_trk_eff_LHC25i4.root", "READ")
+    fInData = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/without_pt_cut/Histograms_trk_eff_LHC25ae_pass2.root", "READ")
 
     # eff st1 => 1 - [1 - (N12/(N02+N12))]*[1 - (N12/(N10+N12))]
     histMcEff1 = {}  #[len(vars)][len(hits)]
@@ -321,9 +321,9 @@ def trackingEfficiency(config):
         histMcMchTrkEff[iVar].Write()
     fOutCorrMap.Close()
 
-    canvasEtaMchTrkEff.SaveAs("figures/mch_trk_eff/eff_eta.pdf")
-    canvasPtMchTrkEff.SaveAs("figures/mch_trk_eff/eff_pt.pdf")
-    canvasPhiMchTrkEff.SaveAs("figures/mch_trk_eff/eff_phi.pdf")
+    canvasEtaMchTrkEff.SaveAs("figures/mch_trk_eff/eff_eta_without_pt_cut.pdf")
+    canvasPtMchTrkEff.SaveAs("figures/mch_trk_eff/eff_pt_without_pt_cut.pdf")
+    canvasPhiMchTrkEff.SaveAs("figures/mch_trk_eff/eff_phi_without_pt_cut.pdf")
 
     exit()
 
