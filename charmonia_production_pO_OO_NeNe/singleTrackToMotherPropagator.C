@@ -118,6 +118,9 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
     bool passInAccDaup = false;
     bool passInAccDaum = false;
 
+    bool newPassInAccDaup = false;
+    bool newPassInAccDaum = false;
+
     bool passMchTrkEffDaup = false;
     bool passMchTrkEffDaum = false;
 
@@ -268,6 +271,11 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
     histPtMomRatioAxeMchTrkEff -> Fit(funcPol0MchTrkEff, "R");
     funcPol0MchTrkEff -> SetLineColor(kRed+1);
 
+    TF1 *funcPol0MchTrkEffWithWeight = new TF1("funcPol0MchTrkEffWithWeight", "[0]", 0, 20);
+    funcPol0MchTrkEffWithWeight -> SetParameter(0, 1);
+    histPtMomRatioAxeMchTrkEffWithWeights -> Fit(funcPol0MchTrkEffWithWeight, "R");
+    funcPol0MchTrkEffWithWeight -> SetLineColor(kOrange+7);
+
     TF1 *funcPol0MatchEff = new TF1("funcPol0MatchEff", "[0]", 0, 20);
     funcPol0MatchEff -> SetParameter(0, 1);
     histPtMomRatioAxeMatchEff -> Fit(funcPol0MatchEff, "R");
@@ -328,10 +336,12 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
     lineUnity -> Draw("SAME");
 
     funcPol0MchTrkEff -> Draw("L SAME");
+    funcPol0MchTrkEffWithWeight -> Draw("L SAME");
     funcPol0MatchEff -> Draw("L SAME");
 
     latexTitle.DrawLatex(0.70, 0.85, Form("#color[633]{p_{0} = %4.3f #pm %4.3f}", funcPol0MchTrkEff -> GetParameter(0), funcPol0MchTrkEff -> GetParError(0)));
-    latexTitle.DrawLatex(0.70, 0.78, Form("#color[864]{p_{0} = %4.3f #pm %4.3f}", funcPol0MatchEff -> GetParameter(0), funcPol0MatchEff -> GetParError(0)));
+    latexTitle.DrawLatex(0.70, 0.78, Form("#color[807]{p_{0} = %4.3f #pm %4.3f}", funcPol0MchTrkEffWithWeight -> GetParameter(0), funcPol0MchTrkEffWithWeight -> GetParError(0)));
+    latexTitle.DrawLatex(0.70, 0.71, Form("#color[864]{p_{0} = %4.3f #pm %4.3f}", funcPol0MatchEff -> GetParameter(0), funcPol0MatchEff -> GetParError(0)));
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 double FuncPt(double *x, double *par) {
