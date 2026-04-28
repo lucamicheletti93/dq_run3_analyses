@@ -1,0 +1,21 @@
+inputs:
+  deltaRap: 1.5
+  Taa: 0.00019058824 # 0-100%
+
+  TaaVsCentr: [0.0005745588,0.00042308824,0.00030264706,0.00020867647,0.00014176471,0.00009573529]  # <Ncoll> / sigma_NN = Value / 68000.0 mub-1 (68 mb)    -->   <Ncoll> = weight average (weighthing with the centrality binning) using the values in slides 13 https://indico.cern.ch/event/1567135/contributions/6732178/attachments/3168316/5631388/DDChinellato-APWNov2025-Centrality-02.pdf 
+  Ncoll:      [39.07       ,28.77        ,20.58        ,14.19        ,9.64         ,         6.51]  # <Ncoll> = weight average (weighthing with the centrality binning) using the values in slides 13 https://indico.cern.ch/event/1567135/contributions/6732178/attachments/3168316/5631388/DDChinellato-APWNov2025-Centrality-02.pdf
+  errNcoll:   [2.66        ,2.73         ,2.35         ,1.75         ,1.22         ,         0.82]  # Err <Ncoll>, using the values in slides 13 https://indico.cern.ch/event/1567135/contributions/6732178/attachments/3168316/5631388/DDChinellato-APWNov2025-Centrality-02.pdf
+  Npart:      [25.21       ,21.03        ,16.88        ,13.05        ,9.88         ,         7.39]  # <Npart> = weight average (weighthing with the centrality binning) using the values in slides 13 https://indico.cern.ch/event/1567135/contributions/6732178/attachments/3168316/5631388/DDChinellato-APWNov2025-Centrality-02.pdf
+  errNpart:   [0.64        ,0.84         ,0.89         ,0.75         ,0.61         ,         0.48]  # Err <Npart>, using the values in slides 13 https://indico.cern.ch/event/1567135/contributions/6732178/attachments/3168316/5631388/DDChinellato-APWNov2025-Centrality-02.pdf
+  
+
+  # ------------------ Normalization
+  ### Train 617522, PbPbQuality
+  #fInLumi: "data/2025/pass2/Train_617522/NEW/NEW___evColCounterTVX_luminosity_jpsi_LHC25_LHC25ae_pass2_minBias_NTVX_Plus_CorrEvSelCorrected_Plus_PileUp_in_Integrated_Plus_PileUp_and_Not_in_Centr__Train_617522_Centr_0_100_PbPbQuality.root"
+  fInLumi: "data/2025/pass2/Train_617522/NEW/NEW___LHC25ae_pass2_minBias_std_assoc_trigger_summary_NTVX_Plus_CorrEvSelCorrected_Plus_PileUp_in_Integrated_Plus_PileUp_and_Not_in_Centr__Train_617522_Centr_0_100_PbPbQuality.root"
+
+  # ------------------- centrality dependence
+  ### Train 617522, PbPbQuality
+  fInRawYieldVsCentr: data/2025/pass2/Train_617522/systematic_sig_Jpsi_vs_centr_Train_617522_PbPbQuality.txt
+  fInAxeVsCentr: data/MC/LHC25i4/axe_integrated_Rap_2.5_4_Cent_0_60_Pt_0_20_PbPbQuality_Train_594149____std_association_Jpsi.txt 
+  fInPPredVsCentr: data/ppRef/new_interp_jpsi_xsec_pp5dot36TeV.root

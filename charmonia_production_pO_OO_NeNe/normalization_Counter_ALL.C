@@ -28,8 +28,8 @@ void RetrieveTriggerInfo(TString , bool , string, double [11]);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void get_normalization_from_single_file(string year = "2025", string period = "LHC25ae_pass2", string triggerMask = "minBias", string assocType = "std_assoc") {
     string fInName = "/home/rebecca/cernbox/O_O/Pass2/Train_706901/AnalysisResults_merged.root"; // LHC25ae_pass2, std assoc
-    string fOutName = Form("data/%s/pass2/Train_706901/normalization/%s_%s_%s_trigger_summary_Train_706901_Sel8.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str());
-
+    string fOutName = Form("data/%s/pass2/Train_706901/normalization/%s_%s_%s_trigger_summary_Train_706901_Sel8.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str());    
+    
     TFile *fIn = TFile::Open(fInName.c_str());
     if (!fIn || fIn -> IsZombie()) {
         return;
@@ -247,7 +247,7 @@ void get_normalization_from_single_file(string year = "2025", string period = "L
     histSelectedIntegrals_CentrFT0C_AfterCuts_TReader->Write();
     histRatioIntegrals_CentrFT0C_AfterCuts_TReader -> Write();
     fOut -> Close();
-} 
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void luminosity(string year = "2025", string period = "LHC25ae_pass2", string triggerMask = "minBias", string assocType = "std_assoc") {
     TFile *fIn = new TFile(Form("data/%s/pass2/Train_706901/normalization/%s_%s_%s_trigger_summary_Train_706901_Sel8.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str()), "READ");
@@ -386,27 +386,16 @@ void luminosity(string year = "2025", string period = "LHC25ae_pass2", string tr
     double Eff_Train = (evSelCollisionAfterCuts_TMaker/evSelCollisionBeforeCuts_TReader);
     std::cout << "Eff_Train = " << Eff_Train << std::endl; 
     if (triggerMask.find("minBias") != std::string::npos) {
-        nEvtsBcSel = pileup * bcCounterTVX * (evSelCollisionAfterCuts_TReader/evSelCollisionBeforeCuts_TMaker) * Eff_Train; // N vs pT - ALWAYS add the PileUp Correction vs pT!
+        nEvtsBcSel = pileup * bcCounterTVX * (evSelCollisionAfterCuts_TReader/evColCounterTVX) * Eff_Train; // N vs pT - ALWAYS add the PileUp Correction vs pT!
 
         for (int i = 0; i < nCentrBins; i++) { // N vs centr
 
-            //----------------------
-            // AfterCuts_TReader/BeforeCuts_TMaker 
-            //nEvtsBcSelCentr_AfterCuts_TMaker[i] = pileup * bcCounterTVX * (histSelectedIntegrals_CentrFT0C_AfterCuts_TReader->GetBinContent(i+1)/histSelectedIntegrals_CentrFT0C_BeforeCuts_TMaker->GetBinContent(i+1)) * Eff_Train * histRatioIntegrals_CentrFT0C_AfterCuts_TMaker->GetBinContent(i+1); // Used the pileup correction flat in all the centrality bins
-            //nEvtsBcSelCentr_AfterCuts_TMaker_NoPileUp[i] = bcCounterTVX * (histSelectedIntegrals_CentrFT0C_AfterCuts_TReader->GetBinContent(i+1)/histSelectedIntegrals_CentrFT0C_BeforeCuts_TMaker->GetBinContent(i+1)) * Eff_Train * histRatioIntegrals_CentrFT0C_AfterCuts_TMaker->GetBinContent(i+1); // Not Used the pileup correction -> To understand the pileup correction vs centrality bins
-            //std::cout << "histRatioIntegrals_CentrFT0C_AfterCuts_TMaker->GetBinContent" << i+1 << " : " << histRatioIntegrals_CentrFT0C_AfterCuts_TMaker->GetBinContent(i+1) << std::endl; // Da inserire ancora efficienza TVX            
-            
-            // --------------------
-            // AfterCuts_TReader/AfterCuts_TMaker 
-            nEvtsBcSelCentr_AfterCuts_TMaker[i] = pileup * bcCounterTVX * (histSelectedIntegrals_CentrFT0C_AfterCuts_TReader->GetBinContent(i+1)/histSelectedIntegrals_CentrFT0C_AfterCuts_TMaker->GetBinContent(i+1)) * Eff_Train * histRatioIntegrals_CentrFT0C_AfterCuts_TMaker->GetBinContent(i+1); // Used the pileup correction flat in all the centrality bins
-            nEvtsBcSelCentr_AfterCuts_TMaker_NoPileUp[i] = bcCounterTVX * (histSelectedIntegrals_CentrFT0C_AfterCuts_TReader->GetBinContent(i+1)/histSelectedIntegrals_CentrFT0C_AfterCuts_TMaker->GetBinContent(i+1)) * Eff_Train * histRatioIntegrals_CentrFT0C_AfterCuts_TMaker->GetBinContent(i+1); // Not Used the pileup correction -> To understand the pileup correction vs centrality bins
-            TString label = histSelectedIntegrals_CentrFT0C_AfterCuts_TReader->GetXaxis()->GetBinLabel(i+1);
-            std::cout << "histRatioIntegrals_CentrFT0C_AfterCuts_TMaker->GetBinContent" << i+1 << " ovvero (" << label << "): " << histRatioIntegrals_CentrFT0C_AfterCuts_TMaker->GetBinContent(i+1) << std::endl; 
-            std::cout << "ACTReader/ACTMaker" << i+1 << " ovvero (" << label << "): " << (histSelectedIntegrals_CentrFT0C_AfterCuts_TReader->GetBinContent(i+1)/histSelectedIntegrals_CentrFT0C_AfterCuts_TMaker->GetBinContent(i+1))   << std::endl; 
-            
+            nEvtsBcSelCentr_AfterCuts_TMaker[i] = pileup * bcCounterTVX * (histSelectedIntegrals_CentrFT0C_AfterCuts_TReader->GetBinContent(i+1)/evColCounterAll) * Eff_Train; // Used the pileup correction flat in all the centrality bins
+            nEvtsBcSelCentr_AfterCuts_TMaker_NoPileUp[i] = bcCounterTVX * (histSelectedIntegrals_CentrFT0C_AfterCuts_TReader->GetBinContent(i+1)/evColCounterAll) * Eff_Train; // Not Used the pileup correction -> To understand the pileup correction vs centrality bins
+        
             // --------------------
 
-            double value_TR_Divided_TM = (histSelectedIntegrals_CentrFT0C_AfterCuts_TReader->GetBinContent(i+1)/histSelectedIntegrals_CentrFT0C_AfterCuts_TMaker->GetBinContent(i+1));
+            double value_TR_Divided_TM = (histSelectedIntegrals_CentrFT0C_AfterCuts_TReader->GetBinContent(i+1)/evColCounterAll);
             hist_CentrFT0C_N_AfterCuts_TReader_Divided_N_BeforeCuts_TMaker->SetBinContent(i + 1, value_TR_Divided_TM);
         }
 
@@ -449,7 +438,7 @@ void luminosity(string year = "2025", string period = "LHC25ae_pass2", string tr
         histLumiSummary_nEvtsBcSelCentr_AfterCuts_TMaker_NoPileUp->SetBinContent(1 + i, nEvtsBcSelCentr_AfterCuts_TMaker_NoPileUp[i]);
     }
 
-    TFile *fOut = new TFile(Form("data/%s/pass2/Train_706901/normalization/NEW___ACTReaderDidACTMaker_%s_%s_%s_luminosity_NTVX_Plus_CorrEvSelCorrected_Plus_PileUp_in_Integrated_Plus_PileUp_and_Not_in_Centr__Train_706901_Centr_0_100_Sel8_ULTIMO.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str()), "RECREATE");
+    TFile *fOut = new TFile(Form("data/%s/pass2/Train_706901/normalization/NEW___evCounterALL_RIGHTBIN_%s_%s_%s_luminosity_NTVX_Plus_CorrEvSelCorrected_Plus_PileUp_in_Integrated_Plus_PileUp_and_Not_in_Centr__Train_706901_Centr_0_100_Sel8.root", year.c_str(), period.c_str(), triggerMask.c_str(), assocType.c_str()), "RECREATE");
     histLumiSummary -> Write();
     hist_CentrFT0C_N_AfterCuts_TReader_Divided_N_BeforeCuts_TMaker -> Write();
     histLumiSummary_nEvtsBcSelCentr_AfterCuts_TMaker -> Write();
@@ -457,7 +446,7 @@ void luminosity(string year = "2025", string period = "LHC25ae_pass2", string tr
     fOut -> Close();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void check_normalization(string fInName = "NEW___ACTReaderDidACTMaker_LHC25ae_pass2_minBias_std_assoc_luminosity_NTVX_Plus_CorrEvSelCorrected_Plus_PileUp_in_Integrated_Plus_PileUp_and_Not_in_Centr__Train_706901_Centr_0_100_Sel8_ULTIMO.root", string fOutName = "luminosity_jpsi_LHC25ae_pass2_minBias_ACTReaderDidACTMaker.root") {
+void check_normalization(string fInName = "NEW___evCounterALL_RIGHTBIN_LHC25ae_pass2_minBias_std_assoc_luminosity_NTVX_Plus_CorrEvSelCorrected_Plus_PileUp_in_Integrated_Plus_PileUp_and_Not_in_Centr__Train_706901_Centr_0_100_Sel8.root", string fOutName = "luminosity_jpsi_LHC25ae_pass2_minBias__ALL.root") {
     TFile *fInLumiMinBias2024StdAssoc = TFile::Open(Form("data/2025/pass2/Train_706901/normalization/%s", fInName.c_str()));
     TH1D *histLumiMinBias2024StdAssoc = (TH1D*) fInLumiMinBias2024StdAssoc -> Get("histLumiSummary");
 
