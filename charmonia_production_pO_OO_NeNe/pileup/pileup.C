@@ -1,23 +1,25 @@
 void LoadStyle();
 void SetLegend(TLegend *, double);
 
-void pileup() {
+void pileup(string triggerMask = "all") { // all, tvx, sel8
     LoadStyle();
 
     TFile *fInData = new TFile("AnalysisResults_data.root", "READ");
-    TList *hlistDataStatistics = (TList*) fInData -> Get("table-maker/Statistics");
-    TH2D *histDataBcStats = (TH2D*) hlistDataStatistics -> FindObject("BcStats");
+    TList *hlistStatisticsData = (TList*) fInData -> Get("table-maker/Statistics");
+    TH2D *histBcStatsData = (TH2D*) hlistStatisticsData -> FindObject("BcStats");
 
-    TH1D *histMuData = (TH1D*) histDataBcStats -> ProjectionY("histMuData");
+    int binTriggerMaskData = histBcStatsData -> GetXaxis() -> FindBin(triggerMask.c_str());
+    TH1D *histMuData = (TH1D*) histBcStatsData -> ProjectionY("histMuData", binTriggerMaskData, binTriggerMaskData);
     histMuData -> Scale(1. / histMuData -> Integral());
     histMuData -> SetLineColor(kBlack);
     histMuData -> SetLineWidth(2);
 
     TFile *fInMc = new TFile("AnalysisResults_mc.root", "READ");
-    TList *hlistMcStatistics = (TList*) fInMc -> Get("table-maker/Statistics");
-    TH2D *histMcBcStats = (TH2D*) hlistMcStatistics -> FindObject("BcStats");
+    TList *hlistStatisticsMc = (TList*) fInMc -> Get("table-maker/Statistics");
+    TH2D *histBcStatsMc = (TH2D*) hlistStatisticsMc -> FindObject("BcStats");
 
-    TH1D *histMuMc = (TH1D*) histMcBcStats -> ProjectionY("histMuMc");
+    int binTriggerMaskMc = histBcStatsMc -> GetXaxis() -> FindBin(triggerMask.c_str());
+    TH1D *histMuMc = (TH1D*) histBcStatsMc -> ProjectionY("histMuMc", binTriggerMaskMc, binTriggerMaskMc);
     histMuMc -> Scale(1. / histMuMc -> Integral());
     histMuMc -> SetLineColor(kRed+1);
     histMuMc -> SetMarkerStyle(20);
@@ -42,12 +44,12 @@ void pileup() {
     histMuData -> Draw("H");
     histMuMc -> Draw("EP SAME");
 
-    TLegend *legendMuData = new TLegend(0.20, 0.85, 0.45, 0.93, " ", "brNDC");
+    TLegend *legendMuData = new TLegend(0.20, 0.82, 0.45, 0.90, " ", "brNDC");
     SetLegend(legendMuData, 0.040);
     legendMuData -> AddEntry(histMuData, "Data (LHC25ae_pass2)", "L");
     legendMuData -> Draw();
 
-    TLegend *legendMuMc = new TLegend(0.20, 0.65, 0.45, 0.73, " ", "brNDC");
+    TLegend *legendMuMc = new TLegend(0.20, 0.62, 0.45, 0.70, " ", "brNDC");
     SetLegend(legendMuMc, 0.040);
     legendMuMc -> AddEntry(histMuMc, "MC (LHC25i4)", "L");
     legendMuMc -> Draw();
@@ -58,12 +60,13 @@ void pileup() {
     double muMc = histMuMc -> GetMean();
     double corrFactorMc = (muMc) / (1 - TMath::Exp(-muMc));
 
-    latexTitle -> DrawLatex(0.22, 0.80, Form("<#mu>_{Data} = %5.4f", muData));
-    latexTitle -> DrawLatex(0.22, 0.74, Form("<#it{N}_{coll}^{TVX} | #it{N}_{coll}^{TVX} #geq 1>_{Data} = %5.4f", corrFactorData));
-    latexTitle -> DrawLatex(0.22, 0.60, Form("<#mu>_{MC}   = %5.4f", muMc));
-    latexTitle -> DrawLatex(0.22, 0.54, Form("<#it{N}_{coll}^{TVX} | #it{N}_{coll}^{TVX} #geq 1>_{MC} = %5.4f", corrFactorMc));
+    latexTitle -> DrawLatex(0.22, 0.90, Form("BC selection: %s", triggerMask.c_str()));
+    latexTitle -> DrawLatex(0.22, 0.77, Form("<#mu>_{Data} = %5.4f", muData));
+    latexTitle -> DrawLatex(0.22, 0.71, Form("<#it{N}_{coll}^{TVX} | #it{N}_{coll}^{TVX} #geq 1>_{Data} = %5.4f", corrFactorData));
+    latexTitle -> DrawLatex(0.22, 0.57, Form("<#mu>_{MC}   = %5.4f", muMc));
+    latexTitle -> DrawLatex(0.22, 0.51, Form("<#it{N}_{coll}^{TVX} | #it{N}_{coll}^{TVX} #geq 1>_{MC} = %5.4f", corrFactorMc));
 
-    
+
     canvasMu -> SaveAs("muDistribution.pdf");
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

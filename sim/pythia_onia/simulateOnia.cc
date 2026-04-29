@@ -83,14 +83,18 @@ void runSimulation(PPythia& pythia, int tune, TNtuple* tuplePairs, TH1D* histEve
     // perform the simulation
     for (auto iEvent{0}; iEvent<nEvents; ++iEvent)
     {
+        std::cout << "Event : " << iEvent << std::endl;
         if(!pythia.next()) {
             continue;
         }
 
         histEvents->Fill(1.5f);
-        double impactParameter = pythia.info.hiInfo->b();
-        double nPart = pythia.info.hiInfo->nPartTarg() + pythia.info.hiInfo->nPartProj();
-        histImpParvsNpart -> Fill(impactParameter, nPart);
+        double impactParameter, nPart;
+        if (tune == kHeavyIon) {
+            impactParameter = pythia.info.hiInfo->b();
+            nPart = pythia.info.hiInfo->nPartTarg() + pythia.info.hiInfo->nPartProj();
+            histImpParvsNpart -> Fill(impactParameter, nPart);
+        }
 
         std::vector<Pythia8::Particle> jPsis;
         std::vector<bool> jPsiFromB{};
@@ -226,9 +230,16 @@ void simulateOnia(int nEvents, int tune, int process, bool usePtHardBins, float 
     else if(tune == kHeavyIon) 
     {
         pythia.readString(Form("HeavyIon:mode = 1"));
+        // old config
+        //pythia.readString("HeavyIon:SigFitNGen = 0");
+        //pythia.readString("HeavyIon:SigFitDefAvNDb = 0.92");
+        //pythia.readString("HeavyIon:SigFitDefPar = 1.34,2.61,1.18");
+        // config stored in https://github.com/AliceO2Group/O2DPG/blob/master/MC/config/common/pythia8/generator/pythia8_OO_536.cfg
+        pythia.readString("Beams:frameType = 1");
+        pythia.readString("ParticleDecays:limitTau0 = on");
+        pythia.readString("ParticleDecays:tau0Max = 10.");
         pythia.readString("HeavyIon:SigFitNGen = 0");
-        pythia.readString("HeavyIon:SigFitDefAvNDb = 0.92");
-        pythia.readString("HeavyIon:SigFitDefPar = 1.34,2.61,1.18");
+        pythia.readString("HeavyIon:SigFitDefPar = 2.15,18.42,0.33");
     } else {
         std::cout << "[ERROR] No tune configured" << std::endl;
         return;

@@ -1,0 +1,10 @@
+inputs:
+  # centrality dependence
+  fInJpsiRaaVsCentr: data/2025/pass2/systematic_raa_Jpsi_vs_centr.txt
+  fInJpsiRaaThuVsCentr: theory/THU/data_Raa_centrality_jpsi_y254.dat
+  # pt dependence
+  fInJpsiRaaVsPt: data/2025/pass2/systematic_raa_Jpsi_vs_pt.txt
+  fInJpsiRaaThuVsPt: theory/THU/forward/data_Raa_jpsi_0100_y254.dat
+
+outputs:
+  fOut: output/jpsi_raa_oo5dot36TeV.root
