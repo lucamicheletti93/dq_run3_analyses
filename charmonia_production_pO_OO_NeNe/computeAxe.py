@@ -135,6 +135,24 @@ def axe(config):
     histRapGen = histPtRapCentGenFor1D.ProjectionY(f'{sigGen}_Rap')
     histCentGen = histPtRapCentGenFor1D.ProjectionZ(f'{sigGen}_Z')
 
+    # Flat distribution
+    '''
+    histCentFlat = histCentGen.Clone(f"{histCentGen.GetName()}_flat")
+
+    errors = []
+    for i in range(1, histCentFlat.GetNbinsX()+1):
+        errors.append(histCentFlat.GetBinError(i))
+    
+    Ntot = histCentGen.Integral()
+    Nbins = histCentGen.GetNbinsX()
+    Nflat = Ntot / Nbins
+    
+    for i in range(1, Nbins+1):
+        histCentFlat.SetBinContent(i, Nflat)
+        histCentFlat.SetBinError(i, errors[i-1])
+    '''
+
+
     ptBinsRun3 = array.array('d', config["inputs"]["ptBins"])
     rapBinsRun3 = array.array('d', config["inputs"]["rapBins"])
     centBinsRun3 = array.array('d', config["inputs"]["centFT0CBins"])
@@ -142,6 +160,8 @@ def axe(config):
     histPtRebinGen = histPtGen.Rebin(len(ptBinsRun3) - 1, f'{histPtGen.GetName()}_rebin', ptBinsRun3)
     histRapRebinGen = histRapGen.Rebin(len(rapBinsRun3) - 1, f'{histRapGen.GetName()}_rebin', rapBinsRun3)
     histCentRebinGen = histCentGen.Rebin(len(centBinsRun3) - 1, f'{histCentGen.GetName()}_rebin', centBinsRun3)
+    # Flat
+    #histCentRebinGenFlat = histCentFlat.Rebin(len(centBinsRun3) - 1, f'{histCentFlat.GetName()}_rebin', centBinsRun3)
 
     canvasGen.cd(3)
     histPtRapCentGenFor1D.Draw("COLZ")
@@ -169,6 +189,7 @@ def axe(config):
     canvasGen.cd(11)
     ROOT.gPad.SetLogy(True)
     histCentRebinGen.Draw()
+    #histCentRebinGenFlat.Draw()
 
     canvasGen.Update()
     input()
@@ -193,7 +214,8 @@ def axe(config):
     for iCut, histRec in enumerate(histRecs):
         histRec.SetName(f'THnSparse_{sigRec}_{cuts[iCut]}') # Just to avoid memory leak
 
-        histPtRapRecs_original.append(histRec.Projection(1, 2, 3, f'{listRec}_{cuts[iCut]}_{sigRec}_PtRapCent'))
+        histPtRapRecs_original.append(histRec.Projection(1, 2, 3, f'{listRec}_{cuts[iCut]}_{sigRec}_PtRapCent')) # histRec = Mass_Pt_centrFT0C_V2
+        #histPtRapRecs_original.append(histRec.Projection(1, 3, 2, f'{listRec}_{cuts[iCut]}_{sigRec}_PtRapCent'))  # histRec = Mass_Pt_Cent_Rap
         histPtRapRecs_original[iCut].SetName(f'{listRec}_{cuts[iCut]}_{sigRec}_PtRapCent')
 
         canvasRec = ROOT.TCanvas("canvasRec", "", 800, 600)
@@ -400,6 +422,7 @@ def axe(config):
     histPtRebinGen.Scale(corrFactor)
     histRapRebinGen.Scale(corrFactor)
     histCentRebinGen.Scale(corrFactor)
+    #histCentRebinGenFlat.Scale(corrFactor)
 
     '''
     histPtRapAxes = []
@@ -436,6 +459,7 @@ def axe(config):
     for iCut, histCentRebinRec in enumerate(histCentRebinRecs):
         histCentRebinAxes.append(histCentRebinRec.Clone(f'{histCentRebinRec.GetName()}_rebin_Axe'))
         histCentRebinAxes[iCut].Divide(histCentRebinAxes[iCut], histCentRebinGen, 1.0, 1.0, "B")
+        #histCentRebinAxes[iCut].Divide(histCentRebinAxes[iCut], histCentRebinGenFlat, 1.0, 1.0, "B")
 
     canvasAxe = ROOT.TCanvas("canvasAxe", "", 800, 600)
     canvasAxe.Divide(2, 2)
@@ -539,6 +563,7 @@ def axe(config):
     histPtRebinGen.Write("histPtRebinGen")
     histRapRebinGen.Write("histRapRebinGen")
     histCentRebinGen.Write("histCentRebinGen")
+    #histCentRebinGenFlat.Write("histCentRebinGenFlat")
     for iCut, cut in enumerate(cuts):
         histPtRapCentRecs[iCut].Write(f'histPtRapRecs_{cut}')
         histPtRebinRecs[iCut].Write(f'histPtRebinRecs_{cut}')

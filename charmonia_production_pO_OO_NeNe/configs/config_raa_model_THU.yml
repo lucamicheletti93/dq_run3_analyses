@@ -1,0 +1,3 @@
+inputs:
+  fInJpsiRaaVsPt: /home/rebecca/cernbox/dq_run3_analyses/charmonia_production_pO_OO_NeNe/SQM2026/ROO_Values/Train_706901_Sel8/jpsi_RAA_vs_pT_Train_607901_MethodSigma_Sel8_so_YESPileUpCorr_ppref_UNC_5.02_RIGHT_LAYOUT.txt
+  fInJpsiRaaThuVsPt: /home/rebecca/cernbox/dq_run3_analyses/charmonia_production_pO_OO_NeNe/theory/THU/forward/data_Raa_jpsi_0100_y254_regandini_RIGHT_LAYOUT.dat

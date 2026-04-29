@@ -1,0 +1,17 @@
+inputs:
+  deltaRap: 1.5
+  Taa: 0.00019058824 # 0-100%
+
+  # ------------------ Normalization
+  ### Train 617522, Sel8 (SQM2026)
+  fInLumi: "data/2025/pass2/Train_706901/normalization/luminosity_jpsi_LHC25ae_pass2_minBias_Train_706901_Sel8.root"
+
+  # ------------------- pt dependence
+  ### Train 607901, Sel8 (SQM2026)
+  fInRawYieldVsPt: data/2025/pass2/Train_706901/systematic_sig_Jpsi_vs_pt_Cent_0_100_Rap_2.5_4_Train_706901_Sel8.txt
+  fInAxeVsPt: data/MC/LHC25i4/axe_pt_dependence_Rap_2.5_4_Pt_0_20_Sel8_Train_596199____std_association_Jpsi.txt
+  fInPPredVsPt: data/ppRef/WITH_5.02_UNCERT_new_interp_jpsi_xsec_pp5dot36TeV.root
+  
+
+outputs:
+  fOut: output/jpsi_raa_oo5dot36TeV_vs_pt.root
