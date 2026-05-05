@@ -123,6 +123,7 @@ def axe(config):
 
     histRecs = []
     for iCut, cut in enumerate(cuts):
+        print(f'{listRec}_{cut}_{sigRec}', " ", f'{histRec}')
         histRecs.append((hlistRec.FindObject(f'{listRec}_{cut}_{sigRec}')).FindObject(f'{histRec}'))
         #histRecs[iCut].GetAxis(1).SetRangeUser(minPtBinInt, maxPtBinInt)
         #histRecs[iCut].GetAxis(2).SetRangeUser(minRapBinInt, maxRapBinInt)

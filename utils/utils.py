@@ -1,4 +1,4 @@
-from telnetlib import Telnet
+#from telnetlib import Telnet
 import matplotlib.pyplot as plt
 import array as arr
 import numpy as np
