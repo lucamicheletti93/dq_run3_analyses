@@ -111,8 +111,16 @@ def trackingEfficiency(config):
     group2 = hits[9:]
     stations = group1 + [group2]
 
-    fInMc = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/without_pt_cut/Histograms_trk_eff_LHC25i4.root", "READ")
-    fInData = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/without_pt_cut/Histograms_trk_eff_LHC25ae_pass2.root", "READ")
+    #fInMc = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/without_pt_cut/Histograms_trk_eff_LHC25i4.root", "READ")
+    #fInMc = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/without_pt_cut/Histograms_trk_eff_PbPb_RejListPerRun.root", "READ")
+    #fInMc = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/without_pt_cut/Histograms_trk_eff_PbPb.root", "READ")
+    #fInMc = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/without_pt_cut/Histograms_trk_eff_LHC26a1_564359.root", "READ")
+    #fInData = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/without_pt_cut/Histograms_trk_eff_LHC25ae_pass2.root", "READ")
+    #fInData = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/without_pt_cut/Histograms_trk_eff_PbPb.root", "READ")
+    #fInData = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/without_pt_cut/Histograms_trk_eff_LHC25ae_564359.root", "READ")
+
+    fInMc   = ROOT.TFile(config["compare"]["fInMc"], "READ")
+    fInData = ROOT.TFile(config["compare"]["fInData"], "READ")
 
     # eff st1 => 1 - [1 - (N12/(N02+N12))]*[1 - (N12/(N10+N12))]
     histMcEff1 = {}  #[len(vars)][len(hits)]
@@ -241,7 +249,7 @@ def trackingEfficiency(config):
     canvasEtaStEff.Divide(2, 2)
     for iSt, st in enumerate(stations):
         canvasEtaStEff.cd(iSt+1)
-        histMcEffSt["Eta"][iSt].GetYaxis().SetRangeUser(0.98, 1.01)
+        histMcEffSt["Eta"][iSt].GetYaxis().SetRangeUser(0.90, 1.01)
         SetHistStat(histMcEffSt["Eta"][iSt], 20, ROOT.kAzure+2)
         histMcEffSt["Eta"][iSt].Draw("H")
         SetHistStat(histDataEffSt["Eta"][iSt], 20, ROOT.kRed+1)
@@ -250,7 +258,7 @@ def trackingEfficiency(config):
 
     canvasEtaMchTrkEff = ROOT.TCanvas("canvasEtaMchTrkEff", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
-    histMcMchTrkEff[0].GetYaxis().SetRangeUser(0.98, 1.01)
+    histMcMchTrkEff[0].GetYaxis().SetRangeUser(0.90, 1.01)
     SetHistStat(histMcMchTrkEff[0], 20, ROOT.kAzure+2)
     histMcMchTrkEff[0].Draw("H")
     SetHistStat(histDataMchTrkEff[0], 20, ROOT.kRed+1)
@@ -264,7 +272,7 @@ def trackingEfficiency(config):
     canvasPt.Divide(2, 2)
     for iSt, st in enumerate(stations):
         canvasPt.cd(iSt+1)
-        histMcEffSt["Pt"][iSt].GetYaxis().SetRangeUser(0.98, 1.01)
+        histMcEffSt["Pt"][iSt].GetYaxis().SetRangeUser(0.90, 1.01)
         SetHistStat(histMcEffSt["Pt"][iSt], 20, ROOT.kAzure+2)
         histMcEffSt["Pt"][iSt].Draw("H")
         SetHistStat(histDataEffSt["Pt"][iSt], 20, ROOT.kRed+1)
@@ -274,7 +282,7 @@ def trackingEfficiency(config):
     canvasPtMchTrkEff = ROOT.TCanvas("canvasPtMchTrkEff", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
     histMcMchTrkEff[1].GetXaxis().SetRangeUser(0, 65)
-    histMcMchTrkEff[1].GetYaxis().SetRangeUser(0.98, 1.01)
+    histMcMchTrkEff[1].GetYaxis().SetRangeUser(0.90, 1.01)
     SetHistStat(histMcMchTrkEff[1], 20, ROOT.kAzure+2)
     histMcMchTrkEff[1].Draw("H")
     SetHistStat(histDataMchTrkEff[1], 20, ROOT.kRed+1)
@@ -288,7 +296,7 @@ def trackingEfficiency(config):
     canvasPhi.Divide(2, 2)
     for iSt, st in enumerate(stations):
         canvasPhi.cd(iSt+1)
-        histMcEffSt["Phi"][iSt].GetYaxis().SetRangeUser(0.98, 1.01)
+        histMcEffSt["Phi"][iSt].GetYaxis().SetRangeUser(0.90, 1.01)
         SetHistStat(histMcEffSt["Phi"][iSt], 20, ROOT.kAzure+2)
         histMcEffSt["Phi"][iSt].Draw("H")
         SetHistStat(histDataEffSt["Phi"][iSt], 20, ROOT.kRed+1)
@@ -297,7 +305,7 @@ def trackingEfficiency(config):
 
     canvasPhiMchTrkEff = ROOT.TCanvas("canvasPhiMchTrkEff", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
-    histMcMchTrkEff[2].GetYaxis().SetRangeUser(0.98, 1.01)
+    histMcMchTrkEff[2].GetYaxis().SetRangeUser(0.90, 1.01)
     SetHistStat(histMcMchTrkEff[2], 20, ROOT.kAzure+2)
     histMcMchTrkEff[2].Draw("H")
     SetHistStat(histDataMchTrkEff[2], 20, ROOT.kRed+1)
@@ -321,9 +329,9 @@ def trackingEfficiency(config):
         histMcMchTrkEff[iVar].Write()
     fOutCorrMap.Close()
 
-    canvasEtaMchTrkEff.SaveAs("figures/mch_trk_eff/eff_eta_without_pt_cut.pdf")
+    '''canvasEtaMchTrkEff.SaveAs("figures/mch_trk_eff/eff_eta_without_pt_cut.pdf")
     canvasPtMchTrkEff.SaveAs("figures/mch_trk_eff/eff_pt_without_pt_cut.pdf")
-    canvasPhiMchTrkEff.SaveAs("figures/mch_trk_eff/eff_phi_without_pt_cut.pdf")
+    canvasPhiMchTrkEff.SaveAs("figures/mch_trk_eff/eff_phi_without_pt_cut.pdf")'''
 
     exit()
 
