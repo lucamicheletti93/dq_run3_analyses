@@ -23,6 +23,7 @@ def main():
         inputCfg = yaml.load(yml_cfg, yaml.FullLoader)
 
     if args.hist:
+        print("Running hist...")
         createHistograms(inputCfg)
 
     if args.run:
@@ -81,6 +82,7 @@ def createHistograms(config):
         histProjPhi[i].Draw("H")
     canvasPhi.Update()
 
+    print("Press enter to exit process...")
     input()
 
     print(f'[INFO] Writing results in {config["outputs"]["fOut"]} ...')
@@ -111,8 +113,8 @@ def trackingEfficiency(config):
     group2 = hits[9:]
     stations = group1 + [group2]
 
-    fInMc = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/without_pt_cut/Histograms_trk_eff_LHC25i4.root", "READ")
-    fInData = ROOT.TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/without_pt_cut/Histograms_trk_eff_LHC25ae_pass2.root", "READ")
+    fInMc = ROOT.TFile("mch_trk_eff/without_pt_cut/Histograms_trk_eff_LHC25i4.root", "READ")
+    fInData = ROOT.TFile("mch_trk_eff/without_pt_cut/Histograms_trk_eff_LHC25ae_pass2.root", "READ")
 
     # eff st1 => 1 - [1 - (N12/(N02+N12))]*[1 - (N12/(N10+N12))]
     histMcEff1 = {}  #[len(vars)][len(hits)]
@@ -223,7 +225,7 @@ def trackingEfficiency(config):
     lineUnityEta.SetLineColor(ROOT.kGray+1)
     lineUnityEta.SetLineStyle(ROOT.kDashed)
 
-    lineUnityPt = ROOT.TLine(0, 1, 65, 1)
+    lineUnityPt = ROOT.TLine(0, 1, 10, 1)
     lineUnityPt.SetLineColor(ROOT.kGray+1)
     lineUnityPt.SetLineStyle(ROOT.kDashed)
 
@@ -250,7 +252,7 @@ def trackingEfficiency(config):
 
     canvasEtaMchTrkEff = ROOT.TCanvas("canvasEtaMchTrkEff", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
-    histMcMchTrkEff[0].GetYaxis().SetRangeUser(0.98, 1.01)
+    histMcMchTrkEff[0].GetYaxis().SetRangeUser(0.975, 1.01)
     SetHistStat(histMcMchTrkEff[0], 20, ROOT.kAzure+2)
     histMcMchTrkEff[0].Draw("H")
     SetHistStat(histDataMchTrkEff[0], 20, ROOT.kRed+1)
@@ -273,8 +275,8 @@ def trackingEfficiency(config):
 
     canvasPtMchTrkEff = ROOT.TCanvas("canvasPtMchTrkEff", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
-    histMcMchTrkEff[1].GetXaxis().SetRangeUser(0, 65)
-    histMcMchTrkEff[1].GetYaxis().SetRangeUser(0.98, 1.01)
+    histMcMchTrkEff[1].GetXaxis().SetRangeUser(0, 10)
+    histMcMchTrkEff[1].GetYaxis().SetRangeUser(0.985, 1.01)
     SetHistStat(histMcMchTrkEff[1], 20, ROOT.kAzure+2)
     histMcMchTrkEff[1].Draw("H")
     SetHistStat(histDataMchTrkEff[1], 20, ROOT.kRed+1)
@@ -297,7 +299,7 @@ def trackingEfficiency(config):
 
     canvasPhiMchTrkEff = ROOT.TCanvas("canvasPhiMchTrkEff", "", 800, 600)
     ROOT.gStyle.SetOptStat(False)
-    histMcMchTrkEff[2].GetYaxis().SetRangeUser(0.98, 1.01)
+    histMcMchTrkEff[2].GetYaxis().SetRangeUser(0.975, 1.01)
     SetHistStat(histMcMchTrkEff[2], 20, ROOT.kAzure+2)
     histMcMchTrkEff[2].Draw("H")
     SetHistStat(histDataMchTrkEff[2], 20, ROOT.kRed+1)

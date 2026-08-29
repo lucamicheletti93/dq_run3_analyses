@@ -75,7 +75,7 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
     funcAxe -> SetParameter(3, -0.00171191);
     funcAxe -> SetParameter(4, 4.08582e-05);
 
-    TFile *fInMchTrkEff = new TFile("/Users/lucamicheletti/GITHUB/dq_run3_analyses/charmonia_production_pO_OO_NeNe/mch_trk_eff/mch_trk_eff_LHC25ae.root", "READ");
+    TFile *fInMchTrkEff = new TFile("mch_trk_eff/without_pt_cut/mch_trk_eff_LHC25ae.root", "READ");
     TH1D *histCorrMapMchTrkEffEta = (TH1D*) fInMchTrkEff -> Get("histCorrMap_Eta");
     TH1D *histCorrMapMchTrkEffPt = (TH1D*) fInMchTrkEff -> Get("histCorrMap_Pt");
     TH1D *histCorrMapMchTrkEffPhi = (TH1D*) fInMchTrkEff -> Get("histCorrMap_Phi");
@@ -104,6 +104,9 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
 
     TH1D *histPtMomAxeMatchEff = new TH1D("histPtMomAxeMatchEff", Form(";#it{p}^{%s}_{T} (GeV/#it{c});A#times#varepsilon", momName.c_str()), nPtBins, pTBinEdges);
     TH1D *histPtMomAxeMatchEffWithWeights = new TH1D("histPtMomAxeMatchEffWithWeights", Form(";#it{p}^{%s}_{T} (GeV/#it{c});A#times#varepsilon", momName.c_str()), nPtBins, pTBinEdges);
+
+    TH1D *histMeanWeight = new TH1D("histMeanWeight", "; Weight; Counts", 100, 0.9, 1.1);
+    TH1D *histMeanWeightProd = new TH1D("histMeanWeightProd", "; Weight1 * Weight2; Counts", 100, 0.9, 1.1);
 
     SetHist(histPtMomGen, kBlue, 20, 1, kBlue);
     SetHist(histPtMomRec, kRed, 20, 1, kRed);
@@ -161,7 +164,7 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
         double eMom   = vecMom -> Energy();
         double rapMom = vecMom -> Rapidity();
 
-        if (ptMom > 15 || TMath::Abs(rapMom) < 2.5 || TMath::Abs(rapMom) > 4.0) continue;
+        //if (ptMom > 10 || TMath::Abs(rapMom) < 2.5 || TMath::Abs(rapMom) > 4.0) continue;
 
         int index = pythia.event.append(pdgCodeMom, 1, 0, 0, pxMom, pyMom, pzMom, eMom, massMom);
 
@@ -170,6 +173,7 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
             return;
         }
 
+        //std::cout << "pxMom: " << ptMom << " " << pzMom << " " << eMom << " " << massMom << std::endl;
         for (int i = 0; i < pythia.event.size(); ++i) {
             const Particle& dau = pythia.event[i];
             if (dau.isFinal()) {
@@ -185,8 +189,10 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
                     double cutPhi = histCorrMapMchTrkEffPhi -> GetBinContent(histCorrMapMchTrkEffPhi -> FindBin(phiDau));
                     weigthTrkEffDaup = std::min({cutEta, cutPt, cutPhi});
 
-                    if (ptDau > 0.5 && etaDau > 2.5 && etaDau < 4.0) {
+                    //if (ptDau > 0.5 && etaDau > 2.5 && etaDau < 4.0) {
+                    if (etaDau > 2.5 && etaDau < 4.0) {
                         passInAccDaup = true;
+                        //std::cout << cutEta << ", " << cutPt << ", " << cutPhi << " -> " << weigthTrkEffDaup << std::endl;
                         //std::cout << rndmDaup << " - " << cutEta << " -> eta = " << etaDau << std::endl;
                     }
 
@@ -207,8 +213,10 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
                     double cutPhi = histCorrMapMchTrkEffPhi -> GetBinContent(histCorrMapMchTrkEffPhi -> FindBin(phiDau));
                     weigthTrkEffDaum = std::min({cutEta, cutPt, cutPhi});
 
-                    if (ptDau > 0.5 && etaDau > 2.5 && etaDau < 4.0) {
+                    //if (ptDau > 0.5 && etaDau > 2.5 && etaDau < 4.0) {
+                    if (etaDau > 2.5 && etaDau < 4.0) {
                         passInAccDaum = true;
+                        //std::cout << cutEta << ", " << cutPt << ", " << cutPhi << " -> " << weigthTrkEffDaum << std::endl;
                         //std::cout << rndmDaum << " - " << cutEta << " -> eta = " << etaDau << std::endl;
                     }
                     
@@ -224,6 +232,10 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
         }
 
         if (passInAccDaup && passInAccDaum) {
+            //std::cout << "------> WEIGHT: " << weigthTrkEffDaup << ", " << weigthTrkEffDaum << std::endl;
+            histMeanWeight -> Fill(weigthTrkEffDaup);
+            histMeanWeight -> Fill(weigthTrkEffDaum);
+            histMeanWeightProd -> Fill(weigthTrkEffDaum * weigthTrkEffDaup);
             histPtMomGen -> Fill(ptMom);
             histPtMomRecWithWeights -> Fill(ptMom, funcAxe -> Eval(ptMom));
             histPtMomRecMchTrkEffWithWeights -> Fill(ptMom, weigthTrkEffDaup * weigthTrkEffDaum * funcAxe -> Eval(ptMom));
@@ -342,6 +354,12 @@ void singleTrackToMotherPropagator(int nEvts = 1e7, int pdgCodeMom = 443, int pd
     latexTitle.DrawLatex(0.70, 0.85, Form("#color[633]{p_{0} = %4.3f #pm %4.3f}", funcPol0MchTrkEff -> GetParameter(0), funcPol0MchTrkEff -> GetParError(0)));
     latexTitle.DrawLatex(0.70, 0.78, Form("#color[807]{p_{0} = %4.3f #pm %4.3f}", funcPol0MchTrkEffWithWeight -> GetParameter(0), funcPol0MchTrkEffWithWeight -> GetParError(0)));
     latexTitle.DrawLatex(0.70, 0.71, Form("#color[864]{p_{0} = %4.3f #pm %4.3f}", funcPol0MatchEff -> GetParameter(0), funcPol0MatchEff -> GetParError(0)));
+
+    TFile *fOut = new TFile("mch_trk_eff/propagation_results_without_pt_cut.root", "RECREATE");
+    canvasAxe -> Write();
+    histMeanWeight -> Write();
+    histMeanWeightProd -> Write();
+    fOut -> Close();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 double FuncPt(double *x, double *par) {
