@@ -1,0 +1,5 @@
+alien:///alice/data/2024/LHC24ar/559828/apass3/0040/o2_ctf_run00559828_orbit0114291424_tf0000000001_epn321/001/AO2D.root
+alien:///alice/data/2024/LHC24ar/559828/apass3/0040/o2_ctf_run00559828_orbit0114291712_tf0000000010_epn308/001/AO2D.root
+alien:///alice/data/2024/LHC24ar/559828/apass3/0040/o2_ctf_run00559828_orbit0114292032_tf0000000020_epn292/001/AO2D.root
+alien:///alice/data/2024/LHC24ar/559828/apass3/0040/o2_ctf_run00559828_orbit0114292352_tf0000000030_epn343/001/AO2D.root
+alien:///alice/data/2024/LHC24ar/559828/apass3/0040/o2_ctf_run00559828_orbit0114292672_tf0000000040_epn130/001/AO2D.root

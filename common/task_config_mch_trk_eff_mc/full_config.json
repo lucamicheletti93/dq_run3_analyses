@@ -1,0 +1,372 @@
+{
+  "dataset_production_type": "MC",
+  "max_df_size": -1,
+  "cpu_cores": 1,
+  "workflows": [
+    {
+      "subwagon_id": 98752,
+      "subwagon_name": "base",
+      "configuration": {
+        "task-muon-mch-trk-efficiency": {
+          "processSim": "1",
+          "binsPt": {
+            "values": [
+              0,
+              0.25,
+              0.5,
+              0.75,
+              1,
+              1.25,
+              1.5,
+              1.75,
+              2,
+              2.5,
+              3,
+              4,
+              5,
+              6,
+              8,
+              10,
+              12,
+              15,
+              18,
+              25,
+              35,
+              45,
+              55,
+              65,
+              75
+            ]
+          },
+          "nEtaBins": "60",
+          "etaMin": "2.5",
+          "muonSelType": "3",
+          "etaMax": "4",
+          "nPhiBins": "60",
+          "ptMin": "0",
+          "processReco": "0"
+        }
+      },
+      "wagon_id": 45223,
+      "workflow_name": "o2-analysis-dq-task-muon-mch-trk-eff",
+      "suffix": ""
+    },
+    {
+      "subwagon_id": 98753,
+      "subwagon_name": "base",
+      "configuration": {
+        "table-maker-muon-mch-trk-efficiency": {
+          "processSim": "1",
+          "binsPt": {
+            "values": [
+              0,
+              0.25,
+              0.5,
+              0.75,
+              1,
+              1.25,
+              1.5,
+              1.75,
+              2,
+              2.5,
+              3,
+              4,
+              5,
+              6,
+              8,
+              10,
+              12,
+              15,
+              18,
+              25,
+              35,
+              45,
+              55,
+              65,
+              75
+            ]
+          },
+          "nEtaBins": "60",
+          "etaMin": "2.5",
+          "fillCorr": "0",
+          "processSimReduced": "0",
+          "ptMin": "0",
+          "cfgEventCuts": "eventSel8",
+          "processRecoReduced": "0",
+          "cfgMuonCuts": "muonQualityCuts",
+          "muonSelType": "-1",
+          "etaMax": "4",
+          "nPhiBins": "60",
+          "processReco": "0"
+        }
+      },
+      "wagon_id": 45224,
+      "workflow_name": "o2-analysis-dq-table-maker-muon-mch-trk-eff",
+      "suffix": ""
+    },
+    {
+      "subwagon_id": 1761,
+      "subwagon_name": "base",
+      "configuration": {
+        "ft0-corrected-table": {
+          "ccdb-timestamp": "-1",
+          "resoFT0C": "20",
+          "ccdb-path-grplhcif": "GLO/Config/GRPLHCIF",
+          "resoFT0A": "20",
+          "collisionSystem": "-2",
+          "addHistograms": "0",
+          "ccdb-url": "http://alice-ccdb.cern.ch",
+          "processWithBypassFT0timeInMC": "0",
+          "processStandard": "1"
+        }
+      },
+      "wagon_id": 1560,
+      "workflow_name": "o2-analysis-ft0-corrected-table",
+      "suffix": ""
+    },
+    {
+      "subwagon_id": 3694,
+      "subwagon_name": "base",
+      "configuration": {
+        "fwd-track-extension": {
+          "propInTheAbsorber": "0",
+          "geoPath": "GLO/Config/GeometryAligned",
+          "grpmagPath": "GLO/Config/GRPMagField",
+          "configCcdbUrl": "http://alice-ccdb.cern.ch",
+          "refitGlobalMuon": "0"
+        }
+      },
+      "wagon_id": 3232,
+      "workflow_name": "o2-analysis-fwdtrackextension",
+      "suffix": ""
+    },
+    {
+      "subwagon_id": 61300,
+      "subwagon_name": "base",
+      "configuration": {
+        "mult-cent-table": {
+          "generatorName": "PYTHIA",
+          "processRun3": "1",
+          "processRun2": "0",
+          "minNclsMFTTrack": "5",
+          "enabledTables": {
+            "values": [
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ],
+              [
+                -1
+              ]
+            ]
+          },
+          "maxPtGlobalTrack": "1e+10",
+          "doNTrackStudies": "1",
+          "ccdbPathCentrality": "Centrality/Estimators",
+          "doVertexZeq": "1",
+          "ccdbPathVtxZ": "Centrality/Calibration",
+          "minNclsITSibGlobalTrack": "1",
+          "reconstructionPass": "",
+          "minNclsITSGlobalTrack": "5",
+          "processMonteCarlo": "1",
+          "processRun3WithGlobalCounters": "0",
+          "minEtaMFTTrack": "-3.9",
+          "processMFT": "0",
+          "processCentralityRun2": "0",
+          "processMonteCarlo2Mults": "1",
+          "embedINELgtZEROselection": "0",
+          "minPtGlobalTrack": "0.15",
+          "maxDCAxyToPVMFTTrack": "2",
+          "maxEtaMFTTrack": "-2",
+          "autoConfigureProcess": "0",
+          "ccdburl": "http://alice-ccdb.cern.ch",
+          "processCentralityRun3": "1"
+        }
+      },
+      "wagon_id": 30778,
+      "workflow_name": "o2-analysis-multcenttable",
+      "suffix": ""
+    },
+    {
+      "subwagon_id": 62128,
+      "subwagon_name": "base",
+      "configuration": {
+        "eventselection-run3": {
+          "timestamp.fatalOnInvalidTimestamp": "0",
+          "evselOpts.NumberOfOrbitsPerTF": "-1",
+          "evselOpts.TimeRangeVetoOnCollNarrow": "0.25",
+          "evselOpts.VzDiffNsigma": "3",
+          "evselOpts.maxDiffZvtxFT0vsPV": "3",
+          "bcselOpts.checkRunDurationLimits": "0",
+          "evselOpts.amIneeded": "-1",
+          "evselOpts.EpsilonVzDiffVetoInROF": "0.3",
+          "evselOpts.isMC": "-1",
+          "bcselOpts.ITSROFrameStartBorderMargin": "-1",
+          "timestamp.isRun2MC": "-1",
+          "bcselOpts.TimeFrameStartBorderMargin": "-1",
+          "evselOpts.FT0CamplPerCollCutVetoOnCollInROF": "5000",
+          "timestamp.orbit-reset-path": "CTP/Calib/OrbitReset",
+          "evselOpts.TimeIntervalForOccupancyCalculationMin": "-40",
+          "evselOpts.TimeRangeVetoOnCollStrict": "10",
+          "bcselOpts.maxInactiveChipsPerLayer": {
+            "values": [
+              8,
+              8,
+              8,
+              111,
+              111,
+              195,
+              195
+            ]
+          },
+          "lumiOpts.amIneeded": "-1",
+          "evselOpts.confSigmaBCforHighPtTracks": "4",
+          "evselOpts.FT0CamplPerCollCutVetoOnCollInTimeRange": "8000",
+          "bcselOpts.ITSROFrameEndBorderMargin": "-1",
+          "evselOpts.VzDiffMargin": "0.2",
+          "bcselOpts.amIneeded": "-1",
+          "evselOpts.TimeIntervalForOccupancyCalculationMax": "100",
+          "ccdburl": "http://alice-ccdb.cern.ch",
+          "evselOpts.muonSelection": "0",
+          "evselOpts.UseWeightsForOccupancyEstimator": "1",
+          "timestamp.verbose": "0",
+          "bcselOpts.TimeFrameEndBorderMargin": "-1",
+          "bcselOpts.NumberOfOrbitsPerTF": "-1"
+        }
+      },
+      "wagon_id": 31191,
+      "workflow_name": "o2-analysis-event-selection-service",
+      "suffix": ""
+    }
+  ],
+  "allowed_parent_level": 0,
+  "type": "test",
+  "tf_limit": 10,
+  "inputdata": [
+    "/alice/sim/2025/LHC25i4/0/564430"
+  ],
+  "package_tag": "VO_ALICE@O2Physics::daily-20260825-0000-1",
+  "wagons_timestamp": 1787663304580,
+  "aod_max_io_rate": 1000,
+  "train_id": "746121",
+  "derived_data": false
+}
