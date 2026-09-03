@@ -1,6 +1,7 @@
 ## Common tools
 ### Tracking efficiency
-- Run the corresponding task locally after modifying and copiling the task tableMakerMuonMchTrkEfficiency (temporary fix: comment all reserve command in the task):
+- temporary fix: comment all `reserve` command in the task `tableMakerMuonMchTrkEfficiency`
+- Run following script in the reposotories `/task_config_mch_trk_eff_data` and `/task_config_mch_trk_eff_mc`:
   ```ruby
   ./run_train.sh --skip-perf
   ```
