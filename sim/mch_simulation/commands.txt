@@ -1,0 +1,18 @@
+o2-mch-digits-reader-workflow \
+  --mch-digit-infile mchdigits.root \
+  --disable-mc \
+  | o2-mch-statusmap-creator-workflow \
+      --configKeyValues 'MCHStatusMap.useBadChannels=false;MCHStatusMap.useRejectList=true;MCHStatusMap.useHV=false' \
+      --condition-backend http://alice-ccdb.cern.ch \
+      --condition-remap \
+      'http://alice-ccdb.cern.ch/Users/s/sgaretti/rejectList/2024_pbpb_apass3_zthr5_6_mw_sameTimestamp_test/=MCH/Calib/RejectList' \
+  | o2-mch-digits-filtering-workflow \
+      --disable-mc \
+      --configKeyValues 'MCHDigitFilter.statusMask=2' \
+  | o2-mch-digits-writer-workflow \
+      --input-digits-data-description F-DIGITS \
+      --input-digitrofs-data-description F-DIGITROFS \
+      --outfile mchdigits_filtered.root \
+      --nevents -1 \
+      --terminate workflow \
+      --run

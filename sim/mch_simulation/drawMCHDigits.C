@@ -2,17 +2,18 @@
 // drawMCHDigits.C
 //
 // Legge i digit MCH da mchdigits.root e crea una mappa ADC
-// per ogni Detection Element (DE), usando la segmentation
-// MCH di O2.
+// per ogni Detection Element (DE), usando:
 //
-// Inoltre carica la geometria TGeo da o2sim_geometry.root.
+//   1) MCH Mapping O2 per pad position/size
+//   2) o2sim_geometry.root per la trasformazione geometrica
 //
 // OUTPUT:
 //   mch_pad_maps.root
 //
 // Nel file di output vengono salvati SOLO i TH2Poly.
 //
-// Nessun canvas viene creato e nessun Draw() viene eseguito.
+// Nessun canvas viene creato.
+// Nessun Draw() viene eseguito.
 //
 // ESECUZIONE:
 //
@@ -27,12 +28,14 @@
 //   NON usare .L drawMCHDigits.C++
 //   perché nel tuo ambiente ACLiC non linka automaticamente
 //   le librerie O2 MCH Mapping.
+//
 // ============================================================
 
 #include <iostream>
 #include <map>
 #include <string>
 #include <algorithm>
+#include <cmath>
 
 // ROOT
 #include "TFile.h"
@@ -40,15 +43,15 @@
 #include "TTreeReader.h"
 #include "TTreeReaderArray.h"
 #include "TH2Poly.h"
-#include "TStyle.h"
 #include "TSystem.h"
 #include "TString.h"
 #include "TGeoManager.h"
-#include "TGeoVolume.h"
 
-// O2 MCH
+// O2
 #include "MCHMappingInterface/Segmentation.h"
+#include "MCHGeometryTransformer/Transformations.h"
 #include "DetectorsBase/GeometryManager.h"
+#include "MathUtils/Cartesian.h"
 
 
 // ============================================================
@@ -61,18 +64,49 @@ const char* O2MCHLIB =
 
 
 // ============================================================
+// Helper: transform local point -> global point
+// ============================================================
+
+o2::math_utils::Point3D<double>
+transformPoint(
+    const o2::mch::geo::TransformationCreator& transformation,
+    int deid,
+    double x,
+    double y)
+{
+    o2::math_utils::Point3D<double> local;
+
+    local.SetX(x);
+    local.SetY(y);
+    local.SetZ(0.0);
+
+    auto transform = transformation(deid);
+
+    return transform(local);
+}
+
+
+// ============================================================
 // Main function
 // ============================================================
 
 void drawMCHDigits(
-    const char* inputFile = "sim_rej_list_high_stat/mchdigits_filtered.root",
-    const char* outputFile = "sim_rej_list_high_stat/mch_pad_maps_filtered.root",
-    const char* geometryFile = "sim_rej_list_high_stat/o2sim_geometry.root")
+    const char* inputFile =
+        "sim_rej_list_high_stat/mchdigits_filtered.root",
+
+    const char* outputFile =
+        "sim_rej_list_high_stat/mch_pad_maps_filtered.root",
+
+    const char* geometryFile =
+        "sim_rej_list_high_stat/o2sim_geometry-aligned.root")
 {
     std::cout << "\n";
-    std::cout << "============================================================\n";
-    std::cout << "                    MCH DIGIT MAP\n";
-    std::cout << "============================================================\n";
+    std::cout
+        << "============================================================\n";
+    std::cout
+        << "                    MCH DIGIT MAP\n";
+    std::cout
+        << "============================================================\n";
     std::cout << "\n";
 
 
@@ -88,88 +122,112 @@ void drawMCHDigits(
         std::string(O2MCHLIB) +
         "libO2MCHMappingImpl4.dylib";
 
-    std::cout << "Loading MCH Mapping libraries...\n";
+    std::cout
+        << "Loading MCH Mapping libraries...\n";
 
-    int ret3 = gSystem->Load(lib3.c_str());
-    int ret4 = gSystem->Load(lib4.c_str());
+    int ret3 =
+        gSystem->Load(lib3.c_str());
 
-    std::cout << "  Impl3: " << ret3 << "\n";
-    std::cout << "  Impl4: " << ret4 << "\n";
+    int ret4 =
+        gSystem->Load(lib4.c_str());
 
-    // In ROOT:
-    //   0 = library loaded successfully
-    //   1 = library was already loaded
-    //  <0 = error
-    //
-    // Therefore 0 or 1 are both OK.
+    std::cout
+        << "  Impl3: "
+        << ret3
+        << "\n";
 
-    if (ret3 < 0 || ret4 < 0) {
-
-        std::cerr
-            << "ERROR: cannot load MCH Mapping libraries.\n";
-
-        return;
-    }
+    std::cout
+        << "  Impl4: "
+        << ret4
+        << "\n";
 
 
     // ========================================================
-    // 2. Load O2 geometry
+    // 2. Load geometry
+    //
+    // This is the important part:
+    //
+    // GeometryManager loads o2sim_geometry.root and creates
+    // gGeoManager.
+    //
+    // We then construct the official MCH transformation
+    // from the TGeo geometry.
     // ========================================================
 
     std::cout << "\n";
-    std::cout << "Loading O2 geometry...\n";
-    std::cout << "  File: "
-              << geometryFile
-              << "\n";
+    std::cout
+        << "Loading MCH geometry...\n";
 
-    if (!gGeoManager) {
+    try {
 
         o2::base::GeometryManager::loadGeometry(
             geometryFile);
-    }
 
-    if (!gGeoManager) {
+    }
+    catch (...) {
 
         std::cerr
-            << "ERROR: TGeo geometry was not loaded.\n"
-            << "       Geometry file: "
+            << "ERROR: could not load geometry file:\n"
             << geometryFile
             << "\n";
 
         return;
     }
 
+
+    if (!gGeoManager) {
+
+        std::cerr
+            << "ERROR: gGeoManager is null after loading geometry.\n";
+
+        return;
+    }
+
+
     std::cout
         << "Geometry loaded successfully.\n";
 
+
+    // ========================================================
+    // 3. Create MCH geometry transformation
+    //
+    // transformation(deid) converts coordinates from the
+    // local coordinate system of a DE to the global MCH
+    // coordinate system.
+    //
+    // This is the same mechanism used by O2 itself.
+    // ========================================================
+
+    o2::mch::geo::TransformationCreator transformation;
+
+    try {
+
+        transformation =
+            o2::mch::geo::transformationFromTGeoManager(
+                *gGeoManager);
+
+    }
+    catch (...) {
+
+        std::cerr
+            << "ERROR: could not create MCH transformation "
+            << "from TGeo geometry.\n";
+
+        return;
+    }
+
+
     std::cout
-        << "Geometry manager: "
-        << gGeoManager->GetName()
-        << "\n";
-
-    if (gGeoManager->GetTopVolume()) {
-
-        std::cout
-            << "Top volume: "
-            << gGeoManager->GetTopVolume()->GetName()
-            << "\n";
-    }
-
-    if (gGeoManager->GetListOfVolumes()) {
-
-        std::cout
-            << "Number of TGeo volumes: "
-            << gGeoManager->GetListOfVolumes()->GetEntries()
-            << "\n";
-    }
+        << "MCH geometry transformation created.\n";
 
 
     // ========================================================
-    // 3. Open input ROOT file
+    // 4. Open input ROOT file
     // ========================================================
 
     TFile* fin =
         TFile::Open(inputFile, "READ");
+
 
     if (!fin || fin->IsZombie()) {
 
@@ -181,6 +239,7 @@ void drawMCHDigits(
         return;
     }
 
+
     std::cout
         << "\nInput file: "
         << inputFile
@@ -188,12 +247,15 @@ void drawMCHDigits(
 
 
     // ========================================================
-    // 4. Get TTree
+    // 5. Get TTree
     // ========================================================
 
     TTree* tree = nullptr;
 
-    fin->GetObject("o2sim", tree);
+    fin->GetObject(
+        "o2sim",
+        tree);
+
 
     if (!tree) {
 
@@ -205,6 +267,7 @@ void drawMCHDigits(
 
         return;
     }
+
 
     std::cout
         << "Tree found: "
@@ -230,24 +293,27 @@ void drawMCHDigits(
 
 
     // ========================================================
-    // 5. TTreeReader
+    // 6. TTreeReader
     //
     // Branches:
     //
-    // MCHDigit.mDetID : Int_t[MCHDigit_]
-    // MCHDigit.mPadID : Int_t[MCHDigit_]
-    // MCHDigit.mADC   : UInt_t[MCHDigit_]
+    // MCHDigit.mDetID
+    // MCHDigit.mPadID
+    // MCHDigit.mADC
     // ========================================================
 
     TTreeReader reader(tree);
+
 
     TTreeReaderArray<Int_t> detID(
         reader,
         "MCHDigit.mDetID");
 
+
     TTreeReaderArray<Int_t> padID(
         reader,
         "MCHDigit.mPadID");
+
 
     TTreeReaderArray<UInt_t> adc(
         reader,
@@ -255,61 +321,7 @@ void drawMCHDigits(
 
 
     // ========================================================
-    // 6. Read first entry
-    // ========================================================
-
-    if (!reader.Next()) {
-
-        std::cerr
-            << "ERROR: cannot read first tree entry.\n";
-
-        fin->Close();
-        delete fin;
-
-        return;
-    }
-
-
-    const Long64_t nDigits =
-        detID.GetSize();
-
-
-    std::cout
-        << "\nNumber of digits = "
-        << nDigits
-        << "\n";
-
-
-    if (padID.GetSize() != nDigits ||
-        adc.GetSize() != nDigits) {
-
-        std::cerr
-            << "ERROR: inconsistent array sizes:\n";
-
-        std::cerr
-            << "  detID = "
-            << detID.GetSize()
-            << "\n";
-
-        std::cerr
-            << "  padID = "
-            << padID.GetSize()
-            << "\n";
-
-        std::cerr
-            << "  adc   = "
-            << adc.GetSize()
-            << "\n";
-
-        fin->Close();
-        delete fin;
-
-        return;
-    }
-
-
-    // ========================================================
-    // 7. Accumulate ADC per DE and pad
+    // 7. Accumulate ADC
     //
     // padADC[DE][padID] = total ADC
     // ========================================================
@@ -317,23 +329,56 @@ void drawMCHDigits(
     std::map<int, std::map<int, double>> padADC;
 
 
+    Long64_t nDigits = 0;
+
+
     std::cout
         << "\nReading digits...\n";
 
 
-    for (Long64_t i = 0; i < nDigits; ++i) {
+    while (reader.Next()) {
 
-        const int deid =
-            detID[i];
+        const Long64_t n =
+            detID.GetSize();
 
-        const int pid =
-            padID[i];
 
-        const double charge =
-            static_cast<double>(adc[i]);
+        if (padID.GetSize() != n ||
+            adc.GetSize() != n) {
 
-        padADC[deid][pid] += charge;
+            std::cerr
+                << "ERROR: inconsistent array sizes "
+                << "in one tree entry.\n";
+
+            fin->Close();
+            delete fin;
+
+            return;
+        }
+
+
+        for (Long64_t i = 0; i < n; ++i) {
+
+            const int deid =
+                detID[i];
+
+            const int pid =
+                padID[i];
+
+            const double charge =
+                static_cast<double>(adc[i]);
+
+
+            padADC[deid][pid] += charge;
+
+            ++nDigits;
+        }
     }
+
+
+    std::cout
+        << "\nNumber of digits = "
+        << nDigits
+        << "\n";
 
 
     // ========================================================
@@ -364,11 +409,13 @@ void drawMCHDigits(
 
 
     // ========================================================
-    // 9. Open output ROOT file
+    // 9. Open output file
     // ========================================================
 
     TFile* fout =
-        TFile::Open(outputFile, "RECREATE");
+        TFile::Open(
+            outputFile,
+            "RECREATE");
 
 
     if (!fout || fout->IsZombie()) {
@@ -387,20 +434,13 @@ void drawMCHDigits(
 
     // ========================================================
     // 10. Create one TH2Poly per DE
-    //
-    // NOTE:
-    // At this stage the bins are still rectangles generated
-    // from the O2 segmentation.
-    //
-    // The TGeo geometry has been loaded and is available
-    // through gGeoManager.
-    //
-    // In the next step we can replace these rectangles with
-    // the REAL pad polygons extracted from TGeo.
     // ========================================================
 
     int nDE = 0;
+
     int nInvalidPads = 0;
+
+    int nAddedPads = 0;
 
 
     for (const auto& deEntry : padADC) {
@@ -413,6 +453,7 @@ void drawMCHDigits(
 
 
         std::cout << "\n";
+
         std::cout
             << "------------------------------------------------------------\n";
 
@@ -440,7 +481,11 @@ void drawMCHDigits(
 
 
         // ====================================================
-        // Determine geometrical limits
+        // Determine GLOBAL geometrical limits
+        //
+        // We transform the four corners of every pad first.
+        //
+        // This is crucial because DEs can be rotated.
         // ====================================================
 
         double xmin =  1.e30;
@@ -467,11 +512,20 @@ void drawMCHDigits(
             }
 
 
+            // ------------------------------------------------
+            // Pad center in LOCAL DE coordinates
+            // ------------------------------------------------
+
             const double x =
                 seg.padPositionX(pid);
 
             const double y =
                 seg.padPositionY(pid);
+
+
+            // ------------------------------------------------
+            // Pad half-size in LOCAL DE coordinates
+            // ------------------------------------------------
 
             const double dx =
                 seg.padSizeX(pid) / 2.0;
@@ -480,17 +534,76 @@ void drawMCHDigits(
                 seg.padSizeY(pid) / 2.0;
 
 
+            // ------------------------------------------------
+            // Four LOCAL corners
+            // ------------------------------------------------
+
+            const auto p1 =
+                transformPoint(
+                    transformation,
+                    deid,
+                    x - dx,
+                    y - dy);
+
+
+            const auto p2 =
+                transformPoint(
+                    transformation,
+                    deid,
+                    x + dx,
+                    y - dy);
+
+
+            const auto p3 =
+                transformPoint(
+                    transformation,
+                    deid,
+                    x + dx,
+                    y + dy);
+
+
+            const auto p4 =
+                transformPoint(
+                    transformation,
+                    deid,
+                    x - dx,
+                    y + dy);
+
+
+            // ------------------------------------------------
+            // Determine GLOBAL limits
+            // ------------------------------------------------
+
             xmin =
-                std::min(xmin, x - dx);
+                std::min(
+                    xmin,
+                    std::min(
+                        std::min(p1.x(), p2.x()),
+                        std::min(p3.x(), p4.x())));
+
 
             xmax =
-                std::max(xmax, x + dx);
+                std::max(
+                    xmax,
+                    std::max(
+                        std::max(p1.x(), p2.x()),
+                        std::max(p3.x(), p4.x())));
+
 
             ymin =
-                std::min(ymin, y - dy);
+                std::min(
+                    ymin,
+                    std::min(
+                        std::min(p1.y(), p2.y()),
+                        std::min(p3.y(), p4.y())));
+
 
             ymax =
-                std::max(ymax, y + dy);
+                std::max(
+                    ymax,
+                    std::max(
+                        std::max(p1.y(), p2.y()),
+                        std::max(p3.y(), p4.y())));
 
 
             ++nValidPads;
@@ -509,14 +622,22 @@ void drawMCHDigits(
 
 
         // ====================================================
-        // Add small margin
+        // Add margin
         // ====================================================
 
-        const double marginX =
+        double marginX =
             0.02 * (xmax - xmin);
 
-        const double marginY =
+        double marginY =
             0.02 * (ymax - ymin);
+
+
+        // Protect against zero-size ranges
+        if (marginX <= 0.)
+            marginX = 0.1;
+
+        if (marginY <= 0.)
+            marginY = 0.1;
 
 
         xmin -= marginX;
@@ -540,7 +661,7 @@ void drawMCHDigits(
         TString htitle;
 
         htitle.Form(
-            "MCH DE %d;X [cm];Y [cm]",
+            "MCH DE %d;Global X [cm];Global Y [cm]",
             deid);
 
 
@@ -555,20 +676,14 @@ void drawMCHDigits(
 
 
         // ====================================================
-        // Associate histogram with output file
-        // ====================================================
-
-        h->SetDirectory(fout);
-
-
-        // ====================================================
-        // Add one polygon/bin for every active pad
+        // Add one POLYGON per pad
         //
-        // CURRENT VERSION:
-        // rectangular approximation.
+        // IMPORTANT:
         //
-        // TODO:
-        // replace with TGeo pad polygon.
+        // The four corners are defined in LOCAL coordinates
+        // and transformed individually into GLOBAL coordinates.
+        //
+        // Therefore a rotated DE produces rotated pads.
         // ====================================================
 
         int nAdded = 0;
@@ -589,7 +704,7 @@ void drawMCHDigits(
 
 
             // ------------------------------------------------
-            // Pad position
+            // Local pad center
             // ------------------------------------------------
 
             const double x =
@@ -600,7 +715,7 @@ void drawMCHDigits(
 
 
             // ------------------------------------------------
-            // Pad dimensions
+            // Local pad half-size
             // ------------------------------------------------
 
             const double dx =
@@ -610,29 +725,67 @@ void drawMCHDigits(
                 seg.padSizeY(pid) / 2.0;
 
 
-            const double x1 =
-                x - dx;
+            // ------------------------------------------------
+            // Transform ALL FOUR corners
+            // ------------------------------------------------
 
-            const double x2 =
-                x + dx;
+            const auto p1 =
+                transformPoint(
+                    transformation,
+                    deid,
+                    x - dx,
+                    y - dy);
 
-            const double y1 =
-                y - dy;
 
-            const double y2 =
-                y + dy;
+            const auto p2 =
+                transformPoint(
+                    transformation,
+                    deid,
+                    x + dx,
+                    y - dy);
+
+
+            const auto p3 =
+                transformPoint(
+                    transformation,
+                    deid,
+                    x + dx,
+                    y + dy);
+
+
+            const auto p4 =
+                transformPoint(
+                    transformation,
+                    deid,
+                    x - dx,
+                    y + dy);
 
 
             // ------------------------------------------------
-            // Add rectangular pad
+            // TH2Poly polygon
             // ------------------------------------------------
+
+            double xPoly[4] = {
+                p1.x(),
+                p2.x(),
+                p3.x(),
+                p4.x()
+            };
+
+
+            double yPoly[4] = {
+                p1.y(),
+                p2.y(),
+                p3.y(),
+                p4.y()
+            };
+
 
             const int bin =
                 h->AddBin(
-                    x1,
-                    y1,
-                    x2,
-                    y2);
+                    4,
+                    xPoly,
+                    yPoly);
 
 
             if (bin <= 0) {
@@ -649,7 +802,7 @@ void drawMCHDigits(
 
 
             // ------------------------------------------------
-            // Store ADC
+            // ADC
             // ------------------------------------------------
 
             h->SetBinContent(
@@ -658,11 +811,12 @@ void drawMCHDigits(
 
 
             ++nAdded;
+            ++nAddedPads;
         }
 
 
         // ====================================================
-        // Write ONLY TH2Poly
+        // Save ONLY histogram
         // ====================================================
 
         fout->cd();
@@ -686,7 +840,7 @@ void drawMCHDigits(
 
 
     // ========================================================
-    // 11. Write output
+    // 11. Final write
     // ========================================================
 
     fout->Write();
@@ -697,6 +851,7 @@ void drawMCHDigits(
     // ========================================================
 
     fout->Close();
+
     fin->Close();
 
 
@@ -709,6 +864,7 @@ void drawMCHDigits(
     // ========================================================
 
     std::cout << "\n";
+
     std::cout
         << "============================================================\n";
 
@@ -719,32 +875,37 @@ void drawMCHDigits(
         << "============================================================\n";
 
     std::cout
-        << "Input file   : "
+        << "Input file       : "
         << inputFile
         << "\n";
 
     std::cout
-        << "Geometry     : "
+        << "Geometry file    : "
         << geometryFile
         << "\n";
 
     std::cout
-        << "Output file  : "
+        << "Output file      : "
         << outputFile
         << "\n";
 
     std::cout
-        << "Digits       : "
+        << "Digits           : "
         << nDigits
         << "\n";
 
     std::cout
-        << "DEs          : "
+        << "DEs              : "
         << nDE
         << "\n";
 
     std::cout
-        << "Invalid pads : "
+        << "Pads added       : "
+        << nAddedPads
+        << "\n";
+
+    std::cout
+        << "Invalid pads     : "
         << nInvalidPads
         << "\n";
 
@@ -754,7 +915,10 @@ void drawMCHDigits(
         << "Output contains ONLY TH2Poly objects.\n";
 
     std::cout
-        << "No canvas was created or drawn.\n";
+        << "No canvas was created.\n";
+
+    std::cout
+        << "No Draw() was executed.\n";
 
     std::cout << "\n";
 }
