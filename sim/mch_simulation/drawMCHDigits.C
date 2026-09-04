@@ -50,7 +50,7 @@
 // O2
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHGeometryTransformer/Transformations.h"
-#include "DetectorsBase/GeometryManager.h"
+//#include "DetectorsBase/GeometryManager.h"
 #include "MathUtils/Cartesian.h"
 
 
@@ -58,9 +58,15 @@
 // O2 installation
 // ============================================================
 
+// for mac
 const char* O2MCHLIB =
     "/Users/lucamicheletti/alice/sw/osx_arm64/"
     "O2/daily-20260224-0000-local1/lib/";
+
+// for ubuntu
+/*const char* O2MCHLIB =
+    "/home/lmichele/alice/sw/ubuntu2404_x86-64"
+    "O2/daily-20260903-0000-local1/lib/";*/
 
 
 // ============================================================
